@@ -1,5 +1,14 @@
+pub mod archive;
+pub mod bitbucket;
+pub mod gist;
+pub mod gitea;
 pub mod github;
+pub mod gitlab;
 pub mod local;
+pub mod resolver;
+pub mod skills_directory;
+pub mod url;
+pub mod url_patterns;
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -30,6 +39,28 @@ pub fn urlencode_path(s: &str) -> String {
         .join("/")
 }
 
+/// Archive format for downloaded skill packages.
+#[derive(Debug, Clone)]
+pub enum ArchiveFormat {
+    Zip,
+    TarGz,
+}
+
+/// Skills directory platform identifier.
+#[derive(Debug, Clone)]
+pub enum SkillsDirectoryPlatform {
+    SkillsSh,
+    SkillsMp,
+    ClawHub,
+    LobeHub,
+    SkillHub,
+    AgentSkillsHub,
+    AgentSkillsSo,
+    McpMarket,
+    SkillsDirectory,
+    PromptsChat,
+}
+
 /// Represents where a skill comes from.
 #[derive(Debug, Clone)]
 pub enum SkillSource {
@@ -39,6 +70,38 @@ pub enum SkillSource {
         repo: String,
         path: Option<String>,
         ref_: Option<String>,
+    },
+    GitLab {
+        host: String,
+        owner: String,
+        repo: String,
+        path: Option<String>,
+        ref_: Option<String>,
+    },
+    Bitbucket {
+        owner: String,
+        repo: String,
+        path: Option<String>,
+        ref_: Option<String>,
+    },
+    Gitea {
+        host: String,
+        owner: String,
+        repo: String,
+        path: Option<String>,
+        ref_: Option<String>,
+    },
+    Gist {
+        id: String,
+        revision: Option<String>,
+    },
+    Archive {
+        url: String,
+        format: ArchiveFormat,
+    },
+    SkillsDirectory {
+        platform: SkillsDirectoryPlatform,
+        path: String,
     },
 }
 
@@ -63,7 +126,7 @@ pub struct SkillMetadata {
 
 /// Resolve a source string into a `SkillSource`.
 ///
-/// Priority: local path > `github:` prefix > GitHub URL > error
+/// Priority: local path > explicit prefix > URL > bare name (error)
 pub fn resolve(input: &str) -> Result<SkillSource> {
     let input = input.trim();
 
@@ -89,19 +152,22 @@ pub fn resolve(input: &str) -> Result<SkillSource> {
         return Ok(SkillSource::Local(as_path));
     }
 
-    // 2. github: prefix
+    // 2. Explicit prefixes: github: and gist:
     if let Some(rest) = input.strip_prefix("github:") {
         return github::GitHubSource::parse(rest);
     }
-
-    // 3. GitHub URL
-    if input.starts_with("https://github.com/") || input.starts_with("http://github.com/") {
-        return github::GitHubSource::parse_url(input);
+    if let Some(rest) = input.strip_prefix("gist:") {
+        return gist::GistSource::parse(rest);
     }
 
-    // 4. Bare name — not supported in v0.1
+    // 3. Full URL — URL smart recognition engine
+    if input.starts_with("https://") || input.starts_with("http://") {
+        return url::resolve_url(input);
+    }
+
+    // 4. Bare name — reserved for v0.4 registry
     Err(SkillxError::InvalidSource(format!(
-        "cannot resolve source: '{input}'. Use a local path (./skill), github: prefix, or GitHub URL"
+        "cannot resolve source: '{input}'. Use a local path (./skill), github:/gist: prefix, or a full URL"
     )))
 }
 

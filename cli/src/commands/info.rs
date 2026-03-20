@@ -52,6 +52,11 @@ pub async fn execute(args: InfoArgs) -> anyhow::Result<()> {
             let resolved = LocalSource::fetch(&skill_dir)?;
             (resolved.metadata, resolved.files, resolved.root_dir)
         }
+        _ => {
+            return Err(anyhow::anyhow!(
+                "source type not yet supported via legacy path — use resolver"
+            ))
+        }
     };
 
     // Display info

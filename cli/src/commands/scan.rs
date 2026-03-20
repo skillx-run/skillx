@@ -66,6 +66,11 @@ pub async fn execute(args: ScanArgs) -> anyhow::Result<()> {
                 dest
             }
         }
+        _ => {
+            return Err(anyhow::anyhow!(
+                "source type not yet supported via legacy path — use resolver"
+            ))
+        }
     };
 
     // Run scan

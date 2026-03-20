@@ -125,6 +125,11 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
                 .unwrap_or_else(|| path.as_deref().unwrap_or(repo).to_string());
             (dir, name)
         }
+        _ => {
+            return Err(anyhow::anyhow!(
+                "source type not yet supported via legacy path — use resolver"
+            ))
+        }
     };
 
     ui::success(&format!("Resolved: {skill_name}"));
