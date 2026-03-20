@@ -1,9 +1,15 @@
+pub mod amp;
 pub mod claude_code;
+pub mod cline;
 pub mod codex;
 pub mod copilot;
 pub mod cursor;
+pub mod gemini_cli;
+pub mod opencode;
 pub mod registry;
+pub mod roo;
 pub mod universal;
+pub mod windsurf;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
