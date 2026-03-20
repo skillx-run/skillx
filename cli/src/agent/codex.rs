@@ -58,8 +58,7 @@ impl AgentAdapter for CodexAdapter {
             Scope::Project => PathBuf::from(".agents")
                 .join("skills")
                 .join(skill_name),
-            Scope::Global => dirs::home_dir()
-                .unwrap_or_default()
+            Scope::Global => super::home_dir_or_fallback()
                 .join(".codex")
                 .join("skills")
                 .join(skill_name),

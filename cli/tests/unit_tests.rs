@@ -929,3 +929,59 @@ fn test_parse_duration_edge_cases() {
     assert_eq!(parse_duration_secs(""), None);
     assert_eq!(parse_duration_secs("   "), None);
 }
+
+// ==================== R3: home_dir_or_fallback ====================
+
+#[test]
+fn test_home_dir_or_fallback_not_empty() {
+    let path = skillx::agent::home_dir_or_fallback();
+    // Must never be an empty PathBuf (the original bug)
+    assert!(
+        !path.as_os_str().is_empty(),
+        "home_dir_or_fallback returned empty path"
+    );
+}
+
+#[test]
+fn test_global_inject_paths_are_absolute() {
+    use skillx::agent::AgentAdapter;
+    use skillx::types::Scope;
+
+    let adapters: Vec<Box<dyn AgentAdapter>> = vec![
+        Box::new(skillx::agent::claude_code::ClaudeCodeAdapter),
+        Box::new(skillx::agent::codex::CodexAdapter),
+        Box::new(skillx::agent::copilot::CopilotAdapter),
+        Box::new(skillx::agent::cursor::CursorAdapter),
+        Box::new(skillx::agent::universal::UniversalAdapter),
+    ];
+
+    for adapter in &adapters {
+        let path = adapter.inject_path("test-skill", &Scope::Global);
+        assert!(
+            path.is_absolute(),
+            "global inject path for {} should be absolute, got: {}",
+            adapter.name(),
+            path.display()
+        );
+    }
+}
+
+// ==================== R3: urlencoding ====================
+
+#[test]
+fn test_urlencoding_basic() {
+    assert_eq!(skillx::source::urlencoding("hello"), "hello");
+    assert_eq!(skillx::source::urlencoding("v1.2.3"), "v1.2.3");
+    assert_eq!(skillx::source::urlencoding("a b"), "a%20b");
+    assert_eq!(skillx::source::urlencoding("ref/name"), "ref%2Fname");
+    assert_eq!(skillx::source::urlencoding(""), "");
+}
+
+// ==================== R3: AgentRegistry Default ====================
+
+#[test]
+fn test_agent_registry_default() {
+    let registry = skillx::agent::registry::AgentRegistry::default();
+    assert!(registry.get("claude-code").is_some());
+    assert!(registry.get("universal").is_some());
+}

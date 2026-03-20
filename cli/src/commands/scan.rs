@@ -85,7 +85,11 @@ pub async fn execute(args: ScanArgs) -> anyhow::Result<()> {
     // Check fail threshold
     let overall = report.overall_level();
     if overall >= fail_on {
-        std::process::exit(1);
+        return Err(anyhow::anyhow!(
+            "scan failed: overall level {} meets or exceeds threshold {}",
+            overall,
+            fail_on
+        ));
     }
 
     Ok(())

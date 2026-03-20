@@ -62,8 +62,7 @@ impl AgentAdapter for CursorAdapter {
             Scope::Project => PathBuf::from(".cursor")
                 .join("skills")
                 .join(skill_name),
-            Scope::Global => dirs::home_dir()
-                .unwrap_or_default()
+            Scope::Global => super::home_dir_or_fallback()
                 .join(".cursor")
                 .join("skills")
                 .join(skill_name),

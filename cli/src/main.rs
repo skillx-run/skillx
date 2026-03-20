@@ -22,13 +22,14 @@ async fn main() -> Result<()> {
 
     if let Err(e) = result {
         // Check for user cancellation (exit cleanly)
-        let err_str = format!("{e:#}");
-        if err_str.contains("user cancelled") {
+        if e.downcast_ref::<skillx::error::SkillxError>()
+            .is_some_and(|se| matches!(se, skillx::error::SkillxError::UserCancelled))
+        {
             skillx::ui::info("Cancelled.");
             std::process::exit(0);
         }
 
-        skillx::ui::error(&err_str);
+        skillx::ui::error(&format!("{e:#}"));
         std::process::exit(1);
     }
 

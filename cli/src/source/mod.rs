@@ -4,6 +4,22 @@ pub mod local;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+/// Percent-encode a string for use in URL query parameters.
+pub fn urlencoding(s: &str) -> String {
+    let mut encoded = String::with_capacity(s.len());
+    for b in s.bytes() {
+        match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                encoded.push(b as char);
+            }
+            _ => {
+                encoded.push_str(&format!("%{b:02X}"));
+            }
+        }
+    }
+    encoded
+}
+
 use crate::error::{Result, SkillxError};
 
 /// Represents where a skill comes from.

@@ -5,22 +5,6 @@ use crate::source::SkillSource;
 
 pub struct GitHubSource;
 
-/// Percent-encode a string for use in URL query parameters.
-fn urlencoding(s: &str) -> String {
-    let mut encoded = String::with_capacity(s.len());
-    for b in s.bytes() {
-        match b {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
-                encoded.push(b as char);
-            }
-            _ => {
-                encoded.push_str(&format!("%{b:02X}"));
-            }
-        }
-    }
-    encoded
-}
-
 impl GitHubSource {
     /// Parse `owner/repo/path[@ref]` format.
     pub fn parse(input: &str) -> Result<SkillSource> {
@@ -115,7 +99,7 @@ impl GitHubSource {
             "https://api.github.com/repos/{owner}/{repo}/contents/{api_path}"
         );
         if let Some(r) = ref_ {
-            let encoded_ref = urlencoding(r);
+            let encoded_ref = super::urlencoding(r);
             url.push_str(&format!("?ref={encoded_ref}"));
         }
 
@@ -129,9 +113,25 @@ impl GitHubSource {
         })?;
 
         if resp.status() == 403 {
-            return Err(SkillxError::RateLimited(
-                "GitHub API rate limit exceeded. Set GITHUB_TOKEN to increase your limit.".into(),
-            ));
+            // Distinguish rate limit from permission denied
+            let is_rate_limit = resp
+                .headers()
+                .get("x-ratelimit-remaining")
+                .and_then(|v| v.to_str().ok())
+                .map(|v| v == "0")
+                .unwrap_or(false);
+
+            if is_rate_limit {
+                return Err(SkillxError::RateLimited(
+                    "GitHub API rate limit exceeded. Set GITHUB_TOKEN to increase your limit."
+                        .into(),
+                ));
+            } else {
+                return Err(SkillxError::GitHubApi(
+                    "GitHub API returned 403 Forbidden. The repository may be private — set GITHUB_TOKEN for access."
+                        .into(),
+                ));
+            }
         }
 
         if !resp.status().is_success() {

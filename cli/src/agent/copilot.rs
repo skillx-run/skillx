@@ -64,8 +64,7 @@ impl AgentAdapter for CopilotAdapter {
             Scope::Project => PathBuf::from(".github")
                 .join("skills")
                 .join(skill_name),
-            Scope::Global => dirs::home_dir()
-                .unwrap_or_default()
+            Scope::Global => super::home_dir_or_fallback()
                 .join(".github")
                 .join("skills")
                 .join(skill_name),

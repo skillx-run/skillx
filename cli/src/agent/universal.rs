@@ -45,8 +45,7 @@ impl AgentAdapter for UniversalAdapter {
             Scope::Project => PathBuf::from(".agents")
                 .join("skills")
                 .join(skill_name),
-            Scope::Global => dirs::home_dir()
-                .unwrap_or_default()
+            Scope::Global => super::home_dir_or_fallback()
                 .join(".agents")
                 .join("skills")
                 .join(skill_name),

@@ -58,8 +58,7 @@ impl AgentAdapter for ClaudeCodeAdapter {
             Scope::Project => PathBuf::from(".claude")
                 .join("skills")
                 .join(skill_name),
-            Scope::Global => dirs::home_dir()
-                .unwrap_or_default()
+            Scope::Global => super::home_dir_or_fallback()
                 .join(".claude")
                 .join("skills")
                 .join(skill_name),

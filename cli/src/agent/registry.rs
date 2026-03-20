@@ -6,6 +6,12 @@ pub struct AgentRegistry {
     adapters: Vec<Box<dyn AgentAdapter>>,
 }
 
+impl Default for AgentRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AgentRegistry {
     /// Create a new registry with all built-in adapters.
     pub fn new() -> Self {

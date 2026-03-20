@@ -84,3 +84,13 @@ pub trait AgentAdapter: Send + Sync {
         Ok(())
     }
 }
+
+/// Helper: get home directory for global inject paths.
+/// Falls back to a temp directory so we never silently produce an empty path.
+pub fn home_dir_or_fallback() -> PathBuf {
+    dirs::home_dir().unwrap_or_else(|| {
+        let fallback = std::env::temp_dir().join("skillx-fallback-home");
+        std::fs::create_dir_all(&fallback).ok();
+        fallback
+    })
+}
