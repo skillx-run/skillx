@@ -194,26 +194,25 @@ pub async fn resolve_and_fetch(
         SkillSource::SkillsDirectory { platform, path } => {
             // Resolve to underlying GitHub source, then fetch
             ui::step("Resolving skills directory source...");
-            let github_source =
+            let resolved_source =
                 source::skills_directory::resolve_skills_directory(&platform, &path).await?;
-            // Recursively resolve the GitHub source
-            let source_str = match &github_source {
+            match resolved_source {
                 SkillSource::GitHub {
                     owner, repo, path, ref_,
                 } => {
-                    let mut s = format!("https://github.com/{owner}/{repo}");
-                    if let Some(r) = ref_ {
-                        s.push_str(&format!("/tree/{r}"));
-                        if let Some(p) = path {
-                            s.push_str(&format!("/{p}"));
+                    let mut source_url = format!("https://github.com/{owner}/{repo}");
+                    if let Some(r) = &ref_ {
+                        source_url.push_str(&format!("/tree/{r}"));
+                        if let Some(p) = &path {
+                            source_url.push_str(&format!("/{p}"));
                         }
                     }
-                    s
+                    Box::pin(resolve_and_fetch(&source_url, no_cache)).await
                 }
-                _ => input.to_string(),
-            };
-            // Re-resolve with the GitHub URL
-            Box::pin(resolve_and_fetch(&source_str, no_cache)).await
+                _ => Err(anyhow::anyhow!(
+                    "skills directory resolved to unsupported source type"
+                )),
+            }
         }
     }
 }
