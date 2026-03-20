@@ -1,0 +1,177 @@
+use sha2::{Digest, Sha256};
+use std::path::{Path, PathBuf};
+
+use crate::config::Config;
+use crate::error::{Result, SkillxError};
+use crate::ui;
+
+use super::manifest::Manifest;
+
+/// Clean up a session: remove injected files, archive manifest.
+pub fn cleanup_session(session_dir: &Path) -> Result<()> {
+    let manifest_path = Manifest::manifest_path(session_dir);
+    if !manifest_path.exists() {
+        ui::warn(&format!(
+            "No manifest found in {}",
+            session_dir.display()
+        ));
+        return Ok(());
+    }
+
+    let manifest = Manifest::load(&manifest_path)?;
+
+    // Remove injected files (with mtime change detection)
+    for file in &manifest.injected_files {
+        let path = PathBuf::from(&file.path);
+        if path.exists() {
+            // Check if file was modified by user
+            if let Ok(content) = std::fs::read(&path) {
+                let mut hasher = Sha256::new();
+                hasher.update(&content);
+                let current_sha = format!("{:x}", hasher.finalize());
+                if current_sha != file.sha256 {
+                    ui::warn(&format!(
+                        "File was modified during session: {}",
+                        file.path
+                    ));
+                }
+            }
+
+            if let Err(e) = std::fs::remove_file(&path) {
+                ui::warn(&format!("Failed to remove {}: {e}", file.path));
+            }
+        }
+    }
+
+    // Remove injected attachments
+    for attachment in &manifest.injected_attachments {
+        let path = PathBuf::from(&attachment.copied_to);
+        if path.exists() {
+            if let Err(e) = std::fs::remove_file(&path) {
+                ui::warn(&format!("Failed to remove {}: {e}", attachment.copied_to));
+            }
+        }
+    }
+
+    // Clean up empty directories
+    cleanup_empty_dirs_from_files(&manifest)?;
+
+    // Archive session to history
+    archive_session(session_dir, &manifest)?;
+
+    // Remove session directory
+    if session_dir.exists() {
+        std::fs::remove_dir_all(session_dir).ok();
+    }
+
+    Ok(())
+}
+
+/// Remove empty directories that were created by file injection.
+fn cleanup_empty_dirs_from_files(manifest: &Manifest) -> Result<()> {
+    let mut dirs: Vec<PathBuf> = Vec::new();
+
+    for file in &manifest.injected_files {
+        let path = PathBuf::from(&file.path);
+        if let Some(parent) = path.parent() {
+            if !dirs.contains(&parent.to_path_buf()) {
+                dirs.push(parent.to_path_buf());
+            }
+        }
+    }
+
+    // Sort by depth (deepest first) so we remove inner dirs before outer ones
+    dirs.sort_by(|a, b| {
+        let a_depth = a.components().count();
+        let b_depth = b.components().count();
+        b_depth.cmp(&a_depth)
+    });
+
+    for dir in &dirs {
+        if dir.exists() && dir.is_dir() {
+            if let Ok(entries) = std::fs::read_dir(dir) {
+                if entries.count() == 0 {
+                    std::fs::remove_dir(dir).ok();
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Archive session manifest to history.
+fn archive_session(_session_dir: &Path, manifest: &Manifest) -> Result<()> {
+    let history_dir = Config::history_dir();
+    std::fs::create_dir_all(&history_dir).ok();
+
+    let archive_path = history_dir.join(format!("{}.json", manifest.session_id));
+    manifest.save(&archive_path)?;
+
+    // Trim old history entries
+    trim_history(&history_dir, 50)?;
+
+    Ok(())
+}
+
+/// Keep only the most recent N history entries.
+fn trim_history(history_dir: &Path, max_entries: usize) -> Result<()> {
+    let mut entries: Vec<_> = std::fs::read_dir(history_dir)
+        .map_err(|e| SkillxError::Session(format!("failed to read history dir: {e}")))?
+        .filter_map(|e| e.ok())
+        .filter(|e| {
+            e.path()
+                .extension()
+                .map(|ext| ext == "json")
+                .unwrap_or(false)
+        })
+        .collect();
+
+    if entries.len() <= max_entries {
+        return Ok(());
+    }
+
+    // Sort by modification time (oldest first)
+    entries.sort_by(|a, b| {
+        let a_time = a.metadata().and_then(|m| m.modified()).ok();
+        let b_time = b.metadata().and_then(|m| m.modified()).ok();
+        a_time.cmp(&b_time)
+    });
+
+    let to_remove = entries.len() - max_entries;
+    for entry in entries.iter().take(to_remove) {
+        std::fs::remove_file(entry.path()).ok();
+    }
+
+    Ok(())
+}
+
+/// Recover orphaned sessions from `~/.skillx/active/`.
+pub fn recover_orphaned_sessions() -> Result<Vec<String>> {
+    let active_dir = Config::active_dir();
+    if !active_dir.exists() {
+        return Ok(vec![]);
+    }
+
+    let mut orphans = Vec::new();
+    let entries = std::fs::read_dir(&active_dir)
+        .map_err(|e| SkillxError::Session(format!("failed to read active dir: {e}")))?;
+
+    for entry in entries {
+        let entry = entry
+            .map_err(|e| SkillxError::Session(format!("dir entry error: {e}")))?;
+        if entry.path().is_dir() {
+            let session_id = entry.file_name().to_string_lossy().to_string();
+            orphans.push(session_id.clone());
+
+            ui::warn(&format!("Found orphaned session: {session_id}"));
+
+            // Clean up the orphaned session
+            if let Err(e) = cleanup_session(&entry.path()) {
+                ui::warn(&format!("Failed to clean orphan {session_id}: {e}"));
+            }
+        }
+    }
+
+    Ok(orphans)
+}
