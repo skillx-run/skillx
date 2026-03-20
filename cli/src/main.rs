@@ -9,6 +9,9 @@ use commands::{Cli, Commands};
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
+    // Ensure base dirs exist
+    let _ = skillx::config::Config::ensure_dirs();
+
     let result = match cli.command {
         Commands::Run(args) => commands::run::execute(args).await,
         Commands::Scan(args) => commands::scan::execute(args).await,
@@ -18,7 +21,14 @@ async fn main() -> Result<()> {
     };
 
     if let Err(e) = result {
-        skillx::ui::error(&format!("{e:#}"));
+        // Check for user cancellation (exit cleanly)
+        let err_str = format!("{e:#}");
+        if err_str.contains("user cancelled") {
+            skillx::ui::info("Cancelled.");
+            std::process::exit(0);
+        }
+
+        skillx::ui::error(&err_str);
         std::process::exit(1);
     }
 

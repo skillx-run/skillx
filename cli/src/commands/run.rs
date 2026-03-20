@@ -331,7 +331,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
 
     let mut session_handle = adapter.launch(launch_config).await?;
 
-    // ── Phase 9: Wait ──
+    // ── Phase 9: Wait (with Ctrl+C and timeout support) ──
     let timeout_duration = args
         .timeout
         .as_ref()
@@ -341,67 +341,67 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     match session_handle.lifecycle_mode {
         LifecycleMode::ManagedProcess => {
             if let Some(ref mut child) = session_handle.child {
-                let wait_future = child.wait();
-
-                if let Some(duration) = timeout_duration {
-                    match tokio::time::timeout(duration, wait_future).await {
-                        Ok(Ok(status)) => {
-                            if status.success() {
+                let wait_result: anyhow::Result<()> = tokio::select! {
+                    result = child.wait() => {
+                        match result {
+                            Ok(status) if status.success() => {
                                 ui::success("Agent completed successfully.");
-                            } else {
+                            }
+                            Ok(status) => {
                                 ui::warn(&format!(
                                     "Agent exited with code: {}",
                                     status.code().unwrap_or(-1)
                                 ));
                             }
-                        }
-                        Ok(Err(e)) => {
-                            ui::error(&format!("Agent process error: {e}"));
-                        }
-                        Err(_) => {
-                            ui::warn("Timeout reached. Terminating agent...");
-                            child.kill().await.ok();
-                        }
-                    }
-                } else {
-                    match wait_future.await {
-                        Ok(status) => {
-                            if status.success() {
-                                ui::success("Agent completed successfully.");
-                            } else {
-                                ui::warn(&format!(
-                                    "Agent exited with code: {}",
-                                    status.code().unwrap_or(-1)
-                                ));
+                            Err(e) => {
+                                ui::error(&format!("Agent process error: {e}"));
                             }
                         }
-                        Err(e) => {
-                            ui::error(&format!("Agent process error: {e}"));
-                        }
+                        Ok(())
                     }
-                }
+                    _ = async {
+                        if let Some(d) = timeout_duration {
+                            tokio::time::sleep(d).await
+                        } else {
+                            // No timeout — never resolves
+                            std::future::pending::<()>().await
+                        }
+                    } => {
+                        ui::warn("Timeout reached. Terminating agent...");
+                        child.kill().await.ok();
+                        Ok(())
+                    }
+                    _ = tokio::signal::ctrl_c() => {
+                        ui::info("Interrupted. Cleaning up...");
+                        child.kill().await.ok();
+                        Ok(())
+                    }
+                };
+                wait_result?;
             }
         }
         LifecycleMode::FileInjectAndWait => {
-            // Wait for user to press Enter
-            if let Some(duration) = timeout_duration {
-                let wait_for_enter = tokio::task::spawn_blocking(|| {
-                    let mut input = String::new();
-                    io::stdin().lock().read_line(&mut input)
-                });
-
-                match tokio::time::timeout(duration, wait_for_enter).await {
-                    Ok(_) => {
-                        ui::success("Session complete.");
-                    }
-                    Err(_) => {
-                        ui::warn("Timeout reached.");
-                    }
-                }
-            } else {
+            let wait_for_enter = tokio::task::spawn_blocking(|| {
                 let mut input = String::new();
-                io::stdin().lock().read_line(&mut input)?;
-                ui::success("Session complete.");
+                io::stdin().lock().read_line(&mut input)
+            });
+
+            tokio::select! {
+                _ = wait_for_enter => {
+                    ui::success("Session complete.");
+                }
+                _ = async {
+                    if let Some(d) = timeout_duration {
+                        tokio::time::sleep(d).await
+                    } else {
+                        std::future::pending::<()>().await
+                    }
+                } => {
+                    ui::warn("Timeout reached.");
+                }
+                _ = tokio::signal::ctrl_c() => {
+                    ui::info("Interrupted. Cleaning up...");
+                }
             }
         }
     }
