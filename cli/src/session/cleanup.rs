@@ -162,13 +162,25 @@ fn trim_history(history_dir: &Path, max_entries: usize) -> Result<()> {
 }
 
 /// Recover orphaned sessions from `~/.skillx/active/`.
+///
+/// When `interactive` is true, shows session metadata and asks for confirmation.
+/// When false (e.g., `--yes` mode), automatically cleans up.
 pub fn recover_orphaned_sessions() -> Result<Vec<String>> {
+    recover_orphaned_sessions_inner(false)
+}
+
+/// Interactive version of orphaned session recovery.
+pub fn recover_orphaned_sessions_interactive() -> Result<Vec<String>> {
+    recover_orphaned_sessions_inner(true)
+}
+
+fn recover_orphaned_sessions_inner(interactive: bool) -> Result<Vec<String>> {
     let active_dir = Config::active_dir()?;
     if !active_dir.exists() {
         return Ok(vec![]);
     }
 
-    let mut orphans = Vec::new();
+    let mut orphan_entries = Vec::new();
     let entries = std::fs::read_dir(&active_dir)
         .map_err(|e| SkillxError::Session(format!("failed to read active dir: {e}")))?;
 
@@ -176,15 +188,67 @@ pub fn recover_orphaned_sessions() -> Result<Vec<String>> {
         let entry = entry
             .map_err(|e| SkillxError::Session(format!("dir entry error: {e}")))?;
         if entry.path().is_dir() {
+            orphan_entries.push(entry);
+        }
+    }
+
+    if orphan_entries.is_empty() {
+        return Ok(vec![]);
+    }
+
+    // Collect session metadata for display
+    if interactive {
+        eprintln!(
+            "\n{} Found orphaned session(s) from previous runs:",
+            console::style("\u{26a0}").yellow().bold()
+        );
+        for (i, entry) in orphan_entries.iter().enumerate() {
             let session_id = entry.file_name().to_string_lossy().to_string();
-            orphans.push(session_id.clone());
+            let short_id = &session_id[..8.min(session_id.len())];
+            let manifest_path = Manifest::manifest_path(&entry.path());
+            let detail = if manifest_path.exists() {
+                if let Ok(manifest) = Manifest::load(&manifest_path) {
+                    let now = chrono::Utc::now();
+                    let dur = now.signed_duration_since(manifest.created_at);
+                    let age = if dur.num_hours() > 0 {
+                        format!("{}h ago", dur.num_hours())
+                    } else {
+                        format!("{}m ago", dur.num_minutes())
+                    };
+                    format!(
+                        "skill: {}, agent: {}, {age}",
+                        manifest.skill_name, manifest.agent
+                    )
+                } else {
+                    "no manifest data".into()
+                }
+            } else {
+                "no manifest".into()
+            };
+            eprintln!("  {}. {short_id} ({detail})", i + 1);
+        }
 
+        eprint!("Clean up? [Y/n] ");
+        let mut input = String::new();
+        std::io::BufRead::read_line(&mut std::io::stdin().lock(), &mut input)
+            .map_err(|e| SkillxError::Session(format!("failed to read input: {e}")))?;
+        let input = input.trim().to_lowercase();
+        if input == "n" || input == "no" {
+            return Ok(vec![]);
+        }
+    }
+
+    let mut orphans = Vec::new();
+    for entry in orphan_entries {
+        let session_id = entry.file_name().to_string_lossy().to_string();
+        orphans.push(session_id.clone());
+
+        if !interactive {
             ui::warn(&format!("Found orphaned session: {session_id}"));
+        }
 
-            // Clean up the orphaned session
-            if let Err(e) = cleanup_session(&entry.path()) {
-                ui::warn(&format!("Failed to clean orphan {session_id}: {e}"));
-            }
+        if let Err(e) = cleanup_session(&entry.path()) {
+            ui::warn(&format!("Failed to clean orphan {session_id}: {e}"));
         }
     }
 

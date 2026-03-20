@@ -91,3 +91,79 @@ impl JsonFormatter {
         serde_json::to_string_pretty(report).unwrap_or_else(|_| "{}".to_string())
     }
 }
+
+/// Format a scan report as SARIF 2.1.0 JSON.
+pub struct SarifFormatter;
+
+impl SarifFormatter {
+    pub fn format(report: &ScanReport) -> String {
+        let rules: Vec<serde_json::Value> = report
+            .findings
+            .iter()
+            .map(|f| f.rule_id.clone())
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .map(|rule_id| {
+                serde_json::json!({
+                    "id": rule_id,
+                    "shortDescription": {
+                        "text": rule_id
+                    }
+                })
+            })
+            .collect();
+
+        let results: Vec<serde_json::Value> = report
+            .findings
+            .iter()
+            .map(|f| {
+                let level = match f.level {
+                    RiskLevel::Pass => "none",
+                    RiskLevel::Info => "note",
+                    RiskLevel::Warn => "warning",
+                    RiskLevel::Danger | RiskLevel::Block => "error",
+                };
+
+                let mut location = serde_json::json!({
+                    "physicalLocation": {
+                        "artifactLocation": {
+                            "uri": f.file
+                        }
+                    }
+                });
+
+                if let Some(line) = f.line {
+                    location["physicalLocation"]["region"] = serde_json::json!({
+                        "startLine": line
+                    });
+                }
+
+                serde_json::json!({
+                    "ruleId": f.rule_id,
+                    "level": level,
+                    "message": {
+                        "text": f.message
+                    },
+                    "locations": [location]
+                })
+            })
+            .collect();
+
+        let sarif = serde_json::json!({
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [{
+                "tool": {
+                    "driver": {
+                        "name": "skillx",
+                        "version": env!("CARGO_PKG_VERSION"),
+                        "rules": rules
+                    }
+                },
+                "results": results
+            }]
+        });
+
+        serde_json::to_string_pretty(&sarif).unwrap_or_else(|_| "{}".to_string())
+    }
+}

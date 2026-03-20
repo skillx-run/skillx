@@ -5,7 +5,6 @@ use std::path::PathBuf;
 
 use skillx::agent::registry::AgentRegistry;
 use skillx::agent::{LaunchConfig, LifecycleMode};
-use skillx::cache::CacheManager;
 use skillx::config::{self, Config};
 use skillx::scanner::report::TextFormatter;
 use skillx::scanner::{RiskLevel, ScanEngine};
@@ -13,8 +12,7 @@ use skillx::session::cleanup::{cleanup_session, recover_orphaned_sessions};
 use skillx::session::inject::inject_skill;
 use skillx::session::manifest::Manifest;
 use skillx::session::Session;
-use skillx::source;
-use skillx::source::local::LocalSource;
+use skillx::source::resolver;
 use skillx::types::Scope;
 use skillx::ui;
 
@@ -81,56 +79,9 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
 
     // ── Phase 1: Resolve ──
     ui::step("Resolving source...");
-    let skill_source = source::resolve(&args.source)?;
-
-    let (skill_dir, skill_name) = match &skill_source {
-        source::SkillSource::Local(path) => {
-            let resolved = LocalSource::fetch(path)?;
-            let name = resolved
-                .metadata
-                .name
-                .clone()
-                .unwrap_or_else(|| {
-                    path.file_name()
-                        .map(|n| n.to_string_lossy().to_string())
-                        .unwrap_or("skill".into())
-                });
-            (resolved.root_dir, name)
-        }
-        source::SkillSource::GitHub {
-            owner,
-            repo,
-            path,
-            ref_,
-        } => {
-            let cache_key = args.source.clone();
-            let dir = if !args.no_cache {
-                if let Some(cached) = CacheManager::lookup(&cache_key)? {
-                    ui::success("Using cached copy");
-                    cached
-                } else {
-                    fetch_github(owner, repo, path.as_deref(), ref_.as_deref(), &cache_key)
-                        .await?
-                }
-            } else {
-                fetch_github(owner, repo, path.as_deref(), ref_.as_deref(), &cache_key)
-                    .await?
-            };
-
-            let resolved = LocalSource::fetch(&dir)?;
-            let name = resolved
-                .metadata
-                .name
-                .clone()
-                .unwrap_or_else(|| path.as_deref().unwrap_or(repo).to_string());
-            (dir, name)
-        }
-        _ => {
-            return Err(anyhow::anyhow!(
-                "source type not yet supported via legacy path — use resolver"
-            ))
-        }
-    };
+    let fetched = resolver::resolve_and_fetch(&args.source, args.no_cache).await?;
+    let skill_dir = fetched.dir;
+    let skill_name = fetched.name;
 
     ui::success(&format!("Resolved: {skill_name}"));
 
@@ -287,23 +238,36 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
 
     inject_skill(&skill_dir, &inject_path, &mut manifest)?;
 
-    // Handle attachments
+    // Handle attachments (supports both files and directories)
     for attach in &args.attach {
         let src = PathBuf::from(attach);
         if !src.exists() {
-            ui::warn(&format!("Attachment not found: {attach}"));
-            continue;
+            return Err(anyhow::anyhow!(
+                "attachment not found: '{}'. Check that the path exists.",
+                attach
+            ));
         }
-        let filename = src
-            .file_name()
-            .map(|n| n.to_string_lossy().to_string())
-            .unwrap_or("attachment".into());
-        let dest = inject_path.join("attachments").join(&filename);
-        if let Some(parent) = dest.parent() {
-            std::fs::create_dir_all(parent)?;
+        if src.is_dir() {
+            // Recursively copy directory
+            let dir_name = src
+                .file_name()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or("attachment".into());
+            let dest_dir = inject_path.join("attachments").join(&dir_name);
+            copy_dir_recursive(&src, &dest_dir)?;
+            manifest.add_attachment(attach.clone(), dest_dir.to_string_lossy().to_string());
+        } else {
+            let filename = src
+                .file_name()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or("attachment".into());
+            let dest = inject_path.join("attachments").join(&filename);
+            if let Some(parent) = dest.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+            std::fs::copy(&src, &dest)?;
+            manifest.add_attachment(attach.clone(), dest.to_string_lossy().to_string());
         }
-        std::fs::copy(&src, &dest)?;
-        manifest.add_attachment(attach.clone(), dest.to_string_lossy().to_string());
     }
 
     // Save manifest
@@ -457,19 +421,18 @@ fn resolve_prompt(args: &RunArgs) -> anyhow::Result<Option<String>> {
     Ok(None)
 }
 
-async fn fetch_github(
-    owner: &str,
-    repo: &str,
-    path: Option<&str>,
-    ref_: Option<&str>,
-    cache_key: &str,
-) -> anyhow::Result<PathBuf> {
-    let sp = ui::spinner("Fetching from GitHub...");
-    let dest = Config::cache_dir()?
-        .join(CacheManager::source_hash(cache_key))
-        .join("skill-files");
-    source::github::GitHubSource::fetch(owner, repo, path, ref_, &dest).await?;
-    sp.finish_and_clear();
-    ui::success("Downloaded from GitHub");
-    Ok(dest)
+/// Recursively copy a directory to a destination.
+fn copy_dir_recursive(src: &PathBuf, dest: &PathBuf) -> anyhow::Result<()> {
+    std::fs::create_dir_all(dest)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let src_path = entry.path();
+        let dest_path = dest.join(entry.file_name());
+        if src_path.is_dir() {
+            copy_dir_recursive(&src_path, &dest_path)?;
+        } else {
+            std::fs::copy(&src_path, &dest_path)?;
+        }
+    }
+    Ok(())
 }

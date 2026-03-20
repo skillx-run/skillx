@@ -1,7 +1,7 @@
 use clap::Args;
 
-use skillx::source;
 use skillx::source::local::LocalSource;
+use skillx::source::resolver;
 use skillx::ui;
 
 #[derive(Args, Debug)]
@@ -12,52 +12,13 @@ pub struct InfoArgs {
 
 pub async fn execute(args: InfoArgs) -> anyhow::Result<()> {
     ui::step("Resolving source...");
-    let skill_source = source::resolve(&args.source)?;
+    let fetched = resolver::resolve_and_fetch(&args.source, false).await?;
 
-    let (metadata, files, root_dir) = match &skill_source {
-        source::SkillSource::Local(path) => {
-            let resolved = LocalSource::fetch(path)?;
-            (resolved.metadata, resolved.files, resolved.root_dir)
-        }
-        source::SkillSource::GitHub {
-            owner,
-            repo,
-            path,
-            ref_,
-        } => {
-            let cache_key = args.source.clone();
-
-            // Check cache
-            let skill_dir = if let Some(cached) = skillx::cache::CacheManager::lookup(&cache_key)? {
-                ui::success("Using cached copy");
-                cached
-            } else {
-                let sp = ui::spinner("Fetching from GitHub...");
-                skillx::config::Config::ensure_dirs()?;
-                let dest = skillx::config::Config::cache_dir()?
-                    .join(skillx::cache::CacheManager::source_hash(&cache_key))
-                    .join("skill-files");
-                source::github::GitHubSource::fetch(
-                    owner,
-                    repo,
-                    path.as_deref(),
-                    ref_.as_deref(),
-                    &dest,
-                )
-                .await?;
-                sp.finish_and_clear();
-                dest
-            };
-
-            let resolved = LocalSource::fetch(&skill_dir)?;
-            (resolved.metadata, resolved.files, resolved.root_dir)
-        }
-        _ => {
-            return Err(anyhow::anyhow!(
-                "source type not yet supported via legacy path — use resolver"
-            ))
-        }
-    };
+    // Re-fetch metadata from the resolved directory
+    let resolved = LocalSource::fetch(&fetched.dir)?;
+    let metadata = resolved.metadata;
+    let files = resolved.files;
+    let root_dir = resolved.root_dir;
 
     // Display info
     ui::header("Skill Information");
