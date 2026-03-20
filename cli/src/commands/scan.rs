@@ -51,7 +51,7 @@ pub async fn execute(args: ScanArgs) -> anyhow::Result<()> {
                 cached
             } else {
                 skillx::config::Config::ensure_dirs()?;
-                let dest = skillx::config::Config::cache_dir()
+                let dest = skillx::config::Config::cache_dir()?
                     .join(skillx::cache::CacheManager::source_hash(&cache_key))
                     .join("skill-files");
                 source::github::GitHubSource::fetch(

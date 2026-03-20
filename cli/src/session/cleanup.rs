@@ -89,8 +89,8 @@ fn cleanup_empty_dirs_from_files(manifest: &Manifest) -> Result<()> {
 
     for dir in &dirs {
         if dir.exists() && dir.is_dir() {
-            if let Ok(entries) = std::fs::read_dir(dir) {
-                if entries.count() == 0 {
+            if let Ok(mut entries) = std::fs::read_dir(dir) {
+                if entries.next().is_none() {
                     std::fs::remove_dir(dir).ok();
                 }
             }
@@ -102,8 +102,9 @@ fn cleanup_empty_dirs_from_files(manifest: &Manifest) -> Result<()> {
 
 /// Archive session manifest to history.
 fn archive_session(_session_dir: &Path, manifest: &Manifest) -> Result<()> {
-    let history_dir = Config::history_dir();
-    std::fs::create_dir_all(&history_dir).ok();
+    let history_dir = Config::history_dir()?;
+    std::fs::create_dir_all(&history_dir)
+        .map_err(|e| SkillxError::Session(format!("failed to create history dir: {e}")))?;
 
     let archive_path = history_dir.join(format!("{}.json", manifest.session_id));
     manifest.save(&archive_path)?;
@@ -140,7 +141,12 @@ fn trim_history(history_dir: &Path, max_entries: usize) -> Result<()> {
 
     let to_remove = entries.len() - max_entries;
     for entry in entries.iter().take(to_remove) {
-        std::fs::remove_file(entry.path()).ok();
+        if let Err(e) = std::fs::remove_file(entry.path()) {
+            ui::warn(&format!(
+                "Failed to remove history entry {}: {e}",
+                entry.path().display()
+            ));
+        }
     }
 
     Ok(())
@@ -148,7 +154,7 @@ fn trim_history(history_dir: &Path, max_entries: usize) -> Result<()> {
 
 /// Recover orphaned sessions from `~/.skillx/active/`.
 pub fn recover_orphaned_sessions() -> Result<Vec<String>> {
-    let active_dir = Config::active_dir();
+    let active_dir = Config::active_dir()?;
     if !active_dir.exists() {
         return Ok(vec![]);
     }

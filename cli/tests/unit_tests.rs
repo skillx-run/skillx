@@ -565,7 +565,7 @@ fn test_cache_store_and_lookup() {
 
     // Cleanup
     let hash = skillx::cache::CacheManager::source_hash(&source_str);
-    let cache_dir = skillx::config::Config::cache_dir().join(&hash);
+    let cache_dir = skillx::config::Config::cache_dir().unwrap().join(&hash);
     std::fs::remove_dir_all(&cache_dir).ok();
 }
 
@@ -742,4 +742,177 @@ fn test_inject_skill() {
     for file in &manifest.injected_files {
         assert!(!file.sha256.is_empty());
     }
+}
+
+// ==================== GitHub URL parsing (blob support) ====================
+
+#[test]
+fn test_github_parse_url_blob() {
+    let source = skillx::source::github::GitHubSource::parse_url(
+        "https://github.com/org/repo/blob/main/path/to/file.md",
+    )
+    .unwrap();
+    match source {
+        skillx::source::SkillSource::GitHub {
+            owner,
+            repo,
+            path,
+            ref_,
+        } => {
+            assert_eq!(owner, "org");
+            assert_eq!(repo, "repo");
+            assert_eq!(path.as_deref(), Some("path/to/file.md"));
+            assert_eq!(ref_.as_deref(), Some("main"));
+        }
+        _ => panic!("expected GitHub source"),
+    }
+}
+
+// ==================== Corrupted manifest ====================
+
+#[test]
+fn test_manifest_load_corrupted() {
+    use tempfile::TempDir;
+    let dir = TempDir::new().unwrap();
+    let path = dir.path().join("manifest.json");
+
+    // Write invalid JSON
+    std::fs::write(&path, "{ this is not valid json }").unwrap();
+    let result = skillx::session::manifest::Manifest::load(&path);
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_manifest_load_nonexistent() {
+    let path = std::path::PathBuf::from("/tmp/nonexistent_skillx_manifest_12345.json");
+    let result = skillx::session::manifest::Manifest::load(&path);
+    assert!(result.is_err());
+}
+
+// ==================== Cleanup session with no manifest ====================
+
+#[test]
+fn test_cleanup_session_no_manifest() {
+    use tempfile::TempDir;
+    let dir = TempDir::new().unwrap();
+    // cleanup_session should handle missing manifest gracefully
+    let result = skillx::session::cleanup::cleanup_session(dir.path());
+    assert!(result.is_ok());
+}
+
+// ==================== Inject SHA256 correctness ====================
+
+#[test]
+fn test_inject_sha256_correctness() {
+    use sha2::{Digest, Sha256};
+    use tempfile::TempDir;
+
+    let source = TempDir::new().unwrap();
+    let content = b"hello world test content";
+    std::fs::write(source.path().join("SKILL.md"), content).unwrap();
+
+    let target = TempDir::new().unwrap();
+    let mut manifest = skillx::session::manifest::Manifest::new(
+        "test", "skill", "src", "agent", "mode", "scope",
+    );
+
+    skillx::session::inject::inject_skill(source.path(), target.path(), &mut manifest).unwrap();
+
+    // Compute expected SHA256
+    let mut hasher = Sha256::new();
+    hasher.update(content);
+    let expected = format!("{:x}", hasher.finalize());
+
+    assert_eq!(manifest.injected_files.len(), 1);
+    assert_eq!(manifest.injected_files[0].sha256, expected);
+}
+
+// ==================== Config base_dir returns Result ====================
+
+#[test]
+fn test_config_base_dir_returns_ok() {
+    // On any machine with a home directory, this should succeed
+    let result = skillx::config::Config::base_dir();
+    assert!(result.is_ok());
+    let path = result.unwrap();
+    assert!(path.to_string_lossy().contains(".skillx"));
+}
+
+// ==================== Pre-compiled rules match raw rules ====================
+
+#[test]
+fn test_compiled_rules_cover_all_md_rules() {
+    use skillx::scanner::compiled_rules::MD_RULES;
+    let rules = &*MD_RULES;
+    assert_eq!(rules.len(), 6, "should have MD-001 through MD-006");
+    assert_eq!(rules[0].id, "MD-001");
+    assert_eq!(rules[5].id, "MD-006");
+    // Verify all patterns compiled (non-empty)
+    for rule in rules {
+        assert!(!rule.patterns.is_empty(), "rule {} has no compiled patterns", rule.id);
+    }
+}
+
+#[test]
+fn test_compiled_rules_cover_all_sc_rules() {
+    use skillx::scanner::compiled_rules::SC_RULES;
+    let rules = &*SC_RULES;
+    assert_eq!(rules.len(), 10, "should have SC-002 through SC-011");
+    assert_eq!(rules[0].id, "SC-002");
+    assert_eq!(rules[9].id, "SC-011");
+    for rule in rules {
+        assert!(!rule.patterns.is_empty(), "rule {} has no compiled patterns", rule.id);
+    }
+}
+
+// ==================== URL encoding ====================
+
+#[test]
+fn test_github_parse_ref_with_special_chars() {
+    // Refs like "v1.2" should parse fine
+    let source =
+        skillx::source::github::GitHubSource::parse("owner/repo/path@v1.2.3").unwrap();
+    match source {
+        skillx::source::SkillSource::GitHub { ref_, .. } => {
+            assert_eq!(ref_.as_deref(), Some("v1.2.3"));
+        }
+        _ => panic!("expected GitHub source"),
+    }
+}
+
+// ==================== Cache TTL expiry ====================
+
+#[test]
+fn test_cache_lookup_nonexistent() {
+    let result = skillx::cache::CacheManager::lookup("nonexistent_source_xyz_99999");
+    assert!(result.is_ok());
+    assert!(result.unwrap().is_none());
+}
+
+// ==================== Session ID uniqueness ====================
+
+#[test]
+fn test_session_ids_are_unique() {
+    let s1 = skillx::session::Session::new("skill");
+    let s2 = skillx::session::Session::new("skill");
+    assert_ne!(s1.id, s2.id);
+}
+
+// ==================== Timeout parsing edge cases ====================
+
+#[test]
+fn test_parse_duration_edge_cases() {
+    use skillx::config::parse_duration_secs;
+
+    // Zero
+    assert_eq!(parse_duration_secs("0s"), Some(0));
+    assert_eq!(parse_duration_secs("0h"), Some(0));
+
+    // Large values
+    assert_eq!(parse_duration_secs("365d"), Some(365 * 86400));
+
+    // Invalid
+    assert_eq!(parse_duration_secs("abc"), None);
+    assert_eq!(parse_duration_secs(""), None);
+    assert_eq!(parse_duration_secs("   "), None);
 }

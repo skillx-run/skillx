@@ -5,6 +5,22 @@ use crate::source::SkillSource;
 
 pub struct GitHubSource;
 
+/// Percent-encode a string for use in URL query parameters.
+fn urlencoding(s: &str) -> String {
+    let mut encoded = String::with_capacity(s.len());
+    for b in s.bytes() {
+        match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                encoded.push(b as char);
+            }
+            _ => {
+                encoded.push_str(&format!("%{b:02X}"));
+            }
+        }
+    }
+    encoded
+}
+
 impl GitHubSource {
     /// Parse `owner/repo/path[@ref]` format.
     pub fn parse(input: &str) -> Result<SkillSource> {
@@ -54,8 +70,8 @@ impl GitHubSource {
         let owner = parts[0].to_string();
         let repo = parts[1].to_string();
 
-        // Handle /tree/ref/path
-        let (path, ref_) = if parts.len() >= 4 && parts[2] == "tree" {
+        // Handle /tree/ref/path and /blob/ref/path
+        let (path, ref_) = if parts.len() >= 4 && (parts[2] == "tree" || parts[2] == "blob") {
             let rest = parts[3];
             // ref is the first segment, path is the remainder
             if let Some((r, p)) = rest.split_once('/') {
@@ -64,7 +80,6 @@ impl GitHubSource {
                 (None, Some(rest.to_string()))
             }
         } else if parts.len() >= 3 {
-            // Could be /tree or /blob etc. — just ignore extra segments for now
             (None, None)
         } else {
             (None, None)
@@ -100,7 +115,8 @@ impl GitHubSource {
             "https://api.github.com/repos/{owner}/{repo}/contents/{api_path}"
         );
         if let Some(r) = ref_ {
-            url.push_str(&format!("?ref={r}"));
+            let encoded_ref = urlencoding(r);
+            url.push_str(&format!("?ref={encoded_ref}"));
         }
 
         let mut req = client.get(&url);

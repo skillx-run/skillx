@@ -20,14 +20,13 @@ pub fn inject_skill(
     })?;
 
     // Recursively copy files
-    copy_dir_recursive(source_dir, target_dir, source_dir, target_dir, manifest)?;
+    copy_dir_recursive(source_dir, source_dir, target_dir, manifest)?;
 
     Ok(())
 }
 
 fn copy_dir_recursive(
     src: &Path,
-    _dst: &Path,
     src_root: &Path,
     dst_root: &Path,
     manifest: &mut Manifest,
@@ -51,7 +50,7 @@ fn copy_dir_recursive(
                     dst_path.display()
                 ))
             })?;
-            copy_dir_recursive(&src_path, &dst_path, src_root, dst_root, manifest)?;
+            copy_dir_recursive(&src_path, src_root, dst_root, manifest)?;
         } else {
             // Read, hash, and copy file
             let content = std::fs::read(&src_path).map_err(|e| {
@@ -66,7 +65,12 @@ fn copy_dir_recursive(
             let sha256 = format!("{:x}", hasher.finalize());
 
             if let Some(parent) = dst_path.parent() {
-                std::fs::create_dir_all(parent).ok();
+                std::fs::create_dir_all(parent).map_err(|e| {
+                    SkillxError::Session(format!(
+                        "failed to create parent dir {}: {e}",
+                        parent.display()
+                    ))
+                })?;
             }
 
             std::fs::write(&dst_path, &content).map_err(|e| {

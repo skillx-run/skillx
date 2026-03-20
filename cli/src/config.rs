@@ -105,7 +105,7 @@ impl Default for HistoryConfig {
 impl Config {
     /// Load config from `~/.skillx/config.toml`, or return defaults if not found.
     pub fn load() -> Result<Self> {
-        let path = Self::config_path();
+        let path = Self::config_path()?;
         if path.exists() {
             let content = std::fs::read_to_string(&path)
                 .map_err(|e| SkillxError::Config(format!("failed to read config: {e}")))?;
@@ -119,7 +119,7 @@ impl Config {
 
     /// Ensure all required directories exist under `~/.skillx/`.
     pub fn ensure_dirs() -> Result<()> {
-        let base = Self::base_dir();
+        let base = Self::base_dir()?;
         let dirs = [
             base.clone(),
             base.join("cache"),
@@ -134,30 +134,30 @@ impl Config {
     }
 
     /// Base directory: `~/.skillx/`
-    pub fn base_dir() -> PathBuf {
-        dirs::home_dir()
-            .expect("could not determine home directory")
-            .join(".skillx")
+    pub fn base_dir() -> Result<PathBuf> {
+        Ok(dirs::home_dir()
+            .ok_or_else(|| SkillxError::Config("could not determine home directory".into()))?
+            .join(".skillx"))
     }
 
     /// Config file path: `~/.skillx/config.toml`
-    pub fn config_path() -> PathBuf {
-        Self::base_dir().join("config.toml")
+    pub fn config_path() -> Result<PathBuf> {
+        Ok(Self::base_dir()?.join("config.toml"))
     }
 
     /// Cache directory: `~/.skillx/cache/`
-    pub fn cache_dir() -> PathBuf {
-        Self::base_dir().join("cache")
+    pub fn cache_dir() -> Result<PathBuf> {
+        Ok(Self::base_dir()?.join("cache"))
     }
 
     /// Active sessions directory: `~/.skillx/active/`
-    pub fn active_dir() -> PathBuf {
-        Self::base_dir().join("active")
+    pub fn active_dir() -> Result<PathBuf> {
+        Ok(Self::base_dir()?.join("active"))
     }
 
     /// History directory: `~/.skillx/history/`
-    pub fn history_dir() -> PathBuf {
-        Self::base_dir().join("history")
+    pub fn history_dir() -> Result<PathBuf> {
+        Ok(Self::base_dir()?.join("history"))
     }
 
     /// Parse TTL string (e.g., "24h", "7d") into seconds.

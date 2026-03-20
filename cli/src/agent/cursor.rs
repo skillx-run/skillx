@@ -24,7 +24,11 @@ impl AgentAdapter for CursorAdapter {
             .values()
             .any(|p| {
                 let name = p.name().to_string_lossy().to_lowercase();
-                name.contains("cursor")
+                // Match "cursor", "cursor helper", "Cursor.app" etc. but not "postcursor"
+                name == "cursor"
+                    || name.starts_with("cursor ")
+                    || name.starts_with("cursor.")
+                    || name.starts_with("cursor helper")
             });
 
         DetectResult {

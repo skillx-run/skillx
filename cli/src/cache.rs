@@ -28,7 +28,7 @@ impl CacheManager {
     /// Look up a cached skill. Returns the cache directory if valid (not expired).
     pub fn lookup(source: &str) -> Result<Option<PathBuf>> {
         let hash = Self::source_hash(source);
-        let cache_dir = Config::cache_dir().join(&hash);
+        let cache_dir = Config::cache_dir()?.join(&hash);
         let meta_path = cache_dir.join("meta.json");
 
         if !meta_path.exists() {
@@ -62,7 +62,7 @@ impl CacheManager {
     /// Store skill files in cache.
     pub fn store(source: &str, source_dir: &Path, skill_name: Option<&str>) -> Result<PathBuf> {
         let hash = Self::source_hash(source);
-        let cache_dir = Config::cache_dir().join(&hash);
+        let cache_dir = Config::cache_dir()?.join(&hash);
         let skill_dir = cache_dir.join("skill-files");
 
         // Remove old cache entry
@@ -94,7 +94,7 @@ impl CacheManager {
 
     /// List all cached skills.
     pub fn list() -> Result<Vec<CacheMeta>> {
-        let cache_dir = Config::cache_dir();
+        let cache_dir = Config::cache_dir()?;
         if !cache_dir.exists() {
             return Ok(vec![]);
         }
@@ -121,7 +121,7 @@ impl CacheManager {
 
     /// Clean all cache entries.
     pub fn clean() -> Result<usize> {
-        let cache_dir = Config::cache_dir();
+        let cache_dir = Config::cache_dir()?;
         if !cache_dir.exists() {
             return Ok(0);
         }

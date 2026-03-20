@@ -1,5 +1,3 @@
-use clap::Parser;
-
 // Test command parsing by importing from the binary crate's commands module.
 // Since commands are in main.rs's mod, we test via clap's try_parse_from.
 

@@ -27,13 +27,13 @@ impl Session {
     }
 
     /// Session directory: `~/.skillx/active/<session-id>/`
-    pub fn session_dir(&self) -> std::path::PathBuf {
-        Config::active_dir().join(&self.id)
+    pub fn session_dir(&self) -> Result<std::path::PathBuf> {
+        Ok(Config::active_dir()?.join(&self.id))
     }
 
     /// Create the session directory structure.
     pub fn create_dirs(&self) -> Result<()> {
-        let dir = self.session_dir();
+        let dir = self.session_dir()?;
         std::fs::create_dir_all(dir.join("skill-files"))
             .map_err(|e| SkillxError::Session(format!("failed to create session dir: {e}")))?;
         std::fs::create_dir_all(dir.join("attachments"))
@@ -43,7 +43,7 @@ impl Session {
 
     /// List active sessions by scanning `~/.skillx/active/`.
     pub fn list_active() -> Result<Vec<String>> {
-        let active_dir = Config::active_dir();
+        let active_dir = Config::active_dir()?;
         if !active_dir.exists() {
             return Ok(vec![]);
         }

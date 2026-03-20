@@ -1,4 +1,5 @@
 pub mod binary_analyzer;
+pub mod compiled_rules;
 pub mod markdown_analyzer;
 pub mod report;
 pub mod resource_analyzer;

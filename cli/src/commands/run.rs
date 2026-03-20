@@ -294,7 +294,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     }
 
     // Save manifest
-    manifest.save(&Manifest::manifest_path(&session.session_dir()))?;
+    manifest.save(&Manifest::manifest_path(&session.session_dir()?))?;
     ui::success(&format!(
         "Injected {} files to {}",
         manifest.injected_files.len(),
@@ -336,7 +336,14 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         .timeout
         .as_ref()
         .and_then(|t| config::parse_duration_secs(t))
-        .map(|secs| std::time::Duration::from_secs(secs));
+        .map(|secs| {
+            if secs < 5 {
+                ui::warn("Timeout too short, using minimum of 5 seconds");
+                std::time::Duration::from_secs(5)
+            } else {
+                std::time::Duration::from_secs(secs)
+            }
+        });
 
     match session_handle.lifecycle_mode {
         LifecycleMode::ManagedProcess => {
@@ -408,7 +415,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
 
     // ── Phase 10: Cleanup ──
     ui::step("Cleaning up...");
-    cleanup_session(&session.session_dir())?;
+    cleanup_session(&session.session_dir()?)?;
     adapter.on_cleanup()?;
     ui::success("Cleanup complete.");
 
@@ -445,7 +452,7 @@ async fn fetch_github(
     cache_key: &str,
 ) -> anyhow::Result<PathBuf> {
     let sp = ui::spinner("Fetching from GitHub...");
-    let dest = Config::cache_dir()
+    let dest = Config::cache_dir()?
         .join(CacheManager::source_hash(cache_key))
         .join("skill-files");
     source::github::GitHubSource::fetch(owner, repo, path, ref_, &dest).await?;
