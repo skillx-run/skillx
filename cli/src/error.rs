@@ -43,6 +43,24 @@ pub enum SkillxError {
     #[error("GitHub API error: {0}")]
     GitHubApi(String),
 
+    #[error("GitLab API error: {0}")]
+    GitLabApi(String),
+
+    #[error("Bitbucket API error: {0}")]
+    BitbucketApi(String),
+
+    #[error("Gitea API error: {0}")]
+    GiteaApi(String),
+
+    #[error("Gist API error: {0}")]
+    GistApi(String),
+
+    #[error("archive error: {0}")]
+    Archive(String),
+
+    #[error("unsupported URL: {0}")]
+    UnsupportedUrl(String),
+
     #[error("rate limited: {0}")]
     RateLimited(String),
 
