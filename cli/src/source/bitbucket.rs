@@ -5,6 +5,29 @@ use crate::source::SkillSource;
 
 pub struct BitbucketSource;
 
+/// Context for Bitbucket API operations to avoid excessive function arguments.
+struct FetchContext {
+    client: reqwest::Client,
+    owner: String,
+    repo: String,
+    ref_: String,
+    root_path: String,
+    token: Option<String>,
+    basic_auth: Option<(String, String)>,
+}
+
+impl FetchContext {
+    fn auth_request(&self, req: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+        if let Some(ref t) = self.token {
+            req.bearer_auth(t)
+        } else if let Some((ref user, ref pass)) = self.basic_auth {
+            req.basic_auth(user, Some(pass))
+        } else {
+            req
+        }
+    }
+}
+
 impl BitbucketSource {
     /// Parse a Bitbucket URL like `https://bitbucket.org/owner/repo/src/ref/path`.
     pub fn parse_url(url: &str) -> Result<SkillSource> {
@@ -27,55 +50,40 @@ impl BitbucketSource {
             .build()
             .map_err(|e| SkillxError::Network(format!("failed to create HTTP client: {e}")))?;
 
-        // Auth: BITBUCKET_TOKEN (Bearer) or BITBUCKET_USERNAME + BITBUCKET_APP_PASSWORD (Basic)
         let token = std::env::var("BITBUCKET_TOKEN").ok();
         let basic_auth = std::env::var("BITBUCKET_USERNAME")
             .ok()
             .zip(std::env::var("BITBUCKET_APP_PASSWORD").ok());
 
-        let ref_str = ref_.unwrap_or("HEAD");
         let api_path = path.unwrap_or("");
+        let ctx = FetchContext {
+            client,
+            owner: owner.to_string(),
+            repo: repo.to_string(),
+            ref_: ref_.unwrap_or("HEAD").to_string(),
+            root_path: api_path.to_string(),
+            token,
+            basic_auth,
+        };
 
         std::fs::create_dir_all(dest)
             .map_err(|e| SkillxError::Source(format!("failed to create dir: {e}")))?;
 
-        Self::fetch_dir(
-            &client,
-            owner,
-            repo,
-            api_path,
-            ref_str,
-            api_path,
-            dest,
-            &token,
-            &basic_auth,
-        )
-        .await
+        Self::fetch_dir(&ctx, api_path, dest).await
     }
 
     /// Recursively fetch a Bitbucket directory.
     async fn fetch_dir(
-        client: &reqwest::Client,
-        owner: &str,
-        repo: &str,
+        ctx: &FetchContext,
         path: &str,
-        ref_: &str,
-        root_path: &str,
         dest: &Path,
-        token: &Option<String>,
-        basic_auth: &Option<(String, String)>,
     ) -> Result<Vec<PathBuf>> {
         let url = format!(
-            "https://api.bitbucket.org/2.0/repositories/{owner}/{repo}/src/{ref_}/{path}",
+            "https://api.bitbucket.org/2.0/repositories/{}/{}/src/{}/{path}",
+            ctx.owner, ctx.repo, ctx.ref_,
         );
 
-        let mut req = client.get(&url);
-        if let Some(ref t) = token {
-            req = req.bearer_auth(t);
-        } else if let Some((ref user, ref pass)) = basic_auth {
-            req = req.basic_auth(user, Some(pass));
-        }
-
+        let req = ctx.auth_request(ctx.client.get(&url));
         let resp = req.send().await.map_err(|e| {
             SkillxError::Network(format!("Bitbucket API request failed: {e}"))
         })?;
@@ -99,7 +107,6 @@ impl BitbucketSource {
 
         let mut downloaded = Vec::new();
 
-        // Separate files and directories
         use futures::stream::{FuturesUnordered, StreamExt};
 
         let file_futures: FuturesUnordered<_> = values
@@ -110,21 +117,15 @@ impl BitbucketSource {
                     return None;
                 }
                 let file_path = item["path"].as_str()?;
-                let relative = if !root_path.is_empty() {
-                    file_path
-                        .strip_prefix(root_path)
-                        .and_then(|p| p.strip_prefix('/'))
-                        .unwrap_or(file_path)
-                } else {
-                    file_path
-                };
+                let relative = strip_root_prefix(file_path, &ctx.root_path);
                 let dest_path = dest.join(relative);
                 let download_url = format!(
-                    "https://api.bitbucket.org/2.0/repositories/{owner}/{repo}/src/{ref_}/{file_path}",
+                    "https://api.bitbucket.org/2.0/repositories/{}/{}/src/{}/{file_path}",
+                    ctx.owner, ctx.repo, ctx.ref_,
                 );
-                let client = client.clone();
-                let token = token.clone();
-                let basic_auth = basic_auth.clone();
+                let client = ctx.client.clone();
+                let token = ctx.token.clone();
+                let basic_auth = ctx.basic_auth.clone();
                 let name = file_path.to_string();
                 Some(async move {
                     let mut req = client.get(&download_url);
@@ -133,7 +134,6 @@ impl BitbucketSource {
                     } else if let Some((ref user, ref pass)) = basic_auth {
                         req = req.basic_auth(user, Some(pass));
                     }
-                    // Request raw content
                     req = req.header("Accept", "application/octet-stream");
                     let resp = req.send().await.map_err(|e| {
                         SkillxError::Network(format!("download failed for {name}: {e}"))
@@ -175,32 +175,26 @@ impl BitbucketSource {
         for item in values {
             if item["type"].as_str() == Some("commit_directory") {
                 if let Some(dir_path) = item["path"].as_str() {
-                    let relative = if !root_path.is_empty() {
-                        dir_path
-                            .strip_prefix(root_path)
-                            .and_then(|p| p.strip_prefix('/'))
-                            .unwrap_or(dir_path)
-                    } else {
-                        dir_path
-                    };
+                    let relative = strip_root_prefix(dir_path, &ctx.root_path);
                     let sub_dest = dest.join(relative);
-                    let sub_files = Box::pin(Self::fetch_dir(
-                        client,
-                        owner,
-                        repo,
-                        dir_path,
-                        ref_,
-                        root_path,
-                        &sub_dest,
-                        token,
-                        basic_auth,
-                    ))
-                    .await?;
+                    let sub_files = Box::pin(Self::fetch_dir(ctx, dir_path, &sub_dest)).await?;
                     downloaded.extend(sub_files);
                 }
             }
         }
 
         Ok(downloaded)
+    }
+}
+
+/// Strip the root path prefix from a file path to get the relative path.
+fn strip_root_prefix<'a>(file_path: &'a str, root_path: &str) -> &'a str {
+    if !root_path.is_empty() {
+        file_path
+            .strip_prefix(root_path)
+            .and_then(|p| p.strip_prefix('/'))
+            .unwrap_or(file_path)
+    } else {
+        file_path
     }
 }

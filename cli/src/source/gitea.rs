@@ -5,6 +5,17 @@ use crate::source::SkillSource;
 
 pub struct GiteaSource;
 
+/// Context for Gitea API operations to avoid excessive function arguments.
+struct FetchContext {
+    client: reqwest::Client,
+    host: String,
+    owner: String,
+    repo: String,
+    ref_: Option<String>,
+    root_path: String,
+    token: Option<String>,
+}
+
 impl GiteaSource {
     /// Parse a Gitea/Codeberg URL.
     pub fn parse_url(url: &str) -> Result<SkillSource> {
@@ -31,33 +42,38 @@ impl GiteaSource {
         let token = std::env::var("GITEA_TOKEN").ok();
         let api_path = path.unwrap_or("");
 
+        let ctx = FetchContext {
+            client,
+            host: host.to_string(),
+            owner: owner.to_string(),
+            repo: repo.to_string(),
+            ref_: ref_.map(|s| s.to_string()),
+            root_path: api_path.to_string(),
+            token,
+        };
+
         std::fs::create_dir_all(dest)
             .map_err(|e| SkillxError::Source(format!("failed to create dir: {e}")))?;
 
-        Self::fetch_dir(&client, host, owner, repo, api_path, ref_, api_path, dest, &token).await
+        Self::fetch_dir(&ctx, api_path, dest).await
     }
 
     /// Recursively fetch a directory from a Gitea instance.
     async fn fetch_dir(
-        client: &reqwest::Client,
-        host: &str,
-        owner: &str,
-        repo: &str,
+        ctx: &FetchContext,
         path: &str,
-        ref_: Option<&str>,
-        root_path: &str,
         dest: &Path,
-        token: &Option<String>,
     ) -> Result<Vec<PathBuf>> {
         let mut url = format!(
-            "https://{host}/api/v1/repos/{owner}/{repo}/contents/{path}",
+            "https://{}/api/v1/repos/{}/{}/contents/{path}",
+            ctx.host, ctx.owner, ctx.repo,
         );
-        if let Some(r) = ref_ {
+        if let Some(ref r) = ctx.ref_ {
             url.push_str(&format!("?ref={}", super::urlencoding(r)));
         }
 
-        let mut req = client.get(&url);
-        if let Some(ref t) = token {
+        let mut req = ctx.client.get(&url);
+        if let Some(ref t) = ctx.token {
             req = req.header("Authorization", format!("token {t}"));
         }
 
@@ -67,8 +83,9 @@ impl GiteaSource {
 
         if !resp.status().is_success() {
             return Err(SkillxError::GiteaApi(format!(
-                "Gitea API returned {} for {host}/{owner}/{repo}/{path}",
-                resp.status()
+                "Gitea API returned {} for {}/{}/{}/{}",
+                resp.status(),
+                ctx.host, ctx.owner, ctx.repo, path
             )));
         }
 
@@ -96,18 +113,11 @@ impl GiteaSource {
                 }
                 let download_url = item["download_url"].as_str()?;
                 let file_path = item["path"].as_str()?;
-                let relative = if !root_path.is_empty() {
-                    file_path
-                        .strip_prefix(root_path)
-                        .and_then(|p| p.strip_prefix('/'))
-                        .unwrap_or(file_path)
-                } else {
-                    file_path
-                };
+                let relative = strip_root_prefix(file_path, &ctx.root_path);
                 let dest_path = dest.join(relative);
                 let url = download_url.to_string();
-                let client = client.clone();
-                let token = token.clone();
+                let client = ctx.client.clone();
+                let token = ctx.token.clone();
                 let name = file_path.to_string();
                 Some(async move {
                     let mut req = client.get(&url);
@@ -154,24 +164,27 @@ impl GiteaSource {
         for item in &items {
             if item["type"].as_str() == Some("dir") {
                 if let Some(dir_path) = item["path"].as_str() {
-                    let relative = if !root_path.is_empty() {
-                        dir_path
-                            .strip_prefix(root_path)
-                            .and_then(|p| p.strip_prefix('/'))
-                            .unwrap_or(dir_path)
-                    } else {
-                        dir_path
-                    };
+                    let relative = strip_root_prefix(dir_path, &ctx.root_path);
                     let sub_dest = dest.join(relative);
-                    let sub_files = Box::pin(Self::fetch_dir(
-                        client, host, owner, repo, dir_path, ref_, root_path, &sub_dest, token,
-                    ))
-                    .await?;
+                    let sub_files =
+                        Box::pin(Self::fetch_dir(ctx, dir_path, &sub_dest)).await?;
                     downloaded.extend(sub_files);
                 }
             }
         }
 
         Ok(downloaded)
+    }
+}
+
+/// Strip the root path prefix from a file path to get the relative path.
+fn strip_root_prefix<'a>(file_path: &'a str, root_path: &str) -> &'a str {
+    if !root_path.is_empty() {
+        file_path
+            .strip_prefix(root_path)
+            .and_then(|p| p.strip_prefix('/'))
+            .unwrap_or(file_path)
+    } else {
+        file_path
     }
 }
