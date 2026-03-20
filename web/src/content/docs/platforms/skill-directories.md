@@ -5,80 +5,41 @@ description: Curated skill registries and marketplaces that can be used with ski
 
 ## Overview
 
-Skill directories are curated registries and marketplaces where skill authors publish their Agent Skills. While skillx v0.1 fetches skills directly from Git hosts, future versions will integrate with these directories for discovery, search, and one-click installation.
+Skill directories are curated registries and marketplaces where skill authors publish their Agent Skills. skillx v0.2 supports fetching skills from directory platforms by extracting the underlying GitHub source URL from the platform's page.
 
-## Planned Integrations
+## Supported Platforms (10)
 
-### skills.sh
+| Platform | Domain | Status |
+|----------|--------|--------|
+| skills.sh | `skills.sh` | Supported |
+| Skills Marketplace | `skillsmp.com` | Supported (API) |
+| ClawHub | `clawhub.ai` | Supported |
+| LobeHub | `lobehub.com` | Supported |
+| SkillHub | `skillhub.club` | Supported |
+| Agent Skills Hub | `agentskillshub.dev` | Supported |
+| Agent Skills | `agentskills.so` | Supported |
+| MCP Market | `mcpmarket.com` | Supported |
+| Skills Directory | `skillsdirectory.com` | Supported |
+| Prompts Chat | `prompts.chat` | Supported |
 
-A community-driven, open directory of Agent Skills with a focus on quality and security.
+### Usage
 
-```bash
-# Planned syntax
-skillx run skills.sh/pdf-processing "prompt"
-```
-
-Features:
-- Community-curated skill listings
-- Automated security scanning on publish
-- Version pinning and changelogs
-- Author verification
-
-### skillsmp (Skills Marketplace)
-
-A marketplace for both free and commercial skills.
+Simply pass the platform URL to skillx:
 
 ```bash
-# Planned syntax
-skillx run skillsmp:author/skill-name "prompt"
+skillx run https://skills.sh/pdf-processing "prompt"
+skillx run https://skillsmp.com/skills/code-review "prompt"
 ```
 
-Features:
-- Free and paid skills
-- Reviews and ratings
-- Usage analytics for authors
-- License management
+### How It Works
 
-### ClawHub
+skillx extracts the underlying source repository (typically GitHub) from the platform:
 
-A hub focused on Claude Code skills and extensions.
+1. **API first**: For platforms with APIs (e.g., skillsmp.com), queries the API for the source URL
+2. **HTML parsing**: Falls back to parsing the page HTML, extracting GitHub links from `<a>` tags
+3. **Meta tags**: Checks Open Graph and other meta tags for source repository links
 
-```bash
-# Planned syntax
-skillx run clawhub:skill-name "prompt"
-```
-
-Features:
-- Optimized for Claude Code workflows
-- Skill composition (skills that depend on other skills)
-- CLAUDE.md template integration
-
-### LobehHub
-
-Part of the Lobe ecosystem, focused on AI agent configurations and skills.
-
-```bash
-# Planned syntax
-skillx run lobehub:agent-skill "prompt"
-```
-
-Features:
-- Integration with LobeChat agent ecosystem
-- Multi-agent skill orchestration
-- Community-driven skill sharing
-
-## Using Directory Skills Today
-
-Until native directory integration ships, you can use skills from any directory that publishes to a Git host:
-
-```bash
-# If a skill directory publishes to GitHub
-skillx run github:skills-sh/registry/pdf-processing "prompt"
-
-# Or clone and use locally
-git clone https://github.com/skills-sh/registry.git
-skillx run ./registry/pdf-processing "prompt"
-```
+Once the GitHub URL is extracted, fetching proceeds as normal through the GitHub source adapter.
 
 ## How Discovery Will Work
 

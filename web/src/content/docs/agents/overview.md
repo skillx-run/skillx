@@ -5,7 +5,7 @@ description: How skillx detects, selects, and adapts to different AI coding agen
 
 ## What Are Agents?
 
-In skillx, an "agent" is an AI coding assistant that can read instructions from files and act on them. skillx supports agents that run as CLI processes (Claude Code, Codex) and agents that run inside IDEs (Copilot, Cursor).
+In skillx, an "agent" is an AI coding assistant that can read instructions from files and act on them. skillx supports 11 agents across two categories: CLI processes (Claude Code, Codex, Gemini CLI, OpenCode, Amp) and IDE integrations (Copilot, Cursor, Windsurf, Cline, Roo Code), plus a Universal fallback.
 
 Each agent has different conventions for where skill files should be placed, how to launch, and what flags are available. skillx abstracts these differences behind a unified interface.
 
@@ -23,8 +23,14 @@ Detection methods vary by agent:
 |-------|-------------|
 | Claude Code | `claude` binary in PATH or `~/.claude/` directory |
 | OpenAI Codex | `codex` binary in PATH or `~/.codex/` directory |
+| Gemini CLI | `gemini` binary in PATH or `~/.gemini/` directory |
+| OpenCode | `opencode` binary in PATH or `~/.config/opencode/` directory |
+| Amp | `amp` binary in PATH or `~/.amp/` directory |
 | GitHub Copilot | Copilot extension in `~/.vscode/extensions/` |
 | Cursor | `cursor` binary in PATH or Cursor process running |
+| Windsurf | `windsurf` binary in PATH or Windsurf process running |
+| Cline | VS Code extension `saoudrizwan.claude-dev` |
+| Roo Code | VS Code extension `rooveterinaryinc.roo-cline` |
 | Universal | Always available (fallback) |
 
 ## Selection Logic
@@ -76,14 +82,14 @@ skillx spawns the agent as a child process, passes the prompt, and waits for it 
 skillx → spawn agent process → wait → cleanup
 ```
 
-**Agents**: Claude Code, OpenAI Codex
+**Agents**: Claude Code, OpenAI Codex, Gemini CLI, OpenCode, Amp
 
 Features:
 - Prompt passed as CLI argument
 - Exit code captured
 - Ctrl+C kills the agent process
 - `--timeout` support
-- `--yolo` mode for permission-skipping
+- `--yolo` mode for permission-skipping (Claude Code, Codex, Gemini CLI)
 
 ### FileInjectAndWait
 
@@ -93,7 +99,7 @@ skillx injects files into the agent's directory, optionally copies the prompt to
 skillx → inject files → (clipboard) → wait for Enter → cleanup
 ```
 
-**Agents**: GitHub Copilot, Cursor, Universal
+**Agents**: GitHub Copilot, Cursor, Windsurf, Cline, Roo Code, Universal
 
 Features:
 - Prompt copied to system clipboard
@@ -109,8 +115,14 @@ Each agent has specific directories where it looks for skill files:
 |-------|-------------|---------------|
 | Claude Code | `~/.claude/skills/<name>/` | `.claude/skills/<name>/` |
 | Codex | `~/.codex/skills/<name>/` | `.agents/skills/<name>/` |
+| Gemini CLI | `~/.gemini/skills/<name>/` | `.gemini/skills/<name>/` |
+| OpenCode | `~/.opencode/skills/<name>/` | `.opencode/skills/<name>/` |
+| Amp | `~/.amp/skills/<name>/` | `.amp/skills/<name>/` |
 | Copilot | `~/.github/skills/<name>/` | `.github/skills/<name>/` |
 | Cursor | `~/.cursor/skills/<name>/` | `.cursor/skills/<name>/` |
+| Windsurf | `~/.windsurf/skills/<name>/` | `.windsurf/skills/<name>/` |
+| Cline | `~/.cline/skills/<name>/` | `.cline/skills/<name>/` |
+| Roo Code | `~/.roo/skills/<name>/` | `.roo/skills/<name>/` |
 | Universal | `~/.agents/skills/<name>/` | `.agents/skills/<name>/` |
 
 The scope is controlled by `--scope`:
@@ -128,8 +140,14 @@ CLI agents can skip their built-in permission prompts:
 |-------|-----------|
 | Claude Code | `--dangerously-skip-permissions` |
 | OpenAI Codex | `--full-auto` |
+| Gemini CLI | `--sandbox=none` |
+| OpenCode | Not supported |
+| Amp | Not supported |
 | Copilot | Not supported |
 | Cursor | Not supported |
+| Windsurf | Not supported |
+| Cline | Not supported |
+| Roo Code | Not supported |
 | Universal | Not supported |
 
 ```bash

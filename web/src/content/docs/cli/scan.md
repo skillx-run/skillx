@@ -15,13 +15,13 @@ Run the security scanner against a skill without executing it. Useful for auditi
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `source` | Yes | Skill source: local path, `github:` prefix, or GitHub URL |
+| `source` | Yes | Skill source: local path, `github:`/`gist:` prefix, or URL |
 
 ## Options
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--format <fmt>` | `text` | Output format: `text` or `json` |
+| `--format <fmt>` | `text` | Output format: `text`, `json`, or `sarif` |
 | `--fail-on <level>` | `danger` | Exit with code 1 if any finding meets or exceeds this level |
 
 ## Output Formats
@@ -66,6 +66,47 @@ skillx scan --format json ./my-skill
 ```
 
 JSON output goes to stdout so it can be piped to `jq` or other tools. Status messages still go to stderr.
+
+### SARIF
+
+[SARIF 2.1.0](https://sarifweb.azurewebsites.net/) (Static Analysis Results Interchange Format) output for integration with code analysis tools:
+
+```bash
+skillx scan --format sarif ./my-skill
+```
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [{
+    "tool": {
+      "driver": {
+        "name": "skillx",
+        "version": "0.2.0",
+        "rules": [{"id": "MD-001", "shortDescription": {"text": "MD-001"}}]
+      }
+    },
+    "results": [{
+      "ruleId": "MD-001",
+      "level": "error",
+      "message": {"text": "Prompt injection pattern detected"},
+      "locations": [{"physicalLocation": {"artifactLocation": {"uri": "SKILL.md"}, "region": {"startLine": 7}}}]
+    }]
+  }]
+}
+```
+
+Risk level mapping to SARIF levels:
+| skillx Level | SARIF Level |
+|-------------|-------------|
+| PASS | `none` |
+| INFO | `note` |
+| WARN | `warning` |
+| DANGER | `error` |
+| BLOCK | `error` |
+
+SARIF output works well with GitHub Code Scanning, VS Code SARIF Viewer, and other static analysis tools.
 
 ## Fail Threshold
 

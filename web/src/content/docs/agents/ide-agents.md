@@ -1,6 +1,6 @@
 ---
 title: IDE Agents
-description: How skillx works with GitHub Copilot and Cursor — FileInjectAndWait lifecycle.
+description: How skillx works with GitHub Copilot, Cursor, Windsurf, Cline, and Roo Code — FileInjectAndWait lifecycle.
 ---
 
 ## Overview
@@ -137,16 +137,90 @@ skillx run --timeout 1h --agent cursor ./my-skill "prompt"
 
 After the timeout, skillx proceeds to cleanup regardless of whether Enter was pressed.
 
+## Windsurf
+
+[Windsurf](https://windsurf.com) is an AI-powered code editor.
+
+### Detection
+
+skillx detects Windsurf by checking:
+
+1. `windsurf` binary in PATH
+2. A running Windsurf process
+
+### Injection Paths
+
+| Scope | Path |
+|-------|------|
+| Global | `~/.windsurf/skills/<skill-name>/` |
+| Project | `.windsurf/skills/<skill-name>/` |
+
+### Usage
+
+```bash
+skillx run --agent windsurf ./my-skill "Refactor the API layer"
+```
+
+## Cline
+
+[Cline](https://github.com/cline/cline) is a VS Code extension providing autonomous AI coding capabilities.
+
+### Detection
+
+skillx detects Cline by scanning for the VS Code extension:
+
+```
+~/.vscode/extensions/saoudrizwan.claude-dev-*
+```
+
+### Injection Paths
+
+| Scope | Path |
+|-------|------|
+| Global | `~/.cline/skills/<skill-name>/` |
+| Project | `.cline/skills/<skill-name>/` |
+
+### Usage
+
+```bash
+skillx run --agent cline ./my-skill "Add error handling"
+```
+
+## Roo Code
+
+[Roo Code](https://github.com/RooVetGit/Roo-Cline) is a VS Code extension forked from Cline with additional features.
+
+### Detection
+
+skillx detects Roo Code by scanning for the VS Code extension:
+
+```
+~/.vscode/extensions/rooveterinaryinc.roo-cline-*
+```
+
+### Injection Paths
+
+| Scope | Path |
+|-------|------|
+| Global | `~/.roo/skills/<skill-name>/` |
+| Project | `.roo/skills/<skill-name>/` |
+
+### Usage
+
+```bash
+skillx run --agent roo ./my-skill "Implement feature"
+```
+
 ## Comparison
 
-| Feature | Copilot | Cursor |
-|---------|---------|--------|
-| Lifecycle | FileInjectAndWait | FileInjectAndWait |
-| Detection | VS Code extension | Binary or process |
-| Prompt delivery | Clipboard | Clipboard |
-| YOLO mode | No | No |
-| Global inject | `~/.github/skills/` | `~/.cursor/skills/` |
-| Project inject | `.github/skills/` | `.cursor/skills/` |
+| Feature | Copilot | Cursor | Windsurf | Cline | Roo Code |
+|---------|---------|--------|----------|-------|----------|
+| Lifecycle | FileInjectAndWait | FileInjectAndWait | FileInjectAndWait | FileInjectAndWait | FileInjectAndWait |
+| Detection | VS Code extension | Binary or process | Binary or process | VS Code extension | VS Code extension |
+| Prompt delivery | Clipboard | Clipboard | Clipboard | Clipboard | Clipboard |
+| YOLO mode | No | No | No | No | No |
+| Global inject | `~/.github/skills/` | `~/.cursor/skills/` | `~/.windsurf/skills/` | `~/.cline/skills/` | `~/.roo/skills/` |
+| Project inject | `.github/skills/` | `.cursor/skills/` | `.windsurf/skills/` | `.cline/skills/` | `.roo/skills/` |
 
 ## Tips
 

@@ -1,13 +1,13 @@
 ---
 title: CLI Agents
-description: How skillx works with Claude Code and OpenAI Codex — ManagedProcess lifecycle.
+description: How skillx works with Claude Code, OpenAI Codex, Gemini CLI, OpenCode, and Amp — ManagedProcess lifecycle.
 ---
 
 ## Overview
 
 CLI agents run as terminal processes that skillx spawns and manages directly. skillx passes the prompt as a CLI argument, waits for the process to exit, captures the exit code, and handles interruptions gracefully.
 
-Both CLI agents use the **ManagedProcess** lifecycle mode.
+All CLI agents use the **ManagedProcess** lifecycle mode.
 
 ## Claude Code
 
@@ -158,13 +158,84 @@ skillx run --timeout 2h  ./skill "prompt"   # 2 hours
 skillx run --timeout 30s ./skill "prompt"   # 30 seconds
 ```
 
+## Gemini CLI
+
+[Gemini CLI](https://github.com/google-gemini/gemini-cli) is Google's command-line interface for Gemini.
+
+### Detection
+
+skillx detects Gemini CLI by checking:
+
+1. `gemini` binary in PATH (via `which gemini`)
+2. `~/.gemini/` directory exists
+
+### Injection Paths
+
+| Scope | Path |
+|-------|------|
+| Global | `~/.gemini/skills/<skill-name>/` |
+| Project | `.gemini/skills/<skill-name>/` |
+
+### YOLO Mode
+
+Gemini CLI supports YOLO mode with the `--sandbox=none` flag.
+
+```bash
+skillx run --yolo --agent gemini-cli ./my-skill "prompt"
+# Equivalent to: gemini --prompt "..." --sandbox=none
+```
+
+## OpenCode
+
+[OpenCode](https://github.com/opencode-ai/opencode) is an open-source AI coding agent.
+
+### Detection
+
+skillx detects OpenCode by checking:
+
+1. `opencode` binary in PATH
+2. `~/.config/opencode/` directory exists
+
+### Injection Paths
+
+| Scope | Path |
+|-------|------|
+| Global | `~/.opencode/skills/<skill-name>/` |
+| Project | `.opencode/skills/<skill-name>/` |
+
+### YOLO Mode
+
+Not supported.
+
+## Amp
+
+[Amp](https://github.com/nicholasgasior/amp) is an AI-powered coding agent.
+
+### Detection
+
+skillx detects Amp by checking:
+
+1. `amp` binary in PATH
+2. `~/.amp/` directory exists
+
+### Injection Paths
+
+| Scope | Path |
+|-------|------|
+| Global | `~/.amp/skills/<skill-name>/` |
+| Project | `.amp/skills/<skill-name>/` |
+
+### YOLO Mode
+
+Not supported.
+
 ## Comparison
 
-| Feature | Claude Code | Codex |
-|---------|------------|-------|
-| Binary | `claude` | `codex` |
-| Lifecycle | ManagedProcess | ManagedProcess |
-| Initial prompt | `--prompt` flag | Positional argument |
-| YOLO flag | `--dangerously-skip-permissions` | `--full-auto` |
-| Global inject | `~/.claude/skills/` | `~/.codex/skills/` |
-| Project inject | `.claude/skills/` | `.agents/skills/` |
+| Feature | Claude Code | Codex | Gemini CLI | OpenCode | Amp |
+|---------|------------|-------|------------|----------|-----|
+| Binary | `claude` | `codex` | `gemini` | `opencode` | `amp` |
+| Lifecycle | ManagedProcess | ManagedProcess | ManagedProcess | ManagedProcess | ManagedProcess |
+| Initial prompt | `--prompt` flag | Positional arg | `--prompt` flag | Positional arg | `--prompt` flag |
+| YOLO flag | `--dangerously-skip-permissions` | `--full-auto` | `--sandbox=none` | N/A | N/A |
+| Global inject | `~/.claude/skills/` | `~/.codex/skills/` | `~/.gemini/skills/` | `~/.opencode/skills/` | `~/.amp/skills/` |
+| Project inject | `.claude/skills/` | `.agents/skills/` | `.gemini/skills/` | `.opencode/skills/` | `.amp/skills/` |

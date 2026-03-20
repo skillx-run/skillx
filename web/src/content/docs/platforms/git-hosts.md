@@ -74,64 +74,82 @@ skillx run github:org/skills/pdf-processing "prompt"
 skillx run github:org/skills/code-review "prompt"
 ```
 
-## Planned Platforms
+## GitLab (Supported)
 
-The following platforms are planned for future releases. Each will follow a similar `<platform>:owner/repo/path@ref` pattern.
-
-### GitLab
+GitLab repositories are supported via URL. Both gitlab.com and self-hosted instances work.
 
 ```bash
-# Planned syntax
-skillx run gitlab:org/repo/path "prompt"
 skillx run https://gitlab.com/org/repo/-/tree/main/path "prompt"
 ```
 
-Will support both gitlab.com and self-hosted GitLab instances.
+Authentication: set `GITLAB_TOKEN` environment variable for private repositories.
 
-### Bitbucket
+GitLab uses the Repository Files API (`/api/v4/projects/:id/repository/tree` and `/repository/files/:path/raw`).
+
+## Bitbucket (Supported)
+
+Bitbucket repositories are supported via URL.
 
 ```bash
-# Planned syntax
-skillx run bitbucket:org/repo/path "prompt"
 skillx run https://bitbucket.org/org/repo/src/main/path "prompt"
 ```
 
-### Codeberg
+Authentication: set `BITBUCKET_TOKEN` (Bearer) or both `BITBUCKET_USERNAME` and `BITBUCKET_APP_PASSWORD` (Basic Auth).
+
+## Codeberg / Gitea (Supported)
+
+Codeberg (and any Gitea/Forgejo instance) is supported via URL.
 
 ```bash
-# Planned syntax
-skillx run codeberg:user/repo/path "prompt"
 skillx run https://codeberg.org/user/repo/src/branch/main/path "prompt"
 ```
 
-Codeberg uses the Gitea API, so it will share implementation with the Gitea adapter.
+Authentication: set `GITEA_TOKEN` environment variable.
+
+Self-hosted Gitea instances are auto-detected when the URL contains `/src/branch/` or `/src/tag/` patterns.
+
+## GitHub Gist (Supported)
+
+Gists are supported via both prefix and URL:
+
+```bash
+skillx run gist:abc123 "prompt"
+skillx run gist:abc123@revision "prompt"
+skillx run https://gist.github.com/user/abc123 "prompt"
+```
+
+All files in the gist are downloaded and SKILL.md is expected among them.
+
+## Archive Downloads (Supported)
+
+ZIP and tar.gz archives are supported via URL:
+
+```bash
+skillx run https://example.com/skill.zip "prompt"
+skillx run https://example.com/skill.tar.gz "prompt"
+```
+
+Security protections:
+- Zip-slip path traversal detection
+- Maximum 1000 files per archive
+- Maximum 500 MB total uncompressed size
+- Single root directory auto-flattening
+
+## Planned Platforms
 
 ### SourceHut
 
 ```bash
 # Planned syntax
-skillx run srht:~user/repo/path "prompt"
 skillx run https://git.sr.ht/~user/repo/tree/main/item/path "prompt"
 ```
-
-### Gitea
-
-```bash
-# Planned syntax
-skillx run gitea:instance.com/user/repo/path "prompt"
-```
-
-Supports self-hosted Gitea instances with configurable base URL.
 
 ### HuggingFace
 
 ```bash
 # Planned syntax
-skillx run hf:user/repo/path "prompt"
 skillx run https://huggingface.co/user/repo/tree/main/path "prompt"
 ```
-
-HuggingFace repositories can contain large files via Git LFS. The skillx scanner's RS-002 rule (large file detection) will flag files exceeding 50 MB.
 
 ## Authentication
 
@@ -146,8 +164,9 @@ Set the appropriate environment variable:
 | Platform | Environment Variable |
 |----------|---------------------|
 | GitHub | `GITHUB_TOKEN` |
-| GitLab | `GITLAB_TOKEN` (planned) |
-| Bitbucket | `BITBUCKET_TOKEN` (planned) |
+| GitLab | `GITLAB_TOKEN` |
+| Bitbucket | `BITBUCKET_TOKEN` or `BITBUCKET_USERNAME` + `BITBUCKET_APP_PASSWORD` |
+| Gitea/Codeberg | `GITEA_TOKEN` |
 
 ```bash
 export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
