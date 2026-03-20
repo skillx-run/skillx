@@ -4,6 +4,8 @@ pub mod local;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+use crate::error::{Result, SkillxError};
+
 /// Percent-encode a string for use in URL query parameters.
 pub fn urlencoding(s: &str) -> String {
     let mut encoded = String::with_capacity(s.len());
@@ -20,7 +22,13 @@ pub fn urlencoding(s: &str) -> String {
     encoded
 }
 
-use crate::error::{Result, SkillxError};
+/// Percent-encode each segment of a URL path (split by `/`).
+pub fn urlencode_path(s: &str) -> String {
+    s.split('/')
+        .map(|seg| urlencoding(seg))
+        .collect::<Vec<_>>()
+        .join("/")
+}
 
 /// Represents where a skill comes from.
 #[derive(Debug, Clone)]

@@ -213,6 +213,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
                                     let file_path = skill_dir.join(&finding.file);
                                     if let Ok(content) = std::fs::read_to_string(&file_path) {
                                         let lines: Vec<&str> = content.lines().collect();
+                                        // 2 lines before + current + 2 lines after (1-indexed to 0-indexed)
                                         let start = line.saturating_sub(3);
                                         let end = (line + 2).min(lines.len());
                                         eprintln!("\n  Source:");
@@ -274,6 +275,9 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         &format!("{:?}", adapter.lifecycle_mode()),
         &scope.to_string(),
     );
+    // NOTE: scan_report is moved here. Phase 3 (Gate) borrows it above via `ref`,
+    // which is fine because the borrow ends before this point. If you reorganize
+    // the phases, ensure Gate completes before this move.
     manifest.scan_result = scan_report;
 
     inject_skill(&skill_dir, &inject_path, &mut manifest)?;

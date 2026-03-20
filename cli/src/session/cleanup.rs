@@ -69,13 +69,22 @@ pub fn cleanup_session(session_dir: &Path) -> Result<()> {
 }
 
 /// Remove empty directories that were created by file injection.
+/// Collects all ancestor directories (not just direct parents) so the
+/// entire injection tree can be cleaned up if empty.
 fn cleanup_empty_dirs_from_files(manifest: &Manifest) -> Result<()> {
     let mut dir_set = HashSet::new();
 
     for file in &manifest.injected_files {
         let path = PathBuf::from(&file.path);
-        if let Some(parent) = path.parent() {
+        // Walk up the parent chain to collect all ancestor dirs
+        let mut current = path.as_path();
+        while let Some(parent) = current.parent() {
+            // Stop at filesystem root or current directory
+            if parent == current || parent.as_os_str().is_empty() {
+                break;
+            }
             dir_set.insert(parent.to_path_buf());
+            current = parent;
         }
     }
 

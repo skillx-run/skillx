@@ -93,8 +93,11 @@ impl GitHubSource {
 
         let token = std::env::var("GITHUB_TOKEN").ok();
 
-        // Build the API URL
-        let api_path = path.unwrap_or("");
+        // Build the API URL (encode path segments for special characters)
+        let api_path = match path {
+            Some(p) => super::urlencode_path(p),
+            None => String::new(),
+        };
         let mut url = format!(
             "https://api.github.com/repos/{owner}/{repo}/contents/{api_path}"
         );
@@ -177,6 +180,12 @@ impl GitHubSource {
                         let resp = req.send().await.map_err(|e| {
                             SkillxError::Network(format!("download failed for {name}: {e}"))
                         })?;
+                        if !resp.status().is_success() {
+                            return Err(SkillxError::GitHubApi(format!(
+                                "download failed for {name}: HTTP {}",
+                                resp.status()
+                            )));
+                        }
                         let bytes = resp.bytes().await.map_err(|e| {
                             SkillxError::Network(format!("failed to read {name}: {e}"))
                         })?;

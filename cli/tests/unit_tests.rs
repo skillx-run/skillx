@@ -985,3 +985,64 @@ fn test_agent_registry_default() {
     assert!(registry.get("claude-code").is_some());
     assert!(registry.get("universal").is_some());
 }
+
+// ==================== R4: urlencode_path ====================
+
+#[test]
+fn test_urlencode_path_basic() {
+    use skillx::source::urlencode_path;
+    // Normal paths pass through
+    assert_eq!(urlencode_path("skills/pdf"), "skills/pdf");
+    assert_eq!(urlencode_path(""), "");
+    // Spaces in segments get encoded, slashes preserved
+    assert_eq!(urlencode_path("my skill/sub dir"), "my%20skill/sub%20dir");
+    // Special characters
+    assert_eq!(urlencode_path("path/to/file name.md"), "path/to/file%20name.md");
+}
+
+// ==================== R4: cleanup ancestor dirs ====================
+
+#[test]
+fn test_cleanup_removes_ancestor_dirs() {
+    use tempfile::TempDir;
+
+    let base = TempDir::new().unwrap();
+    let deep_dir = base.path().join("a/b/c");
+    std::fs::create_dir_all(&deep_dir).unwrap();
+    std::fs::write(deep_dir.join("file.txt"), "test").unwrap();
+
+    // Build manifest pointing at the deep file
+    let mut manifest = skillx::session::manifest::Manifest::new(
+        "test", "skill", "src", "agent", "mode", "scope",
+    );
+    manifest.add_file(
+        deep_dir.join("file.txt").to_string_lossy().to_string(),
+        "fakehash".into(),
+    );
+
+    // Remove the file manually (simulate cleanup_session removing files)
+    std::fs::remove_file(deep_dir.join("file.txt")).unwrap();
+
+    // cleanup_empty_dirs_from_files is private, but cleanup_session covers it.
+    // Verify that empty ancestor dirs are removed by checking the tree.
+    // We call cleanup_session on a temp session dir to test the full flow.
+    let session_dir = TempDir::new().unwrap();
+    manifest
+        .save(&skillx::session::manifest::Manifest::manifest_path(
+            session_dir.path(),
+        ))
+        .unwrap();
+
+    let _ = skillx::session::cleanup::cleanup_session(session_dir.path());
+
+    // After cleanup, the empty ancestor chain a/b/c should be removed
+    assert!(!deep_dir.exists(), "c/ should be removed");
+    assert!(
+        !base.path().join("a/b").exists(),
+        "b/ should be removed"
+    );
+    assert!(
+        !base.path().join("a").exists(),
+        "a/ should be removed"
+    );
+}

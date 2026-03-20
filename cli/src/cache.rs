@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use crate::config::Config;
 use crate::error::{Result, SkillxError};
+use crate::ui;
 
 /// Metadata stored alongside cached skill files.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -141,8 +142,14 @@ impl CacheManager {
             let entry = entry
                 .map_err(|e| SkillxError::Cache(format!("dir entry error: {e}")))?;
             if entry.path().is_dir() {
-                std::fs::remove_dir_all(entry.path()).ok();
-                count += 1;
+                if let Err(e) = std::fs::remove_dir_all(entry.path()) {
+                    ui::warn(&format!(
+                        "Failed to clean cache entry {}: {e}",
+                        entry.path().display()
+                    ));
+                } else {
+                    count += 1;
+                }
             }
         }
 
