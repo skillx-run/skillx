@@ -62,16 +62,14 @@ pub struct Finding {
 }
 
 /// Scan report containing all findings.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ScanReport {
     pub findings: Vec<Finding>,
 }
 
 impl ScanReport {
     pub fn new() -> Self {
-        ScanReport {
-            findings: Vec::new(),
-        }
+        Self::default()
     }
 
     /// Overall risk level (max of all findings).

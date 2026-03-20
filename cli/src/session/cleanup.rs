@@ -1,4 +1,5 @@
 use sha2::{Digest, Sha256};
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 use crate::config::Config;
@@ -69,18 +70,17 @@ pub fn cleanup_session(session_dir: &Path) -> Result<()> {
 
 /// Remove empty directories that were created by file injection.
 fn cleanup_empty_dirs_from_files(manifest: &Manifest) -> Result<()> {
-    let mut dirs: Vec<PathBuf> = Vec::new();
+    let mut dir_set = HashSet::new();
 
     for file in &manifest.injected_files {
         let path = PathBuf::from(&file.path);
         if let Some(parent) = path.parent() {
-            if !dirs.contains(&parent.to_path_buf()) {
-                dirs.push(parent.to_path_buf());
-            }
+            dir_set.insert(parent.to_path_buf());
         }
     }
 
     // Sort by depth (deepest first) so we remove inner dirs before outer ones
+    let mut dirs: Vec<PathBuf> = dir_set.into_iter().collect();
     dirs.sort_by(|a, b| {
         let a_depth = a.components().count();
         let b_depth = b.components().count();

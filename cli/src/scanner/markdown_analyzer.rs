@@ -1,5 +1,5 @@
-use super::compiled_rules::{MD_RULES, MD_RULE_LEVELS};
-use super::{Finding, RiskLevel, ScanReport};
+use super::compiled_rules::MD_RULES;
+use super::{Finding, ScanReport};
 
 pub struct MarkdownAnalyzer;
 
@@ -9,18 +9,12 @@ impl MarkdownAnalyzer {
         let mut report = ScanReport::new();
 
         for rule in MD_RULES.iter() {
-            let level = MD_RULE_LEVELS
-                .iter()
-                .find(|(id, _)| *id == rule.id)
-                .map(|(_, l)| *l)
-                .unwrap_or(RiskLevel::Warn);
-
             for re in &rule.patterns {
                 for (line_num, line) in content.lines().enumerate() {
                     if re.is_match(line) {
                         report.add(Finding {
                             rule_id: rule.id.to_string(),
-                            level,
+                            level: rule.level,
                             message: format!("{}: {}", rule.description, re.as_str()),
                             file: filename.to_string(),
                             line: Some(line_num + 1),

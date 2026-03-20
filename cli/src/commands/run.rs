@@ -173,6 +173,10 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
                     style("yes").green().bold()
                 );
 
+                // Pre-sort findings once (highest severity first)
+                let mut sorted_findings = report.findings.clone();
+                sorted_findings.sort_by(|a, b| b.level.cmp(&a.level));
+
                 loop {
                     eprint!("{} ", style(">").dim());
                     let mut input = String::new();
@@ -190,10 +194,8 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
                             .unwrap_or("")
                             .trim();
                         if let Ok(n) = num_str.parse::<usize>() {
-                            let mut sorted = report.findings.clone();
-                            sorted.sort_by(|a, b| b.level.cmp(&a.level));
-                            if n > 0 && n <= sorted.len() {
-                                let finding = &sorted[n - 1];
+                            if n > 0 && n <= sorted_findings.len() {
+                                let finding = &sorted_findings[n - 1];
                                 eprintln!("\n{}", style("─".repeat(60)).dim());
                                 eprintln!(
                                     "  Rule:    {} ({})",
@@ -227,7 +229,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
                                 }
                                 eprintln!("{}", style("─".repeat(60)).dim());
                             } else {
-                                eprintln!("  Invalid finding number. Valid range: 1-{}", sorted.len());
+                                eprintln!("  Invalid finding number. Valid range: 1-{}", sorted_findings.len());
                             }
                         } else {
                             eprintln!("  Usage: detail <number>");
@@ -288,7 +290,9 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or("attachment".into());
         let dest = inject_path.join("attachments").join(&filename);
-        std::fs::create_dir_all(dest.parent().unwrap())?;
+        if let Some(parent) = dest.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
         std::fs::copy(&src, &dest)?;
         manifest.add_attachment(attach.clone(), dest.to_string_lossy().to_string());
     }

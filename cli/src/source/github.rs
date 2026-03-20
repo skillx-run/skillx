@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::error::{Result, SkillxError};
 use crate::source::SkillSource;
@@ -100,7 +100,7 @@ impl GitHubSource {
         repo: &str,
         path: Option<&str>,
         ref_: Option<&str>,
-        dest: &PathBuf,
+        dest: &Path,
     ) -> Result<Vec<PathBuf>> {
         let client = reqwest::Client::builder()
             .user_agent("skillx/0.1")
@@ -181,7 +181,12 @@ impl GitHubSource {
                             SkillxError::Network(format!("failed to read {name}: {e}"))
                         })?;
                         if let Some(parent) = dest_path.parent() {
-                            std::fs::create_dir_all(parent).ok();
+                            std::fs::create_dir_all(parent).map_err(|e| {
+                                SkillxError::Source(format!(
+                                    "failed to create dir {}: {e}",
+                                    parent.display()
+                                ))
+                            })?;
                         }
                         std::fs::write(&dest_path, &bytes).map_err(|e| {
                             SkillxError::Source(format!("failed to write {}: {e}", dest_path.display()))

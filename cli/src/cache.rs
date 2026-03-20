@@ -47,7 +47,9 @@ impl CacheManager {
             .signed_duration_since(meta.cached_at)
             .num_seconds();
 
-        if age < 0 || age as u64 > ttl {
+        // Negative age means clock skew — treat as expired.
+        // Use unsigned_abs() to avoid wrapping cast semantics.
+        if age < 0 || age.unsigned_abs() > ttl {
             return Ok(None); // Expired
         }
 
@@ -67,7 +69,12 @@ impl CacheManager {
 
         // Remove old cache entry
         if cache_dir.exists() {
-            std::fs::remove_dir_all(&cache_dir).ok();
+            std::fs::remove_dir_all(&cache_dir).map_err(|e| {
+                SkillxError::Cache(format!(
+                    "failed to remove old cache entry {}: {e}",
+                    cache_dir.display()
+                ))
+            })?;
         }
 
         // Copy files

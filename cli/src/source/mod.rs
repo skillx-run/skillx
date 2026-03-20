@@ -49,10 +49,10 @@ pub fn resolve(input: &str) -> Result<SkillSource> {
         || input.starts_with("~/")
         || input.starts_with(".\\")
     {
-        let path = if input.starts_with("~/") {
+        let path = if let Some(rest) = input.strip_prefix("~/") {
             dirs::home_dir()
                 .ok_or_else(|| SkillxError::Source("cannot determine home directory".into()))?
-                .join(&input[2..])
+                .join(rest)
         } else {
             PathBuf::from(input)
         };
@@ -86,11 +86,11 @@ pub fn resolve(input: &str) -> Result<SkillSource> {
 /// Frontmatter is delimited by `---` lines at the start of the file.
 pub fn parse_frontmatter(content: &str) -> Result<SkillMetadata> {
     let content = content.trim_start();
-    if !content.starts_with("---") {
-        return Ok(SkillMetadata::default());
-    }
+    let after_first = match content.strip_prefix("---") {
+        Some(rest) => rest,
+        None => return Ok(SkillMetadata::default()),
+    };
 
-    let after_first = &content[3..];
     let end = after_first
         .find("\n---")
         .ok_or_else(|| SkillxError::FrontmatterParse("unclosed frontmatter block".into()))?;

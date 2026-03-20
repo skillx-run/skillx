@@ -2,6 +2,7 @@ use std::path::Path;
 
 use crate::error::{Result, SkillxError};
 
+use super::binary_analyzer::BinaryAnalyzer;
 use super::rules;
 use super::{Finding, RiskLevel, ScanReport};
 
@@ -29,6 +30,7 @@ impl ResourceAnalyzer {
         }
 
         // RS-001: Extension vs magic bytes mismatch (disguised file)
+        // Only read the first few KB for detection, not the whole file.
         if let Some(mismatch) = Self::check_extension_mismatch(path)? {
             report.add(Finding {
                 rule_id: "RS-001".to_string(),
@@ -40,9 +42,9 @@ impl ResourceAnalyzer {
             });
         }
 
-        // RS-003: Executable in references/
+        // RS-003: Executable in references/ (shared detection)
         if rel_path.starts_with("references/") || rel_path.starts_with("references\\") {
-            if Self::is_executable(path)? {
+            if BinaryAnalyzer::is_executable(path)? {
                 report.add(Finding {
                     rule_id: "RS-003".to_string(),
                     level: RiskLevel::Danger,
@@ -58,6 +60,7 @@ impl ResourceAnalyzer {
     }
 
     /// Check if file extension matches its actual content type.
+    /// Only reads first few KB to avoid loading large files.
     fn check_extension_mismatch(path: &Path) -> Result<Option<String>> {
         let ext = path
             .extension()
@@ -69,8 +72,7 @@ impl ResourceAnalyzer {
             return Ok(None);
         }
 
-        let buf = std::fs::read(path)
-            .map_err(|e| SkillxError::Scan(format!("failed to read file: {e}")))?;
+        let buf = BinaryAnalyzer::read_magic_bytes(path)?;
 
         if buf.len() < 4 {
             return Ok(None);
@@ -109,34 +111,5 @@ impl ResourceAnalyzer {
         }
 
         Ok(None)
-    }
-
-    /// Check if a file is executable (binary).
-    fn is_executable(path: &Path) -> Result<bool> {
-        let buf = std::fs::read(path)
-            .map_err(|e| SkillxError::Scan(format!("failed to read file: {e}")))?;
-
-        if buf.len() < 4 {
-            return Ok(false);
-        }
-
-        // ELF
-        if buf.starts_with(b"\x7fELF") {
-            return Ok(true);
-        }
-        // Mach-O
-        if buf.starts_with(&[0xfe, 0xed, 0xfa, 0xce])
-            || buf.starts_with(&[0xfe, 0xed, 0xfa, 0xcf])
-            || buf.starts_with(&[0xce, 0xfa, 0xed, 0xfe])
-            || buf.starts_with(&[0xcf, 0xfa, 0xed, 0xfe])
-        {
-            return Ok(true);
-        }
-        // PE
-        if buf.starts_with(b"MZ") {
-            return Ok(true);
-        }
-
-        Ok(false)
     }
 }
