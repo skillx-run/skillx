@@ -1,0 +1,75 @@
+---
+---
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="brand">
+      <span class="logo">skillx</span>
+    </a>
+    <div class="nav-links">
+      <a href="/docs">Docs</a>
+      <a href="/blog">Blog</a>
+      <a href="https://github.com/anthropics/skillx" class="gh-link">
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<style>
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.75rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand {
+    text-decoration: none;
+  }
+
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #6366f1;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.15s;
+  }
+
+  .nav-links a:hover {
+    color: #e2e8f0;
+  }
+
+  .gh-link {
+    padding: 0.35rem 0.8rem;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    font-size: 0.85rem !important;
+  }
+
+  .gh-link:hover {
+    border-color: #6366f1;
+  }
+</style>

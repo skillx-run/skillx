@@ -1,0 +1,96 @@
+---
+import Base from '../../layouts/base.astro';
+import Nav from '../../components/nav.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<Base title="Blog — skillx">
+  <Nav />
+  <main>
+    <div class="container">
+      <h1>Blog</h1>
+      <div class="posts">
+        {posts.map((post) => (
+          <article class="post-card">
+            <a href={`/blog/${post.slug}`}>
+              <h2>{post.data.title}</h2>
+              <p class="description">{post.data.description}</p>
+              <time datetime={post.data.date.toISOString()}>
+                {post.data.date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </time>
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </main>
+</Base>
+
+<style>
+  main {
+    background: #020617;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+
+  .posts {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .post-card {
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .post-card:hover {
+    border-color: #6366f1;
+  }
+
+  .post-card a {
+    display: block;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .post-card h2 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .description {
+    color: #94a3b8;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+
+  time {
+    color: #64748b;
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+</style>

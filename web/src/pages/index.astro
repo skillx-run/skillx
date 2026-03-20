@@ -1,0 +1,197 @@
+---
+import Base from '../layouts/base.astro';
+import Nav from '../components/nav.astro';
+import Hero from '../components/hero.astro';
+import InstallSnippet from '../components/install-snippet.astro';
+import DemoTerminal from '../components/demo-terminal.astro';
+import AgentGrid from '../components/agent-grid.astro';
+---
+
+<Base title="skillx — npx for Agent Skills">
+  <Nav />
+  <main>
+    <Hero />
+    <InstallSnippet />
+    <DemoTerminal />
+    <AgentGrid />
+
+    <section class="platforms">
+      <div class="container">
+        <h2>Sources Everywhere</h2>
+        <p class="subtitle">Pull skills from any Git host or skill directory.</p>
+        <div class="platform-grid">
+          <div class="platform-group">
+            <h3>Git Hosts</h3>
+            <ul>
+              <li>GitHub</li>
+              <li>GitLab</li>
+              <li>Bitbucket</li>
+              <li>Codeberg</li>
+              <li>SourceHut</li>
+              <li>Gitea / Forgejo</li>
+              <li>Hugging Face</li>
+              <li>Self-hosted</li>
+            </ul>
+          </div>
+          <div class="platform-group">
+            <h3>Skill Directories</h3>
+            <ul>
+              <li>skills.sh</li>
+              <li>skillsmp.com</li>
+              <li>ClawHub</li>
+              <li>LobehHub</li>
+              <li>SkillHub Club</li>
+              <li>OpenAI Skills</li>
+              <li>Anthropic Skills</li>
+              <li>Vercel Agent Skills</li>
+              <li>Sentry Skills</li>
+              <li>HuggingFace Skills</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <span class="logo">skillx</span>
+            <p>npx for Agent Skills</p>
+          </div>
+          <div class="footer-links">
+            <a href="https://github.com/anthropics/skillx">GitHub</a>
+            <a href="/docs">Documentation</a>
+            <a href="/blog">Blog</a>
+          </div>
+          <div class="footer-legal">
+            <p>Code: Apache-2.0 &middot; Docs: CC-BY-4.0</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </main>
+</Base>
+
+<style>
+  main {
+    background: #020617;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .platforms {
+    padding: 6rem 0;
+    border-top: 1px solid #1e293b;
+  }
+
+  .platforms h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+  }
+
+  .platform-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .platform-group h3 {
+    color: #a5b4fc;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .platform-group ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .platform-group li {
+    padding: 0.4rem 0;
+    color: #94a3b8;
+    font-size: 0.95rem;
+  }
+
+  .platform-group li::before {
+    content: '>';
+    color: #6366f1;
+    margin-right: 0.5rem;
+    font-family: monospace;
+  }
+
+  footer {
+    border-top: 1px solid #1e293b;
+    padding: 3rem 0;
+  }
+
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  .footer-brand .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #6366f1;
+  }
+
+  .footer-brand p {
+    color: #64748b;
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .footer-links a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .footer-links a:hover {
+    color: #a5b4fc;
+  }
+
+  .footer-legal p {
+    color: #475569;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .platform-grid {
+      grid-template-columns: 1fr;
+    }
+    .footer-content {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+</style>

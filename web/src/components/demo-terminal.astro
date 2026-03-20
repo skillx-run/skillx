@@ -1,0 +1,187 @@
+---
+---
+<section class="demo">
+  <div class="container">
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <span class="terminal-title">terminal</span>
+      </div>
+      <div class="terminal-body">
+        <div class="line">
+          <span class="prompt">$</span>
+          <span class="cmd typing">skillx run github:anthropics/skills/pdf-processing "Extract tables from report.pdf"</span>
+        </div>
+        <div class="line output delay-1">
+          <span class="cyan">→</span> Resolving source...
+        </div>
+        <div class="line output delay-2">
+          <span class="green">✓</span> Resolved: pdf-processing
+        </div>
+        <div class="line output delay-3">
+          <span class="cyan">→</span> Scanning for security issues...
+        </div>
+        <div class="line output delay-4">
+          <span class="green">✓</span> Scan Result: <span class="green">PASS</span>
+        </div>
+        <div class="line output delay-5">
+          <span class="cyan">→</span> Detecting agents...
+        </div>
+        <div class="line output delay-6">
+          <span class="green">✓</span> Using agent: Claude Code
+        </div>
+        <div class="line output delay-7">
+          <span class="cyan">→</span> Injecting skill...
+        </div>
+        <div class="line output delay-8">
+          <span class="green">✓</span> Injected 3 files to .claude/skills/pdf-processing
+        </div>
+        <div class="line output delay-9">
+          <span class="cyan">→</span> Launching agent...
+        </div>
+        <div class="line output delay-10">
+          <span class="dim">  [Claude Code running...]</span>
+        </div>
+        <div class="line output delay-11">
+          <span class="green">✓</span> Agent completed successfully.
+        </div>
+        <div class="line output delay-12">
+          <span class="cyan">→</span> Cleaning up...
+        </div>
+        <div class="line output delay-13">
+          <span class="green">✓</span> Cleanup complete.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .demo {
+    padding: 2rem 0 6rem;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .terminal {
+    background: #0c1222;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(99, 102, 241, 0.1),
+      0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+    gap: 0.75rem;
+  }
+
+  .dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .dot.red { background: #ef4444; }
+  .dot.yellow { background: #eab308; }
+  .dot.green { background: #22c55e; }
+
+  .terminal-title {
+    color: #475569;
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .terminal-body {
+    padding: 1.25rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.8;
+  }
+
+  .line {
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .prompt {
+    color: #6366f1;
+    margin-right: 0.5rem;
+  }
+
+  .cmd {
+    color: #e2e8f0;
+  }
+
+  .output {
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  .cyan { color: #22d3ee; }
+  .green { color: #22c55e; }
+  .dim { color: #475569; }
+
+  .delay-1 { animation-delay: 0.8s; }
+  .delay-2 { animation-delay: 1.3s; }
+  .delay-3 { animation-delay: 1.8s; }
+  .delay-4 { animation-delay: 2.5s; }
+  .delay-5 { animation-delay: 3.0s; }
+  .delay-6 { animation-delay: 3.5s; }
+  .delay-7 { animation-delay: 4.0s; }
+  .delay-8 { animation-delay: 4.5s; }
+  .delay-9 { animation-delay: 5.0s; }
+  .delay-10 { animation-delay: 5.5s; }
+  .delay-11 { animation-delay: 7.0s; }
+  .delay-12 { animation-delay: 7.5s; }
+  .delay-13 { animation-delay: 8.0s; }
+
+  .typing {
+    overflow: hidden;
+    border-right: 2px solid #6366f1;
+    white-space: nowrap;
+    animation:
+      typing 1.5s steps(80) forwards,
+      blink 0.8s step-end 3;
+    width: 0;
+    display: inline-block;
+  }
+
+  @keyframes typing {
+    to { width: 100%; }
+  }
+
+  @keyframes blink {
+    50% { border-color: transparent; }
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  @media (max-width: 768px) {
+    .terminal-body {
+      font-size: 0.7rem;
+      overflow-x: auto;
+    }
+  }
+</style>
