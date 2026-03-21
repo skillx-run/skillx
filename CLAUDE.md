@@ -106,7 +106,7 @@ SkillValue supports string shorthand (`"source"`) and detailed object (`{ source
 
 ```bash
 cargo build --workspace          # Build all
-cargo test --workspace           # Run all tests (212+)
+cargo test --workspace           # Run all tests (244+)
 cargo build --release            # Release build
 cargo run -- run ./skill "msg"   # Run CLI
 cargo run -- run                 # Run from skillx.toml
@@ -145,6 +145,10 @@ cargo run -- cache ls            # List cache
 - SkillMetadata includes `license: Option<String>` field (parsed from frontmatter)
 - MD-007 scanner rule: INFO level, triggers when frontmatter exists but has no `license` field (structural check in markdown_analyzer, not regex)
 - `installed.json` uses `scan_level: String` (intentional deviation from design doc's `scan_result` object — session manifest already stores full ScanReport for audit)
+- Cleanup asks `[y/N]` before removing files modified during a session (SHA-256 mismatch detection)
+- CI: GitHub Actions with `ci.yml` (fmt + clippy + test multi-platform) and `release.yml` (tag → cross-compile → GitHub Release → crates.io)
+- cargo-binstall supported via `[package.metadata.binstall]` in Cargo.toml
+- Web docs sidebar in `astro.config.mjs` lists all 10 commands
 
 ## Data Directories
 
