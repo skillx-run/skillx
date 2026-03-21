@@ -2,6 +2,7 @@ use std::io::{BufRead, Write};
 use std::path::Path;
 
 use console::style;
+use sha2::{Digest, Sha256};
 
 use crate::scanner::{RiskLevel, ScanReport};
 use crate::ui;
@@ -115,6 +116,25 @@ pub fn gate_scan_result(
                                         eprintln!("\n  (source unavailable)");
                                     }
                                 }
+                            } else {
+                                // Binary/resource finding — show file metadata
+                                let file_path = skill_dir.join(&finding.file);
+                                if file_path.exists() {
+                                    if let Ok(meta) = std::fs::metadata(&file_path) {
+                                        eprintln!("\n  Size: {}", format_size(meta.len()));
+                                    }
+                                    if let Ok(content) = std::fs::read(&file_path) {
+                                        let hash = format!("{:x}", Sha256::digest(&content));
+                                        eprintln!("  SHA-256: {hash}");
+                                        if let Some(kind) = infer::get(&content) {
+                                            eprintln!(
+                                                "  Type: {} ({})",
+                                                kind.extension(),
+                                                kind.mime_type()
+                                            );
+                                        }
+                                    }
+                                }
                             }
                             eprintln!("{}", style("─".repeat(SEPARATOR_WIDTH)).dim());
                         } else {
@@ -136,6 +156,23 @@ pub fn gate_scan_result(
         }
     }
     Ok(())
+}
+
+/// Format a byte count into a human-readable size string.
+fn format_size(bytes: u64) -> String {
+    const KB: u64 = 1024;
+    const MB: u64 = 1024 * KB;
+    const GB: u64 = 1024 * MB;
+
+    if bytes >= GB {
+        format!("{:.1} GB", bytes as f64 / GB as f64)
+    } else if bytes >= MB {
+        format!("{:.1} MB", bytes as f64 / MB as f64)
+    } else if bytes >= KB {
+        format!("{:.1} KB", bytes as f64 / KB as f64)
+    } else {
+        format!("{bytes} B")
+    }
 }
 
 #[cfg(test)]
