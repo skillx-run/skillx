@@ -1144,6 +1144,7 @@ fn test_installed_state_json_format() {
         name: "test-skill".to_string(),
         source: "github:org/test".to_string(),
         resolved_ref: Some("main".to_string()),
+        resolved_commit: None,
         installed_at: chrono::Utc::now(),
         updated_at: chrono::Utc::now(),
         scan_level: "pass".to_string(),

@@ -121,7 +121,7 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
             let inject_path = adapter.inject_path(&skill.name, &scope);
 
             // Conflict detection
-            check_conflicts(&skill.name, &installed)?;
+            check_conflicts(&skill.name, &inject_path, &installed)?;
 
             ui::step(&format!(
                 "Installing {} to {} ({})",
@@ -158,6 +158,7 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
                     name: skill.name.clone(),
                     source: skill.source.clone(),
                     resolved_ref: None,
+                    resolved_commit: None,
                     installed_at: now,
                     updated_at: now,
                     scan_level: skill.scan_level.clone(),
@@ -166,10 +167,10 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
             }
 
             ui::success(&format!(
-                "Installed {} ({} files) to {}",
+                "{} is now available in {} ({} files)",
                 skill.name,
-                records.len(),
-                adapter.display_name()
+                adapter.display_name(),
+                records.len()
             ));
         }
     }
@@ -280,6 +281,7 @@ async fn install_from_toml(
                     name: name.clone(),
                     source: source.to_string(),
                     resolved_ref: None,
+                    resolved_commit: None,
                     installed_at: now,
                     updated_at: now,
                     scan_level: scan_level.clone(),
@@ -308,7 +310,7 @@ async fn install_from_toml(
             .collect();
         for name in &to_remove {
             // Skip pruning if there's an active run session
-            if check_conflicts(name, &installed).is_err() {
+            if check_conflicts(name, std::path::Path::new(""), &installed).is_err() {
                 ui::warn(&format!("Skipping prune of {name}: active session"));
                 continue;
             }
@@ -373,8 +375,13 @@ async fn select_agents(
 }
 
 /// Check for conflicts before installing.
-fn check_conflicts(skill_name: &str, installed: &InstalledState) -> anyhow::Result<()> {
-    // Check for active sessions with this skill
+/// Returns Ok(()) if safe to proceed.
+fn check_conflicts(
+    skill_name: &str,
+    inject_path: &std::path::Path,
+    installed: &InstalledState,
+) -> anyhow::Result<()> {
+    // Case 2: active run session → error
     if let Ok(active_dir) = Config::active_dir() {
         if active_dir.exists() {
             if let Ok(entries) = std::fs::read_dir(&active_dir) {
@@ -397,9 +404,26 @@ fn check_conflicts(skill_name: &str, installed: &InstalledState) -> anyhow::Resu
         }
     }
 
-    // Already installed -> treated as upgrade (no error)
+    // Case 1: already installed → upgrade
     if installed.is_installed(skill_name) {
         ui::info(&format!("{skill_name} is already installed, upgrading"));
+        return Ok(());
+    }
+
+    // Case 3: target path exists but NOT managed by skillx → prompt overwrite
+    if inject_path.exists() {
+        ui::warn(&format!(
+            "Found existing {} (not managed by skillx)",
+            inject_path.display()
+        ));
+        eprint!("Overwrite? [y/N] ");
+        std::io::Write::flush(&mut std::io::stderr()).ok();
+        let mut input = String::new();
+        std::io::BufRead::read_line(&mut std::io::stdin().lock(), &mut input)?;
+        let input = input.trim().to_lowercase();
+        if input != "y" && input != "yes" {
+            return Err(skillx::error::SkillxError::UserCancelled.into());
+        }
     }
 
     Ok(())

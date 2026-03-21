@@ -68,13 +68,14 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
 
     // Table header
     eprintln!(
-        "{:<20} {:<45} {:<16} {}",
-        "Name", "Source", "Agents", "Scope"
+        "{:<20} {:<10} {:<38} {:<16} {}",
+        "Name", "Version", "Source", "Agents", "Scope"
     );
     eprintln!(
-        "{:<20} {:<45} {:<16} {}",
+        "{:<20} {:<10} {:<38} {:<16} {}",
         "─".repeat(18),
-        "─".repeat(43),
+        "─".repeat(8),
+        "─".repeat(36),
         "─".repeat(14),
         "─".repeat(7)
     );
@@ -96,15 +97,24 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
             .copied()
             .unwrap_or("n/a");
 
-        let source_display = if skill.source.len() > 43 {
-            format!("{}...", &skill.source[..40])
+        // Extract version from resolved_ref or source @ref
+        let version = skill
+            .resolved_ref
+            .as_deref()
+            .or_else(|| {
+                skill.source.rsplit_once('@').map(|(_, v)| v)
+            })
+            .unwrap_or("-");
+
+        let source_display = if skill.source.len() > 36 {
+            format!("{}...", &skill.source[..33])
         } else {
             skill.source.clone()
         };
 
         eprintln!(
-            "{:<20} {:<45} {:<16} {}",
-            skill.name, source_display, agents_str, scope_str
+            "{:<20} {:<10} {:<38} {:<16} {}",
+            skill.name, version, source_display, agents_str, scope_str
         );
     }
 
@@ -114,6 +124,7 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
         ui::step("Checking for updates...");
         let config = Config::load()?;
 
+        let mut outdated_count = 0;
         for skill in &filtered {
             // Skip local sources
             if skillx::source::is_local_source(&skill.source) {
@@ -123,14 +134,21 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
             match check_outdated(skill, &config).await {
                 Ok(true) => {
                     ui::warn(&format!("{}: update available", skill.name));
+                    outdated_count += 1;
                 }
-                Ok(false) => {
-                    // Up to date, nothing to print
-                }
+                Ok(false) => {}
                 Err(e) => {
                     ui::warn(&format!("{}: check failed ({})", skill.name, e));
                 }
             }
+        }
+        if outdated_count > 0 {
+            eprintln!();
+            ui::info(&format!(
+                "Run `skillx update` to update all, or `skillx update <name>` to update one."
+            ));
+        } else {
+            ui::success("All skills are up to date.");
         }
     }
 

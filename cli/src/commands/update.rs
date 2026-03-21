@@ -113,10 +113,11 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
         return Ok(());
     }
 
-    // Show summary
-    eprintln!("\nSkills with updates available:");
+    // Show summary table
+    eprintln!("\n{:<20} {:<12} {}", "Name", "Status", "Source");
+    eprintln!("{:<20} {:<12} {}", "─".repeat(18), "─".repeat(10), "─".repeat(30));
     for c in &candidates {
-        eprintln!("  - {}", c.name);
+        eprintln!("{:<20} {:<12} {}", c.name, "outdated", c.source);
     }
 
     if args.dry_run {

@@ -17,7 +17,11 @@ pub struct InstalledState {
 pub struct InstalledSkill {
     pub name: String,
     pub source: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub resolved_ref: Option<String>,
+    /// Exact commit SHA for the installed version (populated in v0.4+).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resolved_commit: Option<String>,
     pub installed_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub scan_level: String,
@@ -199,6 +203,7 @@ mod tests {
             name: name.to_string(),
             source: format!("github:org/{name}"),
             resolved_ref: None,
+            resolved_commit: None,
             installed_at: Utc::now(),
             updated_at: Utc::now(),
             scan_level: "pass".to_string(),
