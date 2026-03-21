@@ -114,7 +114,7 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
     }
 
     // Show summary table
-    eprintln!("\n{:<20} {:<12} {}", "Name", "Status", "Source");
+    eprintln!("\n{:<20} {:<12} Source", "Name", "Status");
     eprintln!("{:<20} {:<12} {}", "─".repeat(18), "─".repeat(10), "─".repeat(30));
     for c in &candidates {
         eprintln!("{:<20} {:<12} {}", c.name, "outdated", c.source);
@@ -128,6 +128,7 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
     // Confirm
     if !args.yes {
         eprint!("\nUpdate {} skill(s)? [Y/n] ", candidates.len());
+        std::io::Write::flush(&mut std::io::stderr()).ok();
         let mut input = String::new();
         std::io::stdin().lock().read_line(&mut input)?;
         let input = input.trim().to_lowercase();

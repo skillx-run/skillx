@@ -68,8 +68,8 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
 
     // Table header
     eprintln!(
-        "{:<20} {:<10} {:<38} {:<16} {}",
-        "Name", "Version", "Source", "Agents", "Scope"
+        "{:<20} {:<10} {:<38} {:<16} Scope",
+        "Name", "Version", "Source", "Agents"
     );
     eprintln!(
         "{:<20} {:<10} {:<38} {:<16} {}",
@@ -106,11 +106,7 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
             })
             .unwrap_or("-");
 
-        let source_display = if skill.source.len() > 36 {
-            format!("{}...", &skill.source[..33])
-        } else {
-            skill.source.clone()
-        };
+        let source_display = truncate_display(&skill.source, 36);
 
         eprintln!(
             "{:<20} {:<10} {:<38} {:<16} {}",
@@ -144,9 +140,9 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
         }
         if outdated_count > 0 {
             eprintln!();
-            ui::info(&format!(
+            ui::info(
                 "Run `skillx update` to update all, or `skillx update <name>` to update one."
-            ));
+            );
         } else {
             ui::success("All skills are up to date.");
         }
@@ -176,4 +172,20 @@ async fn check_outdated(
         .collect();
 
     Ok(new_hashes != installed_hashes)
+}
+
+/// Truncate a string for display, safe for multi-byte UTF-8.
+fn truncate_display(s: &str, max_len: usize) -> String {
+    if s.len() <= max_len {
+        return s.to_string();
+    }
+    // Find a safe char boundary to truncate at
+    let truncate_at = max_len.saturating_sub(3);
+    let end = s
+        .char_indices()
+        .take_while(|(i, _)| *i <= truncate_at)
+        .last()
+        .map(|(i, c)| i + c.len_utf8())
+        .unwrap_or(0);
+    format!("{}...", &s[..end])
 }

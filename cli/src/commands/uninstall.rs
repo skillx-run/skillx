@@ -48,7 +48,9 @@ pub async fn execute(args: UninstallArgs) -> anyhow::Result<()> {
                 for file in &inj.files {
                     let path = base.join(&file.relative);
                     if path.exists() {
-                        std::fs::remove_file(&path).ok();
+                        if let Err(e) = std::fs::remove_file(&path) {
+                            ui::warn(&format!("Failed to remove {}: {e}", path.display()));
+                        }
                     }
                 }
                 cleanup_empty_parents_for_injection(inj);
@@ -130,7 +132,7 @@ fn cleanup_empty_parents_for_injection(injection: &skillx::installed::Injection)
     dirs.insert(base.to_path_buf());
 
     let mut dirs: Vec<_> = dirs.into_iter().collect();
-    dirs.sort_by(|a, b| b.components().count().cmp(&a.components().count()));
+    dirs.sort_by_key(|b| std::cmp::Reverse(b.components().count()));
 
     for dir in dirs {
         if dir.exists() && dir.is_dir() {

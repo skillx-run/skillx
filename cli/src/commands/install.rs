@@ -295,7 +295,8 @@ async fn install_from_toml(
             }
         }
         count += 1;
-        ui::success(&format!("Installed: {name}"));
+        let agents_display = target_agents.join(", ");
+        ui::success(&format!("{name} is now available in {agents_display}"));
     }
 
     // Prune: remove skills not in toml (skip those with active sessions)
@@ -310,7 +311,7 @@ async fn install_from_toml(
             .collect();
         for name in &to_remove {
             // Skip pruning if there's an active run session
-            if check_conflicts(name, std::path::Path::new(""), &installed).is_err() {
+            if check_conflicts(name, std::path::Path::new(""), installed).is_err() {
                 ui::warn(&format!("Skipping prune of {name}: active session"));
                 continue;
             }
@@ -466,7 +467,7 @@ fn cleanup_empty_parents(base_path: &str, files: &[InjectedFileRecord]) {
 
     // Sort deepest first
     let mut dirs: Vec<_> = dirs.into_iter().collect();
-    dirs.sort_by(|a, b| b.components().count().cmp(&a.components().count()));
+    dirs.sort_by_key(|b| std::cmp::Reverse(b.components().count()));
 
     for dir in dirs {
         if dir.exists() && dir.is_dir() {
