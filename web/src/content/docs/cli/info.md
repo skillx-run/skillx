@@ -53,7 +53,7 @@ Skill Info
 | **Source** | The resolved source string |
 | **Path** | Local path to the skill (cache directory or local source) |
 
-Fields that are not present in the SKILL.md frontmatter are omitted from the output.
+Fields that are not present in the SKILL.md frontmatter are shown with placeholder values such as `(unnamed)`, `(none)`, or `(unknown)`. The Tags field is only shown when tags are defined.
 
 ## Examples
 

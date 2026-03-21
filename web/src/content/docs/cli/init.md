@@ -29,45 +29,52 @@ Initialize a new skillx.toml project configuration file in the current directory
 
 ### Default Template
 
+The generated file is a minimal TOML structure with empty fields ready to be filled in:
+
 ```toml
 [project]
-name = ""
-description = ""
 
 [agent]
-preferred = ""
 scope = "global"
 targets = []
 
 [skills]
-# Add skills here:
-# pdf-processing = "github:anthropics/skills/pdf@v1.2"
-# code-review = { source = "github:org/skills/cr@v2.1", scope = "project" }
+```
+
+Edit this file to add your project's skills. For example:
+
+```toml
+[project]
+name = "my-project"
+description = "My project description"
+
+[agent]
+preferred = "claude-code"
+scope = "global"
+targets = ["claude-code", "cursor"]
+
+[skills]
+pdf-processing = "github:anthropics/skills/pdf@v1.2"
+code-review = { source = "github:org/skills/cr@v2.1", scope = "project" }
 
 [skills.dev]
-# Dev-only skills:
-# testing = "github:org/skills/testing"
+testing = "github:org/skills/testing"
 ```
 
 ### With --from-installed
 
-When `--from-installed` is used, the `[skills]` table is populated with entries from your installed skills:
+When `--from-installed` is used, the `[skills]` table is pre-populated with entries from your currently installed skills:
 
 ```toml
 [project]
-name = ""
-description = ""
 
 [agent]
-preferred = ""
 scope = "global"
 targets = []
 
 [skills]
 pdf-processing = "github:anthropics/skills/pdf@v1.2"
-formatter = { source = "github:org/skills/cr@v2.1", scope = "project" }
-
-[skills.dev]
+formatter = "github:org/skills/formatter"
 ```
 
 ## Examples

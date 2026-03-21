@@ -48,14 +48,38 @@ skillx list --json
   {
     "name": "pdf-processing",
     "source": "github:anthropics/skills/pdf@v1.2",
-    "version": "v1.2",
-    "agents": ["claude-code"],
-    "scope": "global"
+    "resolved_ref": "v1.2",
+    "installed_at": "2026-03-20T12:00:00Z",
+    "updated_at": "2026-03-20T12:00:00Z",
+    "scan_level": "pass",
+    "injections": [
+      {
+        "agent": "claude-code",
+        "scope": "global",
+        "path": "/Users/you/.claude/skills/pdf-processing",
+        "files": [
+          { "relative": "SKILL.md", "sha256": "a1b2c3..." }
+        ]
+      }
+    ]
   }
 ]
 ```
 
-JSON output goes to stdout so it can be piped. Status messages still go to stderr.
+The JSON output is the full internal representation of each installed skill. JSON goes to stdout so it can be piped. Status messages still go to stderr.
+
+Common `jq` queries:
+
+```bash
+# List skill names
+skillx list --json | jq '.[].name'
+
+# Get sources
+skillx list --json | jq '.[] | {name, source}'
+
+# Filter by agent
+skillx list --json | jq '.[] | select(.injections[].agent == "claude-code")'
+```
 
 ### Outdated
 
