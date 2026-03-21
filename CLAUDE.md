@@ -41,15 +41,25 @@ Key modules:
   - User custom agents from config.toml `[[custom_agents]]` (also via GenericAdapter)
   - universal (fallback, always last in registry)
 - `session/` — Session lifecycle, manifest, inject, cleanup
+  - `inject.rs` — `inject_and_collect()` (core) + `inject_skill()` (manifest wrapper)
   - Signal handling via `tokio::signal::ctrl_c()` + `tokio::select!`
   - Interactive orphaned session recovery with metadata display
+- `gate.rs` — Scan result gating (PASS/INFO auto-pass, WARN prompt, DANGER interactive, BLOCK refuse)
+- `installed.rs` — Persistent install state (`~/.skillx/installed.json`)
 - `cache.rs` — Cache management (SHA256 source hash, TTL)
 - `config.rs` — `~/.skillx/config.toml` handling (incl. `[[url_patterns]]`, `[[custom_agents]]`)
-- `project_config.rs` — `skillx.toml` project-level configuration parsing
+- `project_config.rs` — `skillx.toml` project-level configuration ([skills] table format)
 - `types.rs` — Shared types (Scope enum)
 - `error.rs` — SkillxError (thiserror) + Result alias
 - `ui.rs` — Terminal output helpers (console + indicatif)
-- `commands/` — Command implementations using resolver (anyhow::Result)
+- `commands/` — Command implementations (10 commands, anyhow::Result)
+  - `run.rs` — Temporary run (inject → launch → cleanup, skips inject if already installed)
+  - `install.rs` — Persistent install (explicit sources or from skillx.toml)
+  - `uninstall.rs` — Remove installed skills (per-agent partial or full)
+  - `list.rs` — List installed skills (table/JSON, --outdated check)
+  - `update.rs` — Update installed skills (SHA256 diff, --dry-run)
+  - `init.rs` — Initialize skillx.toml (empty or --from-installed)
+  - `scan.rs`, `agents.rs`, `info.rs`, `cache.rs`
 
 ### Error Strategy
 
@@ -60,23 +70,54 @@ Key modules:
 ### Run Command Lifecycle
 
 1. Load Config + ProjectConfig (skillx.toml)
-2. Resolve source(s) — CLI arg or skillx.toml `[[skills]]`
+2. Resolve source(s) — CLI arg or skillx.toml `[skills]`
 3. Scan each skill (unless --skip-scan)
-4. Gate (PASS/INFO auto-pass, WARN Y/n, DANGER `yes`+`detail N`, BLOCK refuse)
-5. Detect Agent (CLI --agent > skillx.toml defaults > config preferred > auto-detect)
-6. Inject all skills (copy files + SHA256 + manifest)
-7. Launch (CLI: subprocess, IDE: clipboard + wait)
-8. Wait (with Ctrl+C and --timeout support)
-9. Cleanup (remove injected files, archive session)
+4. Gate via `gate::gate_scan_result()` (PASS/INFO auto-pass, WARN Y/n, DANGER `yes`+`detail N`, BLOCK refuse)
+5. Detect Agent (CLI --agent > skillx.toml agent.preferred > config preferred > auto-detect)
+6. Check installed state — skip inject/cleanup if already installed
+7. Inject all skills (copy files + SHA256 + manifest)
+8. Launch (CLI: subprocess, IDE: clipboard + wait)
+9. Wait (with Ctrl+C and --timeout support)
+10. Cleanup (remove injected files, archive session) — skipped for installed skills
+
+### skillx.toml Format
+
+```toml
+[project]
+name = "my-project"
+description = "..."
+
+[agent]
+preferred = "claude-code"
+scope = "project"
+targets = ["claude-code", "cursor"]
+
+[skills]
+pdf-processing = "github:anthropics/skills/pdf@v1.2"
+code-review = { source = "github:org/skills/cr@v2.1", scope = "project" }
+
+[skills.dev]
+testing = "github:org/skills/testing"
+```
+
+SkillValue supports string shorthand (`"source"`) and detailed object (`{ source, scope, skip_scan }`).
 
 ## Build & Test
 
 ```bash
 cargo build --workspace          # Build all
-cargo test --workspace           # Run all tests (183+)
+cargo test --workspace           # Run all tests (212+)
 cargo build --release            # Release build
 cargo run -- run ./skill "msg"   # Run CLI
 cargo run -- run                 # Run from skillx.toml
+cargo run -- install ./skill     # Install persistently
+cargo run -- install             # Install from skillx.toml
+cargo run -- uninstall my-skill  # Uninstall
+cargo run -- list                # List installed
+cargo run -- list --json         # JSON output
+cargo run -- update              # Update all
+cargo run -- update --dry-run    # Check for updates
+cargo run -- init                # Create skillx.toml
 cargo run -- scan ./skill        # Scan skill
 cargo run -- agents              # List agents
 cargo run -- agents --all        # List all 32 agents
@@ -97,15 +138,16 @@ cargo run -- cache ls            # List cache
 - JSON output goes to stdout (for piping)
 - `resolve_and_fetch()` and `AgentRegistry::new()` require `&Config` parameter
 - config.toml supports `[[url_patterns]]` and `[[custom_agents]]`
-- `skillx.toml` provides project-level skill configuration (multi-skill mode)
+- `skillx.toml` uses `[skills]` table format (not `[[skills]]` array)
 - SkillSource has 10 variants: Local, GitHub, GitLab, Bitbucket, Gitea, Gist, SourceHut, HuggingFace, Archive, SkillsDirectory
 
 ## Data Directories
 
 ```
 ~/.skillx/
-├── config.toml    # Global config (url_patterns, custom_agents, cache, scan, agent, history)
-├── cache/         # Cached skills (TTL-based)
-├── active/        # Active run sessions
-└── history/       # Archived session manifests
+├── config.toml      # Global config (url_patterns, custom_agents, cache, scan, agent, history)
+├── installed.json   # Persistent install state (skills, injections, SHA256)
+├── cache/           # Cached skills (TTL-based)
+├── active/          # Active run sessions
+└── history/         # Archived session manifests
 ```
