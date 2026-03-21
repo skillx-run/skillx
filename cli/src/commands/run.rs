@@ -421,14 +421,19 @@ fn resolve_prompt(args: &RunArgs) -> anyhow::Result<Option<String>> {
     Ok(None)
 }
 
-/// Recursively copy a directory to a destination.
+/// Recursively copy a directory to a destination, skipping symlinks.
 fn copy_dir_recursive(src: &Path, dest: &Path) -> anyhow::Result<()> {
     std::fs::create_dir_all(dest)?;
     for entry in std::fs::read_dir(src)? {
         let entry = entry?;
+        let file_type = entry.file_type()?;
+        // Skip symlinks to prevent following links outside the source tree
+        if file_type.is_symlink() {
+            continue;
+        }
         let src_path = entry.path();
         let dest_path = dest.join(entry.file_name());
-        if src_path.is_dir() {
+        if file_type.is_dir() {
             copy_dir_recursive(&src_path, &dest_path)?;
         } else {
             std::fs::copy(&src_path, &dest_path)?;

@@ -78,13 +78,11 @@ impl GitLabSource {
                     return None;
                 }
                 let file_path = item["path"].as_str()?;
-                // Compute relative path from the skill root
-                let relative = if let Some(prefix) = api_path.strip_suffix('/') {
-                    file_path.strip_prefix(prefix).unwrap_or(file_path)
-                } else if !api_path.is_empty() {
+                // Compute relative path from the skill root using directory-boundary match
+                let relative = if !api_path.is_empty() {
+                    let prefix_with_slash = format!("{api_path}/");
                     file_path
-                        .strip_prefix(api_path)
-                        .and_then(|p| p.strip_prefix('/'))
+                        .strip_prefix(&prefix_with_slash)
                         .unwrap_or(file_path)
                 } else {
                     file_path

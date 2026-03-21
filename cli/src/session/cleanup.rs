@@ -44,13 +44,15 @@ pub fn cleanup_session(session_dir: &Path) -> Result<()> {
         }
     }
 
-    // Remove injected attachments (files or directories)
+    // Remove injected attachments (files or directories).
+    // Use symlink_metadata to avoid following symlinks when deciding how to remove.
     for attachment in &manifest.injected_attachments {
         let path = PathBuf::from(&attachment.copied_to);
-        if path.exists() {
-            let result = if path.is_dir() {
+        if let Ok(meta) = std::fs::symlink_metadata(&path) {
+            let result = if meta.is_dir() {
                 std::fs::remove_dir_all(&path)
             } else {
+                // Handles both regular files and symlinks (removes the link itself)
                 std::fs::remove_file(&path)
             };
             if let Err(e) = result {
