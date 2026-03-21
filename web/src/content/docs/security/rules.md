@@ -1,11 +1,11 @@
 ---
 title: Security Rules
-description: Complete reference for all scanner rules — MD-001 through MD-006, SC-001 through SC-011, RS-001 through RS-003.
+description: Complete reference for all scanner rules — MD-001 through MD-009, SC-001 through SC-011, RS-001 through RS-003.
 ---
 
 ## Overview
 
-The skillx scanner has 20 rules organized into three categories:
+The skillx scanner has 22 rules organized into three categories:
 
 - **MD** (Markdown) — rules applied to `SKILL.md`
 - **SC** (Script) — rules applied to files in `scripts/` and script-like files at root
@@ -89,6 +89,30 @@ Detects instructions that tell the user or agent to disable security features.
 - `--skip-scan`, `--no-verify`
 
 **Why it matters:** A skill should never need to disable skillx's security scanner.
+
+### MD-007: Missing License Declaration (INFO)
+
+Detects SKILL.md files with YAML frontmatter that do not declare a `license` field.
+
+**Detection method:** Structural analysis of YAML frontmatter (not regex).
+
+**Why it matters:** A declared license helps users understand usage rights before adopting a skill.
+
+### MD-008: Missing Name Declaration (INFO)
+
+Detects SKILL.md files with YAML frontmatter that do not declare a `name` field.
+
+**Detection method:** Structural analysis of YAML frontmatter (not regex).
+
+**Why it matters:** A name field is essential metadata for identifying and referencing skills.
+
+### MD-009: Missing Description Declaration (INFO)
+
+Detects SKILL.md files with YAML frontmatter that do not declare a `description` field.
+
+**Detection method:** Structural analysis of YAML frontmatter (not regex).
+
+**Why it matters:** A description helps users understand what a skill does before using it.
 
 ## Script Rules
 
@@ -235,6 +259,9 @@ Detects executable files in the `references/` directory, which should only conta
 | MD-004 | WARN | Markdown | Destructive file operations |
 | MD-005 | DANGER | Markdown | System config modification |
 | MD-006 | DANGER | Markdown | Security bypass instructions |
+| MD-007 | INFO | Markdown | Missing license declaration |
+| MD-008 | INFO | Markdown | Missing name declaration |
+| MD-009 | INFO | Markdown | Missing description declaration |
 | SC-001 | BLOCK | Script | Embedded binary |
 | SC-002 | DANGER | Script | Dynamic execution |
 | SC-003 | DANGER | Script | Recursive delete |
