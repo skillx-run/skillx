@@ -188,13 +188,21 @@ impl BitbucketSource {
 }
 
 /// Strip the root path prefix from a file path to get the relative path.
+///
+/// Uses directory-boundary matching: `root_path` must match a full path
+/// segment (followed by `/`), not just a string prefix.
 fn strip_root_prefix<'a>(file_path: &'a str, root_path: &str) -> &'a str {
-    if !root_path.is_empty() {
-        file_path
-            .strip_prefix(root_path)
-            .and_then(|p| p.strip_prefix('/'))
-            .unwrap_or(file_path)
-    } else {
-        file_path
+    if root_path.is_empty() {
+        return file_path;
     }
+    // Try "root_path/" as prefix (directory boundary)
+    let with_slash = format!("{root_path}/");
+    if let Some(rest) = file_path.strip_prefix(&with_slash) {
+        return rest;
+    }
+    // Exact match (file_path == root_path, shouldn't happen for files)
+    if file_path == root_path {
+        return "";
+    }
+    file_path
 }

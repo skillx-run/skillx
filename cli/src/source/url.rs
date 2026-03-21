@@ -71,9 +71,9 @@ fn extract_host_path(url: &str) -> Result<(String, String)> {
 /// Parse a gist.github.com URL: /user/id[/revision]
 fn parse_gist_url(path: &str) -> Result<SkillSource> {
     let path = path.trim_start_matches('/').trim_end_matches('/');
-    let parts: Vec<&str> = path.split('/').collect();
+    let parts: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
 
-    // /user/id or just /id
+    // Formats: /id, /user/id, /user/id/revision
     let (id, revision) = match parts.len() {
         0 => {
             return Err(SkillxError::InvalidSource(
@@ -82,7 +82,12 @@ fn parse_gist_url(path: &str) -> Result<SkillSource> {
         }
         1 => (parts[0].to_string(), None),
         2 => (parts[1].to_string(), None),
-        _ => (parts[1].to_string(), Some(parts[2].to_string())),
+        3 => (parts[1].to_string(), Some(parts[2].to_string())),
+        _ => {
+            return Err(SkillxError::InvalidSource(
+                "invalid Gist URL: too many path segments (expected /user/id[/revision])".into(),
+            ))
+        }
     };
 
     if id.is_empty() {

@@ -22,7 +22,7 @@ impl AgentAdapter for RooAdapter {
         let has_extension = dirs::home_dir()
             .map(|h| {
                 let ext_dir = h.join(".vscode").join("extensions");
-                if ext_dir.exists() {
+                if ext_dir.is_dir() {
                     if let Ok(entries) = std::fs::read_dir(&ext_dir) {
                         return entries.flatten().any(|e| {
                             e.file_name()

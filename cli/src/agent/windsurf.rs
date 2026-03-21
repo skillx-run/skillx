@@ -18,20 +18,16 @@ impl AgentAdapter for WindsurfAdapter {
     }
 
     async fn detect(&self) -> DetectResult {
-        // Check for windsurf process
-        let has_process = {
-            use sysinfo::System;
-            let mut sys = System::new();
-            sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
-            sys.processes().values().any(|p| {
+        let has_binary = which::which("windsurf").is_ok();
+        let has_process = sysinfo::System::new_all()
+            .processes()
+            .values()
+            .any(|p| {
                 let name = p.name().to_string_lossy().to_lowercase();
                 name == "windsurf"
                     || name.starts_with("windsurf ")
                     || name.starts_with("windsurf.")
-            })
-        };
-
-        let has_binary = which::which("windsurf").is_ok();
+            });
 
         DetectResult {
             name: self.name().to_string(),

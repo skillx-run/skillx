@@ -44,11 +44,16 @@ pub fn cleanup_session(session_dir: &Path) -> Result<()> {
         }
     }
 
-    // Remove injected attachments
+    // Remove injected attachments (files or directories)
     for attachment in &manifest.injected_attachments {
         let path = PathBuf::from(&attachment.copied_to);
         if path.exists() {
-            if let Err(e) = std::fs::remove_file(&path) {
+            let result = if path.is_dir() {
+                std::fs::remove_dir_all(&path)
+            } else {
+                std::fs::remove_file(&path)
+            };
+            if let Err(e) = result {
                 ui::warn(&format!("Failed to remove {}: {e}", attachment.copied_to));
             }
         }
