@@ -16,13 +16,15 @@ Integration tests access internals via `use skillx::...`.
 Key modules:
 - `source/` — Skill fetching from multiple platforms. Resolve priority: local path > `github:`/`gist:` prefix > URL > error
   - `url.rs` — URL smart recognition engine (20+ platforms)
-  - `url_patterns.rs` — Domain-to-source-type mappings
-  - `resolver.rs` — Unified resolve + fetch + cache abstraction
+  - `url_patterns.rs` — Domain-to-source-type mappings (built-in + custom via config.toml)
+  - `resolver.rs` — Unified resolve + fetch + cache abstraction (requires `&Config` param)
   - `github.rs` — GitHub Contents API
   - `gitlab.rs` — GitLab Repository Files API (supports self-hosted)
   - `bitbucket.rs` — Bitbucket Source API
   - `gitea.rs` — Gitea/Forgejo/Codeberg Contents API (supports self-hosted)
   - `gist.rs` — GitHub Gist API
+  - `sourcehut.rs` — SourceHut tarball download + sub-path extraction
+  - `huggingface.rs` — HuggingFace REST API (models/datasets/spaces type inference)
   - `archive.rs` — ZIP/tar.gz download + extraction (with zip-slip protection)
   - `skills_directory.rs` — Skills directory platform HTML parsing (10 platforms)
   - `local.rs` — Local filesystem source
@@ -35,12 +37,15 @@ Key modules:
 - `agent/` — Agent detection & adapters (AgentAdapter trait with async_trait)
   - Tier 1: claude-code, codex, copilot, cursor
   - Tier 2: gemini-cli, opencode, amp, windsurf, cline, roo
+  - Tier 3: 21 agents via `generic.rs` (AgentDef + GenericAdapter, data-driven)
+  - User custom agents from config.toml `[[custom_agents]]` (also via GenericAdapter)
   - universal (fallback, always last in registry)
 - `session/` — Session lifecycle, manifest, inject, cleanup
   - Signal handling via `tokio::signal::ctrl_c()` + `tokio::select!`
   - Interactive orphaned session recovery with metadata display
 - `cache.rs` — Cache management (SHA256 source hash, TTL)
-- `config.rs` — `~/.skillx/config.toml` handling
+- `config.rs` — `~/.skillx/config.toml` handling (incl. `[[url_patterns]]`, `[[custom_agents]]`)
+- `project_config.rs` — `skillx.toml` project-level configuration parsing
 - `types.rs` — Shared types (Scope enum)
 - `error.rs` — SkillxError (thiserror) + Result alias
 - `ui.rs` — Terminal output helpers (console + indicatif)
@@ -54,24 +59,27 @@ Key modules:
 
 ### Run Command Lifecycle
 
-1. Resolve (source → resolver → local/GitHub/GitLab/Bitbucket/Gitea/Gist/Archive/SkillsDirectory/cache)
-2. Scan (unless --skip-scan)
-3. Gate (PASS/INFO auto-pass, WARN Y/n, DANGER `yes`+`detail N`, BLOCK refuse)
-4. Detect Agent (--agent or auto-detect)
-5. Inject (copy files + SHA256 + manifest)
-6. Launch (CLI: subprocess, IDE: clipboard + wait)
-7. Wait (with Ctrl+C and --timeout support)
-8. Cleanup (remove injected files, archive session)
+1. Load Config + ProjectConfig (skillx.toml)
+2. Resolve source(s) — CLI arg or skillx.toml `[[skills]]`
+3. Scan each skill (unless --skip-scan)
+4. Gate (PASS/INFO auto-pass, WARN Y/n, DANGER `yes`+`detail N`, BLOCK refuse)
+5. Detect Agent (CLI --agent > skillx.toml defaults > config preferred > auto-detect)
+6. Inject all skills (copy files + SHA256 + manifest)
+7. Launch (CLI: subprocess, IDE: clipboard + wait)
+8. Wait (with Ctrl+C and --timeout support)
+9. Cleanup (remove injected files, archive session)
 
 ## Build & Test
 
 ```bash
 cargo build --workspace          # Build all
-cargo test --workspace           # Run all tests (149+)
+cargo test --workspace           # Run all tests (183+)
 cargo build --release            # Release build
 cargo run -- run ./skill "msg"   # Run CLI
+cargo run -- run                 # Run from skillx.toml
 cargo run -- scan ./skill        # Scan skill
 cargo run -- agents              # List agents
+cargo run -- agents --all        # List all 32 agents
 cargo run -- info ./skill        # Show info
 cargo run -- cache ls            # List cache
 ```
@@ -82,17 +90,21 @@ cargo run -- cache ls            # List cache
 - Frequent atomic commits
 - Test fixtures in `cli/tests/fixtures/`
 - v0.1 scanner uses regex (not tree-sitter)
-- Agent adapters implement `AgentAdapter` trait with `async_trait` (11 total)
+- Agent adapters implement `AgentAdapter` trait with `async_trait` (32 built-in + custom)
 - Source fetchers use FetchContext structs to avoid excessive arguments
 - Regex patterns in rules.rs must use `r#"..."#` (Rust 2021 raw strings)
 - All user-facing output goes to stderr (via `eprintln!` / `ui::*`)
 - JSON output goes to stdout (for piping)
+- `resolve_and_fetch()` and `AgentRegistry::new()` require `&Config` parameter
+- config.toml supports `[[url_patterns]]` and `[[custom_agents]]`
+- `skillx.toml` provides project-level skill configuration (multi-skill mode)
+- SkillSource has 10 variants: Local, GitHub, GitLab, Bitbucket, Gitea, Gist, SourceHut, HuggingFace, Archive, SkillsDirectory
 
 ## Data Directories
 
 ```
 ~/.skillx/
-├── config.toml    # Global config
+├── config.toml    # Global config (url_patterns, custom_agents, cache, scan, agent, history)
 ├── cache/         # Cached skills (TTL-based)
 ├── active/        # Active run sessions
 └── history/       # Archived session manifests

@@ -1,24 +1,46 @@
 ---
 const agents = [
+  // Tier 1
   { name: 'Claude Code', type: 'CLI', tier: 1, yolo: '--dangerously-skip-permissions' },
   { name: 'OpenAI Codex', type: 'CLI', tier: 1, yolo: '--full-auto' },
   { name: 'GitHub Copilot', type: 'IDE', tier: 1, yolo: null },
   { name: 'Cursor', type: 'IDE', tier: 1, yolo: null },
+  // Tier 2
   { name: 'Gemini CLI', type: 'CLI', tier: 2, yolo: null },
   { name: 'OpenCode', type: 'CLI', tier: 2, yolo: null },
   { name: 'Amp', type: 'CLI', tier: 2, yolo: null },
   { name: 'Windsurf', type: 'IDE', tier: 2, yolo: null },
   { name: 'Cline', type: 'IDE', tier: 2, yolo: null },
   { name: 'Roo Code', type: 'IDE', tier: 2, yolo: null },
+  // Tier 3
   { name: 'Goose', type: 'CLI', tier: 3, yolo: null },
-  { name: 'Kiro', type: 'IDE', tier: 3, yolo: null },
+  { name: 'Kiro', type: 'CLI', tier: 3, yolo: null },
+  { name: 'Aider', type: 'CLI', tier: 3, yolo: null },
+  { name: 'OpenClaw', type: 'CLI', tier: 3, yolo: null },
+  { name: 'Qwen Code', type: 'CLI', tier: 3, yolo: null },
+  { name: 'Droid', type: 'CLI', tier: 3, yolo: null },
+  { name: 'Warp', type: 'CLI', tier: 3, yolo: null },
+  { name: 'OpenHands', type: 'CLI', tier: 3, yolo: null },
+  { name: 'Command Code', type: 'CLI', tier: 3, yolo: null },
+  { name: 'Mistral Vibe', type: 'CLI', tier: 3, yolo: null },
+  { name: 'Qoder', type: 'CLI', tier: 3, yolo: null },
+  { name: 'Kode', type: 'CLI', tier: 3, yolo: null },
+  { name: 'Kilo Code', type: 'IDE', tier: 3, yolo: null },
+  { name: 'Trae', type: 'IDE', tier: 3, yolo: null },
+  { name: 'Augment', type: 'IDE', tier: 3, yolo: null },
+  { name: 'Continue', type: 'IDE', tier: 3, yolo: null },
+  { name: 'CodeBuddy', type: 'IDE', tier: 3, yolo: null },
+  { name: 'Antigravity', type: 'IDE', tier: 3, yolo: null },
+  { name: 'Zencoder', type: 'IDE', tier: 3, yolo: null },
+  { name: 'Junie', type: 'IDE', tier: 3, yolo: null },
+  { name: 'Replit Agent', type: 'IDE', tier: 3, yolo: null },
 ];
 ---
 
 <section class="agents">
   <div class="container">
     <h2>Works with Every Agent</h2>
-    <p class="subtitle">One adapter per agent. 31+ supported in the roadmap.</p>
+    <p class="subtitle">One adapter per agent. 32 built-in + custom agents via config.</p>
 
     <div class="tier-sections">
       <div class="tier">
@@ -42,7 +64,7 @@ const agents = [
       <div class="tier">
         <h3>
           <span class="tier-badge t2">Tier 2</span>
-          Coming in v0.2
+          Supported in v0.2+
         </h3>
         <div class="agent-cards">
           {agents.filter(a => a.tier === 2).map(agent => (
@@ -59,7 +81,7 @@ const agents = [
       <div class="tier">
         <h3>
           <span class="tier-badge t3">Tier 3</span>
-          v0.3+
+          Supported in v0.3+
         </h3>
         <div class="agent-cards">
           {agents.filter(a => a.tier === 3).map(agent => (
@@ -71,7 +93,7 @@ const agents = [
             </div>
           ))}
           <div class="agent-card muted more">
-            <div class="agent-name">+20 more</div>
+            <div class="agent-name">+ custom agents</div>
           </div>
         </div>
       </div>
