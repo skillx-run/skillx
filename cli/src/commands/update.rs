@@ -70,6 +70,7 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
         resolved_ref: Option<String>,
         old_version: Option<String>,
         files_changed: usize,
+        scan_level: String,
     }
 
     let mut candidates: Vec<UpdateCandidate> = Vec::new();
@@ -102,7 +103,11 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
                     let old_version = skill.resolved_ref.as_deref()
                         .or_else(|| skill.source.rsplit_once('@').map(|(_, v)| v))
                         .map(|s| s.to_string());
-                    let files_changed = new_hashes.symmetric_difference(&installed_hashes).count();
+                    let files_changed: usize = new_hashes
+                        .symmetric_difference(&installed_hashes)
+                        .map(|(path, _)| path.as_str())
+                        .collect::<BTreeSet<&str>>()
+                        .len();
                     ui::info(&format!("{name}: update available"));
                     candidates.push(UpdateCandidate {
                         name: name.clone(),
@@ -111,6 +116,7 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
                         resolved_ref: fetched.resolved_ref,
                         old_version,
                         files_changed,
+                        scan_level: String::new(), // filled during apply
                     });
                 }
             }
@@ -165,11 +171,11 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
 
     // Apply updates (save after each success to avoid losing progress on failure)
     let mut updated_count = 0;
-    for candidate in &candidates {
+    for candidate in &mut candidates {
         ui::step(&format!("Updating {}...", candidate.name));
 
         // Scan
-        if !args.skip_scan {
+        candidate.scan_level = if !args.skip_scan {
             let report = ScanEngine::scan(&candidate.dir)?;
             eprint!("{}", TextFormatter::format(&report));
             if let Err(e) = gate_scan_result(&Some(report.clone()), &candidate.dir, args.yes) {
@@ -179,7 +185,10 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
                 }
                 return Err(e);
             }
-        }
+            format!("{}", report.overall_level())
+        } else {
+            "skipped".to_string()
+        };
 
         let skill = installed.find_skill_mut(&candidate.name).unwrap();
 
@@ -215,6 +224,7 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
         skill.updated_at = chrono::Utc::now();
         skill.source = candidate.source.clone();
         skill.resolved_ref = candidate.resolved_ref.clone();
+        skill.scan_level = candidate.scan_level.clone();
         updated_count += 1;
 
         ui::success(&format!("Updated {}", candidate.name));

@@ -179,7 +179,11 @@ async fn check_outdated(
         .collect();
 
     if new_hashes != installed_hashes {
-        let files_changed = new_hashes.symmetric_difference(&installed_hashes).count();
+        let files_changed: usize = new_hashes
+            .symmetric_difference(&installed_hashes)
+            .map(|(path, _)| path.as_str())
+            .collect::<std::collections::BTreeSet<&str>>()
+            .len();
         Ok(Some(OutdatedInfo { files_changed }))
     } else {
         Ok(None)

@@ -206,10 +206,14 @@ impl ProjectConfig {
 
     /// Update the source string of an existing skill entry.
     /// For Detailed entries, only updates `source`, preserving scope and skip_scan.
-    /// Returns true if found and updated.
+    /// Returns true if found and the value actually changed.
     pub fn update_skill_source(&mut self, name: &str, new_source: &str) -> bool {
         for map in [&mut self.skills.entries, &mut self.skills.dev] {
             if let Some(value) = map.get_mut(name) {
+                // Skip if source is already the same
+                if value.source() == new_source {
+                    return false;
+                }
                 match value {
                     SkillValue::Simple(_) => {
                         *value = SkillValue::Simple(new_source.to_string());
@@ -572,6 +576,16 @@ bad = { source = "  " }
         assert_eq!(val.source(), "github:org/review@v2.0");
         assert_eq!(val.scope(), Some("project"));
         assert_eq!(val.skip_scan(), Some(true));
+    }
+
+    #[test]
+    fn test_update_skill_source_same_value_returns_false() {
+        let mut config = ProjectConfig::default();
+        config.add_skill("pdf", "github:org/pdf@v1.0", false);
+
+        // Same source — should return false (no change)
+        assert!(!config.update_skill_source("pdf", "github:org/pdf@v1.0"));
+        assert_eq!(config.skills.entries["pdf"].source(), "github:org/pdf@v1.0");
     }
 
     #[test]
