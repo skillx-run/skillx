@@ -2,6 +2,7 @@ use clap::Args;
 use console::style;
 
 use skillx::agent::registry::AgentRegistry;
+use skillx::config::Config;
 use skillx::ui;
 
 #[derive(Args, Debug)]
@@ -12,7 +13,8 @@ pub struct AgentsArgs {
 }
 
 pub async fn execute(args: AgentsArgs) -> anyhow::Result<()> {
-    let registry = AgentRegistry::new();
+    let config = Config::load()?;
+    let registry = AgentRegistry::new(&config);
     let results = registry.detect_all().await;
 
     ui::header("Agent Environments");

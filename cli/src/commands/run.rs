@@ -210,7 +210,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
 
     // ── Phase 4: Detect Agent ──
     ui::step("Detecting agents...");
-    let registry = AgentRegistry::new();
+    let registry = AgentRegistry::new(&config);
     let adapter = registry.select(args.agent.as_deref()).await?;
     ui::success(&format!("Using agent: {}", adapter.display_name()));
 

@@ -616,7 +616,7 @@ fn test_manifest_add_file() {
 
 #[test]
 fn test_agent_registry_get_known() {
-    let registry = skillx::agent::registry::AgentRegistry::new();
+    let registry = skillx::agent::registry::AgentRegistry::new_default();
     assert!(registry.get("claude-code").is_some());
     assert!(registry.get("codex").is_some());
     assert!(registry.get("copilot").is_some());
@@ -626,7 +626,7 @@ fn test_agent_registry_get_known() {
 
 #[test]
 fn test_agent_registry_get_unknown() {
-    let registry = skillx::agent::registry::AgentRegistry::new();
+    let registry = skillx::agent::registry::AgentRegistry::new_default();
     assert!(registry.get("nonexistent-agent").is_none());
 }
 

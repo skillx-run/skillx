@@ -1,4 +1,5 @@
 use super::{AgentAdapter, DetectResult};
+use crate::config::Config;
 use crate::error::{Result, SkillxError};
 
 /// Registry of all known agent adapters.
@@ -8,14 +9,14 @@ pub struct AgentRegistry {
 
 impl Default for AgentRegistry {
     fn default() -> Self {
-        Self::new()
+        Self::new_default()
     }
 }
 
 impl AgentRegistry {
-    /// Create a new registry with all built-in adapters.
-    pub fn new() -> Self {
-        let adapters: Vec<Box<dyn AgentAdapter>> = vec![
+    /// Create a new registry with all built-in adapters plus custom agents from config.
+    pub fn new(config: &Config) -> Self {
+        let mut adapters: Vec<Box<dyn AgentAdapter>> = vec![
             // Tier 1: CLI agents
             Box::new(super::claude_code::ClaudeCodeAdapter),
             Box::new(super::codex::CodexAdapter),
@@ -30,10 +31,23 @@ impl AgentRegistry {
             Box::new(super::windsurf::WindsurfAdapter),
             Box::new(super::cline::ClineAdapter),
             Box::new(super::roo::RooAdapter),
-            // Universal fallback (always last)
-            Box::new(super::universal::UniversalAdapter),
         ];
+
+        // Tier 3: Generic built-in agents
+        adapters.extend(super::generic::tier3_adapters());
+
+        // Custom agents from config.toml
+        adapters.extend(super::generic::custom_adapters(config));
+
+        // Universal fallback (always last)
+        adapters.push(Box::new(super::universal::UniversalAdapter));
+
         AgentRegistry { adapters }
+    }
+
+    /// Create a registry with defaults (no custom agents). For backward compatibility.
+    pub fn new_default() -> Self {
+        Self::new(&Config::default())
     }
 
     /// Detect all available agents.

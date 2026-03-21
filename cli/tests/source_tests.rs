@@ -242,14 +242,15 @@ fn test_error_display_unsupported_url() {
 // ==================== Agent Registry ====================
 
 #[tokio::test]
-async fn test_registry_has_11_adapters() {
-    let registry = skillx::agent::registry::AgentRegistry::new();
-    assert_eq!(registry.all().len(), 11);
+async fn test_registry_has_32_adapters() {
+    let registry = skillx::agent::registry::AgentRegistry::new_default();
+    // 10 Tier1+2 + 21 Tier3 + 1 universal = 32
+    assert_eq!(registry.all().len(), 32);
 }
 
 #[tokio::test]
 async fn test_registry_tier2_agents_by_name() {
-    let registry = skillx::agent::registry::AgentRegistry::new();
+    let registry = skillx::agent::registry::AgentRegistry::new_default();
     assert!(registry.get("gemini-cli").is_some());
     assert!(registry.get("opencode").is_some());
     assert!(registry.get("amp").is_some());
@@ -260,7 +261,7 @@ async fn test_registry_tier2_agents_by_name() {
 
 #[tokio::test]
 async fn test_registry_universal_is_last() {
-    let registry = skillx::agent::registry::AgentRegistry::new();
+    let registry = skillx::agent::registry::AgentRegistry::new_default();
     let all = registry.all();
     assert_eq!(all.last().unwrap().name(), "universal");
 }
