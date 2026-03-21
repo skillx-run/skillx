@@ -53,11 +53,28 @@ impl GistSource {
             SkillxError::Network(format!("Gist API request failed: {e}"))
         })?;
 
-        if !resp.status().is_success() {
-            return Err(SkillxError::GistApi(format!(
-                "Gist API returned {} for gist '{id}'",
-                resp.status()
-            )));
+        match resp.status().as_u16() {
+            401 => {
+                return Err(SkillxError::GistApi(
+                    "authentication required. Set GITHUB_TOKEN environment variable.".into(),
+                ));
+            }
+            403 => {
+                return Err(SkillxError::GistApi(
+                    "access denied. Gist may be private — set GITHUB_TOKEN.".into(),
+                ));
+            }
+            404 => {
+                return Err(SkillxError::GistApi(format!(
+                    "gist '{id}' not found. Check the gist ID."
+                )));
+            }
+            s if !(200..300).contains(&s) => {
+                return Err(SkillxError::GistApi(format!(
+                    "Gist API returned HTTP {s}"
+                )));
+            }
+            _ => {}
         }
 
         let body: serde_json::Value = resp.json().await.map_err(|e| {

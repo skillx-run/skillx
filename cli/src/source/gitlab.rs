@@ -52,12 +52,28 @@ impl GitLabSource {
             SkillxError::Network(format!("GitLab API request failed: {e}"))
         })?;
 
-        if !resp.status().is_success() {
-            return Err(SkillxError::GitLabApi(format!(
-                "GitLab API returned {} for {}",
-                resp.status(),
-                tree_url
-            )));
+        match resp.status().as_u16() {
+            401 => {
+                return Err(SkillxError::GitLabApi(
+                    "authentication required. Set GITLAB_TOKEN environment variable.".into(),
+                ));
+            }
+            403 => {
+                return Err(SkillxError::GitLabApi(
+                    "access denied. Repository may be private — set GITLAB_TOKEN.".into(),
+                ));
+            }
+            404 => {
+                return Err(SkillxError::GitLabApi(
+                    "not found. Check the owner, repository, and path.".into(),
+                ));
+            }
+            s if !(200..300).contains(&s) => {
+                return Err(SkillxError::GitLabApi(format!(
+                    "GitLab API returned HTTP {s}"
+                )));
+            }
+            _ => {}
         }
 
         let items: Vec<serde_json::Value> = resp.json().await.map_err(|e| {

@@ -81,12 +81,28 @@ impl GiteaSource {
             SkillxError::Network(format!("Gitea API request failed: {e}"))
         })?;
 
-        if !resp.status().is_success() {
-            return Err(SkillxError::GiteaApi(format!(
-                "Gitea API returned {} for {}/{}/{}/{}",
-                resp.status(),
-                ctx.host, ctx.owner, ctx.repo, path
-            )));
+        match resp.status().as_u16() {
+            401 => {
+                return Err(SkillxError::GiteaApi(
+                    "authentication required. Set GITEA_TOKEN environment variable.".into(),
+                ));
+            }
+            403 => {
+                return Err(SkillxError::GiteaApi(
+                    "access denied. Repository may be private — set GITEA_TOKEN.".into(),
+                ));
+            }
+            404 => {
+                return Err(SkillxError::GiteaApi(
+                    "not found. Check the owner, repository, and path.".into(),
+                ));
+            }
+            s if !(200..300).contains(&s) => {
+                return Err(SkillxError::GiteaApi(format!(
+                    "Gitea API returned HTTP {s}"
+                )));
+            }
+            _ => {}
         }
 
         let body: serde_json::Value = resp.json().await.map_err(|e| {

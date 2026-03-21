@@ -97,12 +97,28 @@ impl HuggingFaceSource {
             SkillxError::Network(format!("HuggingFace API request failed: {e}"))
         })?;
 
-        if !resp.status().is_success() {
-            return Err(SkillxError::HuggingFaceApi(format!(
-                "HuggingFace API returned HTTP {} for {}",
-                resp.status(),
-                list_url
-            )));
+        match resp.status().as_u16() {
+            401 => {
+                return Err(SkillxError::HuggingFaceApi(
+                    "authentication required. Set HF_TOKEN environment variable.".into(),
+                ));
+            }
+            403 => {
+                return Err(SkillxError::HuggingFaceApi(
+                    "access denied. Repository may be private — set HF_TOKEN.".into(),
+                ));
+            }
+            404 => {
+                return Err(SkillxError::HuggingFaceApi(
+                    "not found. Check the owner, repository, and path.".into(),
+                ));
+            }
+            s if !(200..300).contains(&s) => {
+                return Err(SkillxError::HuggingFaceApi(format!(
+                    "HuggingFace API returned HTTP {s}"
+                )));
+            }
+            _ => {}
         }
 
         let entries: Vec<serde_json::Value> = resp.json().await.map_err(|e| {

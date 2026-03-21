@@ -38,12 +38,28 @@ impl SourceHutSource {
             SkillxError::Network(format!("SourceHut tarball download failed: {e}"))
         })?;
 
-        if !resp.status().is_success() {
-            return Err(SkillxError::SourceHutApi(format!(
-                "SourceHut returned HTTP {} for {}",
-                resp.status(),
-                tarball_url
-            )));
+        match resp.status().as_u16() {
+            401 => {
+                return Err(SkillxError::SourceHutApi(
+                    "authentication required. Set SRHT_TOKEN environment variable.".into(),
+                ));
+            }
+            403 => {
+                return Err(SkillxError::SourceHutApi(
+                    "access denied. Repository may be private — set SRHT_TOKEN.".into(),
+                ));
+            }
+            404 => {
+                return Err(SkillxError::SourceHutApi(
+                    "not found. Check the owner, repository, and ref.".into(),
+                ));
+            }
+            s if !(200..300).contains(&s) => {
+                return Err(SkillxError::SourceHutApi(format!(
+                    "SourceHut returned HTTP {s}"
+                )));
+            }
+            _ => {}
         }
 
         let bytes = resp.bytes().await.map_err(|e| {
