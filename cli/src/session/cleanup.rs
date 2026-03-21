@@ -1,5 +1,6 @@
 use sha2::{Digest, Sha256};
 use std::collections::HashSet;
+use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
 
 use crate::config::Config;
@@ -40,14 +41,20 @@ pub fn cleanup_session(session_dir: &Path) -> Result<()> {
                     "File was modified during session: {}",
                     file.path
                 ));
-                eprint!("  Remove modified file? [y/N] ");
-                std::io::Write::flush(&mut std::io::stderr()).ok();
-                let mut input = String::new();
-                if std::io::BufRead::read_line(&mut std::io::stdin().lock(), &mut input).is_ok() {
-                    let input = input.trim().to_lowercase();
-                    if input != "y" && input != "yes" {
-                        ui::info(&format!("Keeping: {}", file.path));
-                        continue;
+                // Only prompt interactively when stdin is a TTY;
+                // in non-interactive contexts (piped, CI, signal handler)
+                // fall through to remove the file with the warning above.
+                if std::io::stdin().is_terminal() {
+                    eprint!("  Remove modified file? [y/N] ");
+                    std::io::Write::flush(&mut std::io::stderr()).ok();
+                    let mut input = String::new();
+                    if std::io::BufRead::read_line(&mut std::io::stdin().lock(), &mut input).is_ok()
+                    {
+                        let input = input.trim().to_lowercase();
+                        if input != "y" && input != "yes" {
+                            ui::info(&format!("Keeping: {}", file.path));
+                            continue;
+                        }
                     }
                 }
             }
