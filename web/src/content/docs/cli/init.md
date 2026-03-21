@@ -21,7 +21,7 @@ Initialize a new skillx.toml project configuration file in the current directory
 
 - Creates a `skillx.toml` file in the current directory
 - Errors if `skillx.toml` already exists
-- Default mode creates an empty template with commented examples
+- Default mode creates a minimal TOML structure with empty fields
 - `--from-installed` reads `installed.json` and pre-populates the `[skills]` table with your currently installed skills
 - After creation, shows next steps guidance
 
