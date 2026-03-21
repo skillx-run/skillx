@@ -285,3 +285,46 @@ fn recover_orphaned_sessions_inner(interactive: bool) -> Result<Vec<String>> {
 
     Ok(orphans)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_trim_history_removes_excess() {
+        let dir = tempfile::TempDir::new().unwrap();
+        for i in 0..10 {
+            let path = dir.path().join(format!("session-{i:02}.json"));
+            std::fs::write(&path, format!(r#"{{"id": "{i}"}}"#)).unwrap();
+            // Small sleep to ensure distinct modification times
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+        trim_history(dir.path(), 5).unwrap();
+        let remaining: Vec<_> = std::fs::read_dir(dir.path())
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().extension().is_some_and(|ext| ext == "json"))
+            .collect();
+        assert_eq!(remaining.len(), 5);
+    }
+
+    #[test]
+    fn test_trim_history_noop_under_limit() {
+        let dir = tempfile::TempDir::new().unwrap();
+        for i in 0..3 {
+            std::fs::write(dir.path().join(format!("s{i}.json")), "{}").unwrap();
+        }
+        trim_history(dir.path(), 10).unwrap();
+        let count = std::fs::read_dir(dir.path())
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .count();
+        assert_eq!(count, 3);
+    }
+
+    #[test]
+    fn test_trim_history_empty_dir() {
+        let dir = tempfile::TempDir::new().unwrap();
+        assert!(trim_history(dir.path(), 5).is_ok());
+    }
+}
