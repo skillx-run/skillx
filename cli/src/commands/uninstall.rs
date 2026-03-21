@@ -94,8 +94,8 @@ pub async fn execute(args: UninstallArgs) -> anyhow::Result<()> {
             }
         }
 
-        // Update skillx.toml
-        if !args.keep_in_toml {
+        // Update skillx.toml only if skill is fully removed (no remaining injections)
+        if !args.keep_in_toml && !installed.is_installed(name) {
             if let Some(mut pc) = ProjectConfig::load(Path::new("."))? {
                 if pc.remove_skill(name) {
                     pc.save(Path::new("."))?;

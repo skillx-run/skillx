@@ -296,7 +296,7 @@ async fn install_from_toml(
         ui::success(&format!("Installed: {name}"));
     }
 
-    // Prune: remove skills not in toml
+    // Prune: remove skills not in toml (skip those with active sessions)
     if args.prune {
         let toml_names: std::collections::HashSet<String> =
             skills_to_install.iter().map(|(n, _, _)| n.clone()).collect();
@@ -307,6 +307,11 @@ async fn install_from_toml(
             .map(|s| s.name.clone())
             .collect();
         for name in &to_remove {
+            // Skip pruning if there's an active run session
+            if check_conflicts(name, &installed).is_err() {
+                ui::warn(&format!("Skipping prune of {name}: active session"));
+                continue;
+            }
             if let Some(skill) = installed.remove_skill(name) {
                 remove_injected_files(&skill);
                 ui::info(&format!("Pruned: {name}"));

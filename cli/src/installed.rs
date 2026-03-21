@@ -70,9 +70,17 @@ impl InstalledState {
         Ok(state)
     }
 
-    /// Save to `~/.skillx/installed.json`.
+    /// Save to `~/.skillx/installed.json`. Creates parent directory if needed.
     pub fn save(&self) -> Result<()> {
         let path = Self::file_path()?;
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).map_err(|e| {
+                SkillxError::Install(format!(
+                    "failed to create directory {}: {e}",
+                    parent.display()
+                ))
+            })?;
+        }
         let json = serde_json::to_string_pretty(self).map_err(|e| {
             SkillxError::Install(format!("failed to serialize installed.json: {e}"))
         })?;
@@ -122,6 +130,44 @@ impl InstalledState {
     pub fn is_installed(&self, name: &str) -> bool {
         self.find_skill(name).is_some()
     }
+}
+
+/// Recursively collect (relative_path, sha256) pairs for all files in a directory.
+/// Used for comparing installed vs fetched skill content.
+pub fn collect_file_hashes(
+    dir: &std::path::Path,
+) -> std::result::Result<std::collections::BTreeSet<(String, String)>, std::io::Error> {
+    let mut result = std::collections::BTreeSet::new();
+    collect_file_hashes_inner(dir, dir, &mut result)?;
+    Ok(result)
+}
+
+fn collect_file_hashes_inner(
+    current: &std::path::Path,
+    root: &std::path::Path,
+    result: &mut std::collections::BTreeSet<(String, String)>,
+) -> std::result::Result<(), std::io::Error> {
+    use sha2::{Digest, Sha256};
+
+    for entry in std::fs::read_dir(current)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            collect_file_hashes_inner(&path, root, result)?;
+        } else {
+            let relative = path
+                .strip_prefix(root)
+                .unwrap_or(&path)
+                .to_string_lossy()
+                .to_string();
+            let content = std::fs::read(&path)?;
+            let mut hasher = Sha256::new();
+            hasher.update(&content);
+            let sha256 = format!("{:x}", hasher.finalize());
+            result.insert((relative, sha256));
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]

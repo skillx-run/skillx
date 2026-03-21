@@ -1224,3 +1224,56 @@ fn test_gate_block_always_refuses() {
     let result = skillx::gate::gate_scan_result(&Some(blocked), Path::new("."), true);
     assert!(result.is_err());
 }
+
+// ==================== collect_file_hashes ====================
+
+#[test]
+fn test_collect_file_hashes() {
+    use tempfile::TempDir;
+
+    let dir = TempDir::new().unwrap();
+    std::fs::write(dir.path().join("SKILL.md"), "# Test").unwrap();
+    std::fs::create_dir_all(dir.path().join("sub")).unwrap();
+    std::fs::write(dir.path().join("sub/script.sh"), "echo hello").unwrap();
+
+    let hashes = skillx::installed::collect_file_hashes(dir.path()).unwrap();
+    assert_eq!(hashes.len(), 2);
+
+    // Should contain (relative_path, sha256) pairs
+    let paths: Vec<&str> = hashes.iter().map(|(p, _)| p.as_str()).collect();
+    assert!(paths.contains(&"SKILL.md"));
+    assert!(paths.contains(&"sub/script.sh"));
+
+    // All hashes should be 64-char hex SHA256
+    for (_, sha) in &hashes {
+        assert_eq!(sha.len(), 64);
+    }
+}
+
+// ==================== ProjectConfig serialization no nulls ====================
+
+#[test]
+fn test_project_config_serialize_no_nulls() {
+    use tempfile::TempDir;
+
+    let dir = TempDir::new().unwrap();
+    let mut config = skillx::project_config::ProjectConfig::default();
+    config.project.name = Some("test".to_string());
+    // description, preferred, scope are all None — should NOT produce null
+
+    config.save(dir.path()).unwrap();
+    let content = std::fs::read_to_string(dir.path().join("skillx.toml")).unwrap();
+
+    // TOML doesn't support null; None fields should be omitted
+    assert!(!content.contains("null"), "serialized TOML contains 'null': {content}");
+
+    // Roundtrip should work
+    let loaded = skillx::project_config::ProjectConfig::load(dir.path())
+        .unwrap()
+        .unwrap();
+    assert_eq!(loaded.project.name.as_deref(), Some("test"));
+    assert!(loaded.project.description.is_none());
+    assert!(loaded.agent.preferred.is_none());
+    assert!(loaded.agent.scope.is_none());
+    assert!(loaded.agent.targets.is_empty());
+}

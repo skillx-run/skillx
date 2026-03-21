@@ -14,7 +14,9 @@ pub enum SkillValue {
     /// Expanded form: `name = { source = "...", scope = "...", skip_scan = true }`
     Detailed {
         source: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
         scope: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         skip_scan: Option<bool>,
     },
 }
@@ -58,7 +60,9 @@ pub struct SkillsSection {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct ProjectInfo {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
 }
 
@@ -67,10 +71,13 @@ pub struct ProjectInfo {
 #[serde(default)]
 pub struct AgentSettings {
     /// Preferred agent name
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub preferred: Option<String>,
     /// Default injection scope ("project" | "global")
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub scope: Option<String>,
     /// List of agents to inject into during install
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub targets: Vec<String>,
 }
 

@@ -1,5 +1,5 @@
 use clap::Args;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use std::io::BufRead;
 
 use skillx::config::Config;
@@ -79,15 +79,18 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
 
         match resolver::resolve_and_fetch(source, true, &config).await {
             Ok(fetched) => {
-                // Compare hashes
-                let mut new_hashes: HashSet<String> = HashSet::new();
-                collect_file_hashes(&fetched.dir, &mut new_hashes)?;
+                // Compare (path, hash) pairs for precise change detection
+                let new_hashes = skillx::installed::collect_file_hashes(&fetched.dir)?;
 
                 let skill = installed.find_skill(name).unwrap();
-                let installed_hashes: HashSet<String> = skill
+                let installed_hashes: BTreeSet<(String, String)> = skill
                     .injections
                     .iter()
-                    .flat_map(|inj| inj.files.iter().map(|f| f.sha256.clone()))
+                    .flat_map(|inj| {
+                        inj.files
+                            .iter()
+                            .map(|f| (f.relative.clone(), f.sha256.clone()))
+                    })
                     .collect();
 
                 if new_hashes != installed_hashes {
@@ -185,23 +188,3 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn collect_file_hashes(
-    dir: &std::path::Path,
-    hashes: &mut HashSet<String>,
-) -> anyhow::Result<()> {
-    use sha2::{Digest, Sha256};
-
-    for entry in std::fs::read_dir(dir)? {
-        let entry = entry?;
-        let path = entry.path();
-        if path.is_dir() {
-            collect_file_hashes(&path, hashes)?;
-        } else {
-            let content = std::fs::read(&path)?;
-            let mut hasher = Sha256::new();
-            hasher.update(&content);
-            hashes.insert(format!("{:x}", hasher.finalize()));
-        }
-    }
-    Ok(())
-}
