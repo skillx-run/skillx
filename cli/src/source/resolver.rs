@@ -10,6 +10,8 @@ use crate::ui;
 pub struct FetchedSkill {
     pub dir: PathBuf,
     pub name: String,
+    /// The ref (branch/tag/commit) resolved from the source, if any.
+    pub resolved_ref: Option<String>,
 }
 
 /// Resolve a source string and fetch skill files to a local directory.
@@ -37,6 +39,7 @@ pub async fn resolve_and_fetch(
             Ok(FetchedSkill {
                 dir: resolved.root_dir,
                 name,
+                resolved_ref: None,
             })
         }
         SkillSource::GitHub {
@@ -65,7 +68,7 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name })
+            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
         }
         SkillSource::GitLab {
             host,
@@ -95,7 +98,7 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name })
+            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
         }
         SkillSource::Bitbucket {
             owner,
@@ -123,7 +126,7 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name })
+            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
         }
         SkillSource::Gitea {
             host,
@@ -153,7 +156,7 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name })
+            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
         }
         SkillSource::Gist { id, revision } => {
             let cache_key = input.to_string();
@@ -174,7 +177,7 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| format!("gist-{}", &id[..8.min(id.len())]));
-            Ok(FetchedSkill { dir, name })
+            Ok(FetchedSkill { dir, name, resolved_ref: revision.clone() })
         }
         SkillSource::SourceHut {
             owner,
@@ -202,7 +205,7 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name })
+            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
         }
         SkillSource::HuggingFace {
             owner,
@@ -232,7 +235,7 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name })
+            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
         }
         SkillSource::Archive { url, format } => {
             // Gitea API probe: for fallback Archive URLs (no archive extension),
@@ -266,7 +269,7 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| "archive-skill".into());
-            Ok(FetchedSkill { dir, name })
+            Ok(FetchedSkill { dir, name, resolved_ref: None })
         }
         SkillSource::SkillsDirectory { platform, path } => {
             // Resolve to underlying GitHub source, then fetch

@@ -350,6 +350,39 @@ mod tests {
     }
 
     #[test]
+    fn test_resolved_ref_json_roundtrip() {
+        let mut state = InstalledState::default();
+        let mut skill = make_skill("pdf", "claude-code");
+        skill.resolved_ref = Some("v1.3".to_string());
+        state.add_or_update_skill(skill);
+
+        let json = serde_json::to_string_pretty(&state).unwrap();
+        assert!(json.contains("\"resolved_ref\": \"v1.3\""));
+
+        let loaded: InstalledState = serde_json::from_str(&json).unwrap();
+        assert_eq!(
+            loaded.skills[0].resolved_ref.as_deref(),
+            Some("v1.3")
+        );
+    }
+
+    #[test]
+    fn test_resolved_ref_none_skipped_in_json() {
+        let mut state = InstalledState::default();
+        let skill = make_skill("pdf", "claude-code");
+        // resolved_ref is None by default in make_skill
+        state.add_or_update_skill(skill);
+
+        let json = serde_json::to_string_pretty(&state).unwrap();
+        // Should not appear in JSON when None (skip_serializing_if)
+        assert!(!json.contains("resolved_ref"));
+
+        // Should still deserialize correctly (backward compat)
+        let loaded: InstalledState = serde_json::from_str(&json).unwrap();
+        assert!(loaded.skills[0].resolved_ref.is_none());
+    }
+
+    #[test]
     fn test_find_skill_mut() {
         let mut state = InstalledState::default();
         state.add_or_update_skill(make_skill("pdf", "claude-code"));

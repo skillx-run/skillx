@@ -80,6 +80,7 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
         name: String,
         source: String,
         scan_level: String,
+        resolved_ref: Option<String>,
     }
     let mut resolved: Vec<Resolved> = Vec::new();
 
@@ -104,6 +105,7 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
             name: fetched.name,
             source: source_str.clone(),
             scan_level,
+            resolved_ref: fetched.resolved_ref,
         });
     }
 
@@ -153,11 +155,13 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
                 existing.injections.push(injection);
                 existing.updated_at = now;
                 existing.source = skill.source.clone();
+                existing.resolved_ref = skill.resolved_ref.clone();
+                existing.scan_level = skill.scan_level.clone();
             } else {
                 installed.add_or_update_skill(InstalledSkill {
                     name: skill.name.clone(),
                     source: skill.source.clone(),
-                    resolved_ref: None,
+                    resolved_ref: skill.resolved_ref.clone(),
                     resolved_commit: None,
                     installed_at: now,
                     updated_at: now,
@@ -275,12 +279,13 @@ async fn install_from_toml(
                 });
                 existing.updated_at = now;
                 existing.source = source.to_string();
+                existing.resolved_ref = fetched.resolved_ref.clone();
                 existing.scan_level = scan_level.clone();
             } else {
                 installed.add_or_update_skill(InstalledSkill {
                     name: name.clone(),
                     source: source.to_string(),
-                    resolved_ref: None,
+                    resolved_ref: fetched.resolved_ref.clone(),
                     resolved_commit: None,
                     installed_at: now,
                     updated_at: now,

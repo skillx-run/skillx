@@ -65,6 +65,9 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
         name: String,
         source: String,
         dir: std::path::PathBuf,
+        resolved_ref: Option<String>,
+        old_version: Option<String>,
+        files_changed: usize,
     }
 
     let mut candidates: Vec<UpdateCandidate> = Vec::new();
@@ -94,11 +97,18 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
                     .collect();
 
                 if new_hashes != installed_hashes {
+                    let old_version = skill.resolved_ref.as_deref()
+                        .or_else(|| skill.source.rsplit_once('@').map(|(_, v)| v))
+                        .map(|s| s.to_string());
+                    let files_changed = new_hashes.symmetric_difference(&installed_hashes).count();
                     ui::info(&format!("{name}: update available"));
                     candidates.push(UpdateCandidate {
                         name: name.clone(),
                         source: source.clone(),
                         dir: fetched.dir,
+                        resolved_ref: fetched.resolved_ref,
+                        old_version,
+                        files_changed,
                     });
                 }
             }
@@ -188,6 +198,7 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
 
         skill.updated_at = chrono::Utc::now();
         skill.source = candidate.source.clone();
+        skill.resolved_ref = candidate.resolved_ref.clone();
         updated_count += 1;
 
         ui::success(&format!("Updated {}", candidate.name));
