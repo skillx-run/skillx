@@ -3,6 +3,18 @@ use std::path::{Path, PathBuf};
 use crate::error::{Result, SkillxError};
 use crate::source::HfRepoType;
 
+/// Context for HuggingFace fetch operations, avoiding excessive parameters.
+struct HfFetchContext<'a> {
+    client: &'a reqwest::Client,
+    token: Option<&'a str>,
+    type_prefix: &'a str,
+    owner: &'a str,
+    repo: &'a str,
+    ref_name: &'a str,
+    dest: &'a Path,
+    base_path: &'a str,
+}
+
 pub struct HuggingFaceSource;
 
 impl HuggingFaceSource {
@@ -36,34 +48,35 @@ impl HuggingFaceSource {
             .map_err(|e| SkillxError::Source(format!("failed to create dest dir: {e}")))?;
 
         let path_suffix = path.unwrap_or("");
-        let files = Self::fetch_recursive(
-            &client,
-            token.as_deref(),
+        let ctx = HfFetchContext {
+            client: &client,
+            token: token.as_deref(),
             type_prefix,
             owner,
             repo,
             ref_name,
-            path_suffix,
             dest,
-            path_suffix,
-        )
-        .await?;
+            base_path: path_suffix,
+        };
+        let files = Self::fetch_recursive(&ctx, path_suffix).await?;
 
         Ok(files)
     }
 
     /// Recursively list and download files from a HuggingFace repo path.
     async fn fetch_recursive(
-        client: &reqwest::Client,
-        token: Option<&str>,
-        type_prefix: &str,
-        owner: &str,
-        repo: &str,
-        ref_name: &str,
+        ctx: &HfFetchContext<'_>,
         api_path: &str,
-        dest: &Path,
-        base_path: &str,
     ) -> Result<Vec<PathBuf>> {
+        let client = ctx.client;
+        let token = ctx.token;
+        let type_prefix = ctx.type_prefix;
+        let owner = ctx.owner;
+        let repo = ctx.repo;
+        let ref_name = ctx.ref_name;
+        let dest = ctx.dest;
+        let base_path = ctx.base_path;
+
         // Build list URL
         let list_url = if api_path.is_empty() {
             format!(
@@ -193,18 +206,7 @@ impl HuggingFaceSource {
                     std::fs::create_dir_all(&sub_dest).map_err(|e| {
                         SkillxError::Source(format!("failed to create dir: {e}"))
                     })?;
-                    let sub_files = Box::pin(Self::fetch_recursive(
-                        client,
-                        token,
-                        type_prefix,
-                        owner,
-                        repo,
-                        ref_name,
-                        dir_path,
-                        dest,
-                        base_path,
-                    ))
-                    .await?;
+                    let sub_files = Box::pin(Self::fetch_recursive(ctx, dir_path)).await?;
                     files.extend(sub_files);
                 }
             }

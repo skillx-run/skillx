@@ -118,10 +118,18 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
             .collect()
     };
 
-    // Resolve, scan, and collect all skills
-    let mut resolved_skills: Vec<(PathBuf, String, Option<skillx::scanner::ScanReport>)> = Vec::new();
+    // Resolved skill: (dir, name, scan_report, scope_override)
+    struct ResolvedEntry {
+        dir: PathBuf,
+        name: String,
+        scan_report: Option<skillx::scanner::ScanReport>,
+        scope_override: Option<String>,
+    }
 
-    for (source_str, skip_scan, _scope_override) in &skill_entries {
+    // Resolve, scan, gate each skill
+    let mut resolved_skills: Vec<ResolvedEntry> = Vec::new();
+
+    for (source_str, skip_scan, scope_override) in &skill_entries {
         ui::step(&format!("Resolving source: {source_str}"));
         let fetched = resolver::resolve_and_fetch(source_str, args.no_cache, &config).await?;
         let skill_dir = fetched.dir;
@@ -139,131 +147,25 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
             None
         };
 
-        resolved_skills.push((skill_dir, skill_name, scan_report));
+        // Gate — check every skill, not just the first
+        gate_scan_report(&scan_report, &skill_dir, args.yes)?;
+
+        resolved_skills.push(ResolvedEntry {
+            dir: skill_dir,
+            name: skill_name,
+            scan_report,
+            scope_override: scope_override.clone(),
+        });
     }
 
-    // For backward compat: use first skill's data for single-skill flow
-    let (skill_dir, skill_name, scan_report) = if resolved_skills.len() == 1 {
-        resolved_skills.remove(0)
-    } else {
-        // Multi-skill mode: use first as primary for session naming
-        let first = resolved_skills.remove(0);
-        // remaining skills stored for multi-inject
-        // We'll inject them all below
-        first
-    };
-
-    // Remaining skills (for multi-skill mode)
+    // Split into primary + extras
+    let primary = resolved_skills.remove(0);
     let extra_skills = resolved_skills;
 
-    // ── Phase 3: Gate ──
-    if let Some(ref report) = scan_report {
-        let level = report.overall_level();
-        match level {
-            RiskLevel::Pass | RiskLevel::Info => {
-                // Auto-pass
-            }
-            RiskLevel::Warn => {
-                if !args.yes {
-                    eprint!(
-                        "{} Continue? [Y/n] ",
-                        style("⚠").yellow().bold()
-                    );
-                    let mut input = String::new();
-                    io::stdin().lock().read_line(&mut input)?;
-                    let input = input.trim().to_lowercase();
-                    if input == "n" || input == "no" {
-                        return Err(skillx::error::SkillxError::UserCancelled.into());
-                    }
-                }
-            }
-            RiskLevel::Danger => {
-                // Show detail interaction
-                eprintln!(
-                    "\n{}",
-                    style("DANGER level findings detected. Review carefully.").red().bold()
-                );
-                eprintln!(
-                    "Type '{}' to see finding details, or type '{}' to continue:",
-                    style("detail N").cyan(),
-                    style("yes").green().bold()
-                );
-
-                // Pre-sort findings once (highest severity first)
-                let mut sorted_findings = report.findings.clone();
-                sorted_findings.sort_by(|a, b| b.level.cmp(&a.level));
-
-                loop {
-                    eprint!("{} ", style(">").dim());
-                    let mut input = String::new();
-                    io::stdin().lock().read_line(&mut input)?;
-                    let input = input.trim();
-
-                    if input.eq_ignore_ascii_case("yes") {
-                        break;
-                    } else if input.eq_ignore_ascii_case("no") || input.eq_ignore_ascii_case("n") {
-                        return Err(skillx::error::SkillxError::UserCancelled.into());
-                    } else if input.starts_with("detail") || input.starts_with("d ") {
-                        let num_str = input
-                            .strip_prefix("detail")
-                            .or_else(|| input.strip_prefix("d "))
-                            .unwrap_or("")
-                            .trim();
-                        if let Ok(n) = num_str.parse::<usize>() {
-                            if n > 0 && n <= sorted_findings.len() {
-                                let finding = &sorted_findings[n - 1];
-                                eprintln!("\n{}", style("─".repeat(60)).dim());
-                                eprintln!(
-                                    "  Rule:    {} ({})",
-                                    finding.rule_id,
-                                    finding.level
-                                );
-                                eprintln!("  File:    {}", finding.file);
-                                if let Some(line) = finding.line {
-                                    eprintln!("  Line:    {line}");
-                                }
-                                eprintln!("  Message: {}", finding.message);
-
-                                // Show file content if available
-                                if let Some(line) = finding.line {
-                                    let file_path = skill_dir.join(&finding.file);
-                                    if let Ok(content) = std::fs::read_to_string(&file_path) {
-                                        let lines: Vec<&str> = content.lines().collect();
-                                        // 2 lines before + current + 2 lines after (1-indexed to 0-indexed)
-                                        let start = line.saturating_sub(3);
-                                        let end = (line + 2).min(lines.len());
-                                        eprintln!("\n  Source:");
-                                        for (i, l) in lines[start..end].iter().enumerate() {
-                                            let line_num = start + i + 1;
-                                            let marker = if line_num == line { ">" } else { " " };
-                                            eprintln!(
-                                                "  {marker} {}: {}",
-                                                style(line_num).dim(),
-                                                l
-                                            );
-                                        }
-                                    }
-                                }
-                                eprintln!("{}", style("─".repeat(60)).dim());
-                            } else {
-                                eprintln!("  Invalid finding number. Valid range: 1-{}", sorted_findings.len());
-                            }
-                        } else {
-                            eprintln!("  Usage: detail <number>");
-                        }
-                    } else {
-                        eprintln!(
-                            "  Type 'yes' to continue, 'no' to abort, or 'detail N' to inspect"
-                        );
-                    }
-                }
-            }
-            RiskLevel::Block => {
-                ui::error("BLOCK level findings detected. Execution refused.");
-                return Err(skillx::error::SkillxError::ScanBlocked.into());
-            }
-        }
-    }
+    let skill_dir = primary.dir;
+    let skill_name = primary.name;
+    let scan_report = primary.scan_report;
+    let primary_scope_override = primary.scope_override;
 
     // ── Phase 4: Detect Agent ──
     ui::step("Detecting agents...");
@@ -282,8 +184,10 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     ui::success(&format!("Using agent: {}", adapter.display_name()));
 
     // ── Phase 5: Parse scope ──
-    let scope: Scope = args
-        .scope
+    // Per-skill scope: scope_override (from skillx.toml entry) > CLI --scope
+    let scope: Scope = primary_scope_override
+        .as_deref()
+        .unwrap_or(&args.scope)
         .parse()
         .map_err(|e: String| anyhow::anyhow!(e))?;
 
@@ -341,11 +245,17 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         }
     }
 
-    // Multi-skill mode: inject remaining skills
-    for (extra_dir, extra_name, _extra_scan) in &extra_skills {
-        let extra_inject_path = adapter.inject_path(extra_name, &scope);
-        inject_skill(extra_dir, &extra_inject_path, &mut manifest)?;
-        ui::success(&format!("Injected extra skill: {extra_name}"));
+    // Multi-skill mode: inject remaining skills with per-skill scope
+    for entry in &extra_skills {
+        let extra_scope: Scope = entry
+            .scope_override
+            .as_deref()
+            .unwrap_or(&args.scope)
+            .parse()
+            .map_err(|e: String| anyhow::anyhow!(e))?;
+        let extra_inject_path = adapter.inject_path(&entry.name, &extra_scope);
+        inject_skill(&entry.dir, &extra_inject_path, &mut manifest)?;
+        ui::success(&format!("Injected extra skill: {}", entry.name));
     }
 
     // Save manifest
@@ -506,6 +416,119 @@ fn resolve_prompt(args: &RunArgs) -> anyhow::Result<Option<String>> {
     }
 
     Ok(None)
+}
+
+/// Gate a scan report: check risk level and prompt user if needed.
+fn gate_scan_report(
+    scan_report: &Option<skillx::scanner::ScanReport>,
+    skill_dir: &Path,
+    auto_yes: bool,
+) -> anyhow::Result<()> {
+    let report = match scan_report {
+        Some(r) => r,
+        None => return Ok(()),
+    };
+
+    let level = report.overall_level();
+    match level {
+        RiskLevel::Pass | RiskLevel::Info => {}
+        RiskLevel::Warn => {
+            if !auto_yes {
+                eprint!(
+                    "{} Continue? [Y/n] ",
+                    style("⚠").yellow().bold()
+                );
+                let mut input = String::new();
+                io::stdin().lock().read_line(&mut input)?;
+                let input = input.trim().to_lowercase();
+                if input == "n" || input == "no" {
+                    return Err(skillx::error::SkillxError::UserCancelled.into());
+                }
+            }
+        }
+        RiskLevel::Danger => {
+            eprintln!(
+                "\n{}",
+                style("DANGER level findings detected. Review carefully.").red().bold()
+            );
+            eprintln!(
+                "Type '{}' to see finding details, or type '{}' to continue:",
+                style("detail N").cyan(),
+                style("yes").green().bold()
+            );
+
+            let mut sorted_findings = report.findings.clone();
+            sorted_findings.sort_by(|a, b| b.level.cmp(&a.level));
+
+            loop {
+                eprint!("{} ", style(">").dim());
+                let mut input = String::new();
+                io::stdin().lock().read_line(&mut input)?;
+                let input = input.trim();
+
+                if input.eq_ignore_ascii_case("yes") {
+                    break;
+                } else if input.eq_ignore_ascii_case("no") || input.eq_ignore_ascii_case("n") {
+                    return Err(skillx::error::SkillxError::UserCancelled.into());
+                } else if input.starts_with("detail") || input.starts_with("d ") {
+                    let num_str = input
+                        .strip_prefix("detail")
+                        .or_else(|| input.strip_prefix("d "))
+                        .unwrap_or("")
+                        .trim();
+                    if let Ok(n) = num_str.parse::<usize>() {
+                        if n > 0 && n <= sorted_findings.len() {
+                            let finding = &sorted_findings[n - 1];
+                            eprintln!("\n{}", style("─".repeat(60)).dim());
+                            eprintln!(
+                                "  Rule:    {} ({})",
+                                finding.rule_id,
+                                finding.level
+                            );
+                            eprintln!("  File:    {}", finding.file);
+                            if let Some(line) = finding.line {
+                                eprintln!("  Line:    {line}");
+                            }
+                            eprintln!("  Message: {}", finding.message);
+
+                            if let Some(line) = finding.line {
+                                let file_path = skill_dir.join(&finding.file);
+                                if let Ok(content) = std::fs::read_to_string(&file_path) {
+                                    let lines: Vec<&str> = content.lines().collect();
+                                    let start = line.saturating_sub(3);
+                                    let end = (line + 2).min(lines.len());
+                                    eprintln!("\n  Source:");
+                                    for (i, l) in lines[start..end].iter().enumerate() {
+                                        let line_num = start + i + 1;
+                                        let marker = if line_num == line { ">" } else { " " };
+                                        eprintln!(
+                                            "  {marker} {}: {}",
+                                            style(line_num).dim(),
+                                            l
+                                        );
+                                    }
+                                }
+                            }
+                            eprintln!("{}", style("─".repeat(60)).dim());
+                        } else {
+                            eprintln!("  Invalid finding number. Valid range: 1-{}", sorted_findings.len());
+                        }
+                    } else {
+                        eprintln!("  Usage: detail <number>");
+                    }
+                } else {
+                    eprintln!(
+                        "  Type 'yes' to continue, 'no' to abort, or 'detail N' to inspect"
+                    );
+                }
+            }
+        }
+        RiskLevel::Block => {
+            ui::error("BLOCK level findings detected. Execution refused.");
+            return Err(skillx::error::SkillxError::ScanBlocked.into());
+        }
+    }
+    Ok(())
 }
 
 /// Recursively copy a directory to a destination, skipping symlinks.

@@ -150,48 +150,11 @@ pub struct SkillMetadata {
 /// Resolve a source string into a `SkillSource`.
 ///
 /// Priority: local path > explicit prefix > URL > bare name (error)
+///
+/// Uses default (empty) custom URL patterns. For custom pattern support,
+/// use `resolve_with_config()`.
 pub fn resolve(input: &str) -> Result<SkillSource> {
-    let input = input.trim();
-
-    // 1. Local path: starts with ./ or / or ~ or is an existing path
-    if input.starts_with("./")
-        || input.starts_with('/')
-        || input.starts_with("~/")
-        || input.starts_with(".\\")
-    {
-        let path = if let Some(rest) = input.strip_prefix("~/") {
-            dirs::home_dir()
-                .ok_or_else(|| SkillxError::Source("cannot determine home directory".into()))?
-                .join(rest)
-        } else {
-            PathBuf::from(input)
-        };
-        return Ok(SkillSource::Local(path));
-    }
-
-    // Check if it's a relative path that exists on disk
-    let as_path = PathBuf::from(input);
-    if as_path.exists() {
-        return Ok(SkillSource::Local(as_path));
-    }
-
-    // 2. Explicit prefixes: github: and gist:
-    if let Some(rest) = input.strip_prefix("github:") {
-        return github::GitHubSource::parse(rest);
-    }
-    if let Some(rest) = input.strip_prefix("gist:") {
-        return gist::GistSource::parse(rest);
-    }
-
-    // 3. Full URL — URL smart recognition engine
-    if input.starts_with("https://") || input.starts_with("http://") {
-        return url::resolve_url(input);
-    }
-
-    // 4. Bare name — reserved for v0.4 registry
-    Err(SkillxError::InvalidSource(format!(
-        "cannot resolve source: '{input}'. Use a local path (./skill), github:/gist: prefix, or a full URL"
-    )))
+    resolve_with_config(input, &crate::config::Config::default())
 }
 
 /// Resolve a source string into a `SkillSource`, using custom URL patterns from config.

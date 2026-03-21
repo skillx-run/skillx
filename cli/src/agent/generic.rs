@@ -20,6 +20,7 @@ pub enum DetectionMethod {
 }
 
 /// Definition for a generic agent (covers Tier 3 built-in + user custom agents).
+#[derive(Debug)]
 pub struct AgentDef {
     pub name: String,
     pub display_name: String,
@@ -99,11 +100,19 @@ impl AgentDef {
     }
 
     /// Create from a user-defined config.toml `[[custom_agents]]` entry.
-    pub fn from_config(cfg: &CustomAgentConfig) -> Self {
-        let lifecycle = if cfg.lifecycle == "managed_process" {
-            LifecycleMode::ManagedProcess
-        } else {
-            LifecycleMode::FileInjectAndWait
+    ///
+    /// Returns an error if `lifecycle` is not a recognized value.
+    pub fn from_config(cfg: &CustomAgentConfig) -> std::result::Result<Self, String> {
+        let lifecycle = match cfg.lifecycle.as_str() {
+            "managed_process" => LifecycleMode::ManagedProcess,
+            "file_inject_and_wait" => LifecycleMode::FileInjectAndWait,
+            other => {
+                return Err(format!(
+                    "custom agent '{}': invalid lifecycle '{}' \
+                     (expected 'managed_process' or 'file_inject_and_wait')",
+                    cfg.name, other
+                ));
+            }
         };
 
         let detection = if cfg.binary.is_some() {
@@ -121,7 +130,7 @@ impl AgentDef {
             }
         });
 
-        AgentDef {
+        Ok(AgentDef {
             name: cfg.name.clone(),
             display_name,
             binary_name: cfg.binary.clone(),
@@ -132,7 +141,7 @@ impl AgentDef {
             yolo_args: cfg.yolo_args.clone(),
             detection,
             prompt_flag: cfg.prompt_flag.clone(),
-        }
+        })
     }
 }
 
@@ -340,11 +349,19 @@ pub fn tier3_adapters() -> Vec<Box<dyn AgentAdapter>> {
 }
 
 /// Create adapters from user-defined `[[custom_agents]]` in config.toml.
+///
+/// Logs a warning and skips any agent with an invalid lifecycle value.
 pub fn custom_adapters(config: &crate::config::Config) -> Vec<Box<dyn AgentAdapter>> {
     config
         .custom_agents
         .iter()
-        .map(|cfg| Box::new(GenericAdapter(AgentDef::from_config(cfg))) as Box<dyn AgentAdapter>)
+        .filter_map(|cfg| match AgentDef::from_config(cfg) {
+            Ok(def) => Some(Box::new(GenericAdapter(def)) as Box<dyn AgentAdapter>),
+            Err(e) => {
+                crate::ui::warn(&e);
+                None
+            }
+        })
         .collect()
 }
 
@@ -446,7 +463,7 @@ mod tests {
             yolo_args: vec!["--auto".to_string()],
             prompt_flag: Some("--message".to_string()),
         };
-        let def = AgentDef::from_config(&cfg);
+        let def = AgentDef::from_config(&cfg).unwrap();
         assert_eq!(def.name, "my-agent");
         assert_eq!(def.display_name, "My Custom Agent");
         assert_eq!(def.binary_name.as_deref(), Some("myagent"));
@@ -478,10 +495,30 @@ mod tests {
             yolo_args: vec![],
             prompt_flag: None,
         };
-        let def = AgentDef::from_config(&cfg);
+        let def = AgentDef::from_config(&cfg).unwrap();
         // display_name should be auto-capitalized
         assert_eq!(def.display_name, "Simple");
         assert_eq!(def.lifecycle, LifecycleMode::FileInjectAndWait);
         assert!(matches!(def.detection, DetectionMethod::ConfigDirOnly));
+    }
+
+    #[test]
+    fn test_agent_def_from_config_invalid_lifecycle() {
+        let cfg = CustomAgentConfig {
+            name: "bad".to_string(),
+            display_name: None,
+            binary: None,
+            config_dir: ".bad".to_string(),
+            lifecycle: "invalid_value".to_string(),
+            supports_prompt: true,
+            supports_yolo: false,
+            yolo_args: vec![],
+            prompt_flag: None,
+        };
+        let result = AgentDef::from_config(&cfg);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.contains("invalid lifecycle"));
+        assert!(err.contains("invalid_value"));
     }
 }

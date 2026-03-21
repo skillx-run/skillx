@@ -247,7 +247,7 @@ pub async fn resolve_and_fetch(
 
             if is_fallback {
                 if let Some(gitea_result) =
-                    try_gitea_probe(input, &url, no_cache, config).await
+                    try_gitea_probe(&url, no_cache, config).await
                 {
                     return gitea_result;
                 }
@@ -328,18 +328,21 @@ fn cache_dest(cache_key: &str) -> anyhow::Result<PathBuf> {
 
 /// Try to detect if a fallback Archive URL is actually a Gitea instance.
 ///
-/// Probes `GET https://{host}/api/v1/settings/api` with a 2-second timeout.
+/// Probes `GET {scheme}://{host}/api/v1/settings/api` with a 2-second timeout.
 /// If successful, parses owner/repo from the URL path and fetches via Gitea.
 async fn try_gitea_probe(
-    _input: &str,
     url: &str,
     no_cache: bool,
     config: &Config,
 ) -> Option<anyhow::Result<FetchedSkill>> {
-    // Extract host from URL
-    let without_scheme = url
-        .strip_prefix("https://")
-        .or_else(|| url.strip_prefix("http://"))?;
+    // Extract scheme and host from URL
+    let (scheme, without_scheme) = if let Some(rest) = url.strip_prefix("https://") {
+        ("https", rest)
+    } else if let Some(rest) = url.strip_prefix("http://") {
+        ("http", rest)
+    } else {
+        return None;
+    };
 
     let slash_pos = without_scheme.find('/');
     let host = match slash_pos {
@@ -347,8 +350,8 @@ async fn try_gitea_probe(
         None => without_scheme,
     };
 
-    // Probe Gitea API
-    let probe_url = format!("https://{host}/api/v1/settings/api");
+    // Probe Gitea API using the same scheme as the original URL
+    let probe_url = format!("{scheme}://{host}/api/v1/settings/api");
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(2))
         .build()
@@ -375,7 +378,7 @@ async fn try_gitea_probe(
 
     ui::info(&format!("Detected Gitea instance at {host}"));
 
-    // Re-resolve as Gitea URL and fetch
-    let gitea_url = format!("https://{host}/{owner}/{repo}");
+    // Re-resolve as Gitea URL using the original scheme
+    let gitea_url = format!("{scheme}://{host}/{owner}/{repo}");
     Some(Box::pin(resolve_and_fetch(&gitea_url, no_cache, config)).await)
 }
