@@ -967,6 +967,79 @@ fn test_global_inject_paths_are_absolute() {
     }
 }
 
+// ==================== MD-008/MD-009 scanner rules ====================
+
+#[test]
+fn test_scan_md008_missing_name() {
+    let content = "---\nversion: 1.0\nlicense: MIT\n---\n# Skill";
+    let report =
+        skillx::scanner::markdown_analyzer::MarkdownAnalyzer::analyze(content, "SKILL.md");
+    assert!(report.findings.iter().any(|f| f.rule_id == "MD-008"));
+    assert_eq!(
+        report
+            .findings
+            .iter()
+            .find(|f| f.rule_id == "MD-008")
+            .unwrap()
+            .level,
+        skillx::scanner::RiskLevel::Info
+    );
+}
+
+#[test]
+fn test_scan_md009_missing_description() {
+    let content = "---\nname: test\nlicense: MIT\n---\n# Skill";
+    let report =
+        skillx::scanner::markdown_analyzer::MarkdownAnalyzer::analyze(content, "SKILL.md");
+    assert!(report.findings.iter().any(|f| f.rule_id == "MD-009"));
+}
+
+#[test]
+fn test_scan_valid_skill_no_md008_md009() {
+    // valid-skill fixture has both name and description
+    let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/valid-skill");
+    let report = skillx::scanner::ScanEngine::scan(&fixture).unwrap();
+    assert!(
+        !report.findings.iter().any(|f| f.rule_id == "MD-008"),
+        "valid-skill has name, should not trigger MD-008"
+    );
+    assert!(
+        !report.findings.iter().any(|f| f.rule_id == "MD-009"),
+        "valid-skill has description, should not trigger MD-009"
+    );
+}
+
+#[test]
+fn test_scan_overall_level_ordering() {
+    use skillx::scanner::RiskLevel;
+    let levels = [
+        RiskLevel::Pass,
+        RiskLevel::Info,
+        RiskLevel::Warn,
+        RiskLevel::Danger,
+        RiskLevel::Block,
+    ];
+    for window in levels.windows(2) {
+        assert!(
+            window[0] < window[1],
+            "{:?} should be less than {:?}",
+            window[0],
+            window[1]
+        );
+    }
+}
+
+#[test]
+fn test_no_agent_error_has_guidance() {
+    let err = skillx::error::SkillxError::NoAgentDetected;
+    let msg = err.to_string();
+    assert!(msg.contains("--agent"), "error should mention --agent flag");
+    assert!(
+        msg.contains("Claude Code") || msg.contains("Cursor"),
+        "error should mention example agents"
+    );
+}
+
 // ==================== R3: urlencoding ====================
 
 #[test]
