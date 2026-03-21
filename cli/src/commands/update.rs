@@ -127,8 +127,8 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
 
     // Show summary table
     eprintln!(
-        "\n{:<20} {:<12} {:<12} {}",
-        "Name", "Installed", "Available", "Change"
+        "\n{:<20} {:<12} {:<12} Change",
+        "Name", "Installed", "Available"
     );
     eprintln!(
         "{:<20} {:<12} {:<12} {}",

@@ -17,7 +17,7 @@ Key modules:
 - `source/` — Skill fetching from multiple platforms. Resolve priority: local path > `github:`/`gist:` prefix > URL > error
   - `url.rs` — URL smart recognition engine (20+ platforms)
   - `url_patterns.rs` — Domain-to-source-type mappings (built-in + custom via config.toml)
-  - `resolver.rs` — Unified resolve + fetch + cache abstraction (requires `&Config` param)
+  - `resolver.rs` — Unified resolve + fetch + cache abstraction (requires `&Config` param). `FetchedSkill` carries `resolved_ref` from source for version tracking
   - `github.rs` — GitHub Contents API
   - `gitlab.rs` — GitLab Repository Files API (supports self-hosted)
   - `bitbucket.rs` — Bitbucket Source API
@@ -48,7 +48,7 @@ Key modules:
 - `installed.rs` — Persistent install state (`~/.skillx/installed.json`)
 - `cache.rs` — Cache management (SHA256 source hash, TTL)
 - `config.rs` — `~/.skillx/config.toml` handling (incl. `[[url_patterns]]`, `[[custom_agents]]`)
-- `project_config.rs` — `skillx.toml` project-level configuration ([skills] table format)
+- `project_config.rs` — `skillx.toml` project-level configuration ([skills] table format, `update_skill_source()` for version sync)
 - `types.rs` — Shared types (Scope enum)
 - `error.rs` — SkillxError (thiserror) + Result alias
 - `ui.rs` — Terminal output helpers (console + indicatif)
@@ -140,6 +140,7 @@ cargo run -- cache ls            # List cache
 - config.toml supports `[[url_patterns]]` and `[[custom_agents]]`
 - `skillx.toml` uses `[skills]` table format (not `[[skills]]` array)
 - SkillSource has 10 variants: Local, GitHub, GitLab, Bitbucket, Gitea, Gist, SourceHut, HuggingFace, Archive, SkillsDirectory
+- FetchedSkill carries resolved_ref from source for version tracking in installed state
 
 ## Data Directories
 
