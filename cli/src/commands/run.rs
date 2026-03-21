@@ -5,8 +5,9 @@ use std::path::{Path, PathBuf};
 use skillx::agent::registry::AgentRegistry;
 use skillx::agent::{LaunchConfig, LifecycleMode};
 use skillx::config::{self, Config};
-use skillx::project_config::ProjectConfig;
 use skillx::gate::gate_scan_result;
+use skillx::installed::InstalledState;
+use skillx::project_config::ProjectConfig;
 use skillx::scanner::report::TextFormatter;
 use skillx::scanner::ScanEngine;
 use skillx::session::cleanup::{cleanup_session, recover_orphaned_sessions};
@@ -190,85 +191,102 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         .parse()
         .map_err(|e: String| anyhow::anyhow!(e))?;
 
+    // ── Check if skill is already installed (persistent) ──
+    let installed = InstalledState::load().unwrap_or_default();
+    let is_already_installed = installed.is_installed(&skill_name);
+
     // ── Phase 6: Create session and inject ──
-    ui::step("Injecting skill...");
-    let session = Session::new(&skill_name);
-    session.create_dirs()?;
+    let inject_path;
+    let session;
 
-    let inject_path = adapter.inject_path(&skill_name, &scope);
-    let source_display = args.source.as_deref().unwrap_or("skillx.toml");
-    let mut manifest = Manifest::new(
-        &session.id,
-        &skill_name,
-        source_display,
-        adapter.name(),
-        &format!("{:?}", adapter.lifecycle_mode()),
-        &scope.to_string(),
-    );
-    manifest.scan_result = scan_report;
+    if is_already_installed {
+        ui::info(&format!(
+            "{skill_name} is already installed — skipping inject, will launch agent directly"
+        ));
+        inject_path = adapter.inject_path(&skill_name, &scope);
+        session = None;
+    } else {
+        ui::step("Injecting skill...");
+        let s = Session::new(&skill_name);
+        s.create_dirs()?;
 
-    inject_skill(&skill_dir, &inject_path, &mut manifest)?;
+        inject_path = adapter.inject_path(&skill_name, &scope);
+        let source_display = args.source.as_deref().unwrap_or("skillx.toml");
+        let mut manifest = Manifest::new(
+            &s.id,
+            &skill_name,
+            source_display,
+            adapter.name(),
+            &format!("{:?}", adapter.lifecycle_mode()),
+            &scope.to_string(),
+        );
+        manifest.scan_result = scan_report;
 
-    // Handle attachments (supports both files and directories)
-    for attach in &args.attach {
-        let src = PathBuf::from(attach);
-        if !src.exists() {
-            return Err(anyhow::anyhow!(
-                "attachment not found: '{}'. Check that the path exists.",
-                attach
+        inject_skill(&skill_dir, &inject_path, &mut manifest)?;
+
+        // Handle attachments (supports both files and directories)
+        for attach in &args.attach {
+            let src = PathBuf::from(attach);
+            if !src.exists() {
+                return Err(anyhow::anyhow!(
+                    "attachment not found: '{}'. Check that the path exists.",
+                    attach
+                ));
+            }
+            if src.is_dir() {
+                // Recursively copy directory
+                let dir_name = src
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or("attachment".into());
+                let dest_dir = inject_path.join("attachments").join(&dir_name);
+                copy_dir_recursive(&src, &dest_dir)?;
+                manifest.add_attachment(attach.clone(), dest_dir.to_string_lossy().to_string());
+            } else {
+                let filename = src
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or("attachment".into());
+                let dest = inject_path.join("attachments").join(&filename);
+                if let Some(parent) = dest.parent() {
+                    std::fs::create_dir_all(parent)?;
+                }
+                std::fs::copy(&src, &dest)?;
+                manifest.add_attachment(attach.clone(), dest.to_string_lossy().to_string());
+            }
+        }
+
+        // Multi-skill mode: inject remaining skills with per-skill scope
+        for entry in &extra_skills {
+            let extra_scope: Scope = entry
+                .scope_override
+                .as_deref()
+                .unwrap_or(&args.scope)
+                .parse()
+                .map_err(|e: String| anyhow::anyhow!(e))?;
+            let extra_inject_path = adapter.inject_path(&entry.name, &extra_scope);
+            inject_skill(&entry.dir, &extra_inject_path, &mut manifest)?;
+            ui::success(&format!("Injected extra skill: {}", entry.name));
+        }
+
+        // Save manifest
+        manifest.save(&Manifest::manifest_path(&s.session_dir()?))?;
+        let total_skills = 1 + extra_skills.len();
+        if total_skills > 1 {
+            ui::success(&format!(
+                "Injected {} skills ({} files total) to agent",
+                total_skills,
+                manifest.injected_files.len()
+            ));
+        } else {
+            ui::success(&format!(
+                "Injected {} files to {}",
+                manifest.injected_files.len(),
+                inject_path.display()
             ));
         }
-        if src.is_dir() {
-            // Recursively copy directory
-            let dir_name = src
-                .file_name()
-                .map(|n| n.to_string_lossy().to_string())
-                .unwrap_or("attachment".into());
-            let dest_dir = inject_path.join("attachments").join(&dir_name);
-            copy_dir_recursive(&src, &dest_dir)?;
-            manifest.add_attachment(attach.clone(), dest_dir.to_string_lossy().to_string());
-        } else {
-            let filename = src
-                .file_name()
-                .map(|n| n.to_string_lossy().to_string())
-                .unwrap_or("attachment".into());
-            let dest = inject_path.join("attachments").join(&filename);
-            if let Some(parent) = dest.parent() {
-                std::fs::create_dir_all(parent)?;
-            }
-            std::fs::copy(&src, &dest)?;
-            manifest.add_attachment(attach.clone(), dest.to_string_lossy().to_string());
-        }
-    }
 
-    // Multi-skill mode: inject remaining skills with per-skill scope
-    for entry in &extra_skills {
-        let extra_scope: Scope = entry
-            .scope_override
-            .as_deref()
-            .unwrap_or(&args.scope)
-            .parse()
-            .map_err(|e: String| anyhow::anyhow!(e))?;
-        let extra_inject_path = adapter.inject_path(&entry.name, &extra_scope);
-        inject_skill(&entry.dir, &extra_inject_path, &mut manifest)?;
-        ui::success(&format!("Injected extra skill: {}", entry.name));
-    }
-
-    // Save manifest
-    manifest.save(&Manifest::manifest_path(&session.session_dir()?))?;
-    let total_skills = 1 + extra_skills.len();
-    if total_skills > 1 {
-        ui::success(&format!(
-            "Injected {} skills ({} files total) to agent",
-            total_skills,
-            manifest.injected_files.len()
-        ));
-    } else {
-        ui::success(&format!(
-            "Injected {} files to {}",
-            manifest.injected_files.len(),
-            inject_path.display()
-        ));
+        session = Some(s);
     }
 
     // ── Phase 7: Resolve prompt ──
@@ -384,10 +402,14 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     }
 
     // ── Phase 10: Cleanup ──
-    ui::step("Cleaning up...");
-    cleanup_session(&session.session_dir()?)?;
-    adapter.on_cleanup()?;
-    ui::success("Cleanup complete.");
+    if let Some(ref s) = session {
+        ui::step("Cleaning up...");
+        cleanup_session(&s.session_dir()?)?;
+        adapter.on_cleanup()?;
+        ui::success("Cleanup complete.");
+    } else {
+        ui::info("Installed skill — no cleanup needed.");
+    }
 
     Ok(())
 }
