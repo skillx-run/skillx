@@ -74,6 +74,8 @@ pub const MD_006_PATTERNS: &[&str] = &[
 ];
 
 // MD-007 is handled by structural analysis in markdown_analyzer (no regex patterns)
+// MD-008 is handled by structural analysis in markdown_analyzer (name field check)
+// MD-009 is handled by structural analysis in markdown_analyzer (description field check)
 
 // --- Script rules (SC-001 ~ SC-011) ---
 

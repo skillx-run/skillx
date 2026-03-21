@@ -27,7 +27,7 @@ impl MarkdownAnalyzer {
         }
 
         // MD-007: License not declared in frontmatter (INFO)
-        if Self::has_frontmatter_without_license(content) {
+        if Self::has_frontmatter_without_field(content, "license") {
             report.add(Finding {
                 rule_id: "MD-007".to_string(),
                 level: RiskLevel::Info,
@@ -38,11 +38,35 @@ impl MarkdownAnalyzer {
             });
         }
 
+        // MD-008: Name not declared in frontmatter (INFO)
+        if Self::has_frontmatter_without_field(content, "name") {
+            report.add(Finding {
+                rule_id: "MD-008".to_string(),
+                level: RiskLevel::Info,
+                message: "name not declared in frontmatter".to_string(),
+                file: filename.to_string(),
+                line: Some(1),
+                context: None,
+            });
+        }
+
+        // MD-009: Description not declared in frontmatter (INFO)
+        if Self::has_frontmatter_without_field(content, "description") {
+            report.add(Finding {
+                rule_id: "MD-009".to_string(),
+                level: RiskLevel::Info,
+                message: "description not declared in frontmatter".to_string(),
+                file: filename.to_string(),
+                line: Some(1),
+                context: None,
+            });
+        }
+
         report
     }
 
-    /// Check if the content has a YAML frontmatter block but no `license` field.
-    fn has_frontmatter_without_license(content: &str) -> bool {
+    /// Check if the content has a YAML frontmatter block but is missing a specific field.
+    fn has_frontmatter_without_field(content: &str, field: &str) -> bool {
         let trimmed = content.trim_start();
         let after_first = match trimmed.strip_prefix("---") {
             Some(rest) => rest,
@@ -55,10 +79,11 @@ impl MarkdownAnalyzer {
         };
 
         let yaml = &after_first[..end];
-        // Check if any line starts with "license:" (case-insensitive)
+        let prefix = format!("{field}:");
+        // Check if any line starts with "field:" (case-insensitive)
         !yaml
             .lines()
-            .any(|line| line.trim_start().to_lowercase().starts_with("license:"))
+            .any(|line| line.trim_start().to_lowercase().starts_with(&prefix))
     }
 }
 
@@ -113,5 +138,101 @@ mod tests {
             .filter(|f| f.rule_id == "MD-007")
             .collect();
         assert!(md007.is_empty());
+    }
+
+    // MD-008 tests
+
+    #[test]
+    fn test_md008_triggers_when_no_name() {
+        let content = "---\nversion: 1.0\nlicense: MIT\n---\n# Skill";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md008: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-008")
+            .collect();
+        assert_eq!(md008.len(), 1);
+        assert_eq!(md008[0].level, RiskLevel::Info);
+    }
+
+    #[test]
+    fn test_md008_not_triggered_when_name_present() {
+        let content = "---\nname: my-skill\nlicense: MIT\n---\n# Skill";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md008: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-008")
+            .collect();
+        assert!(md008.is_empty());
+    }
+
+    #[test]
+    fn test_md008_not_triggered_without_frontmatter() {
+        let content = "# My Skill\nSome content here.";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md008: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-008")
+            .collect();
+        assert!(md008.is_empty());
+    }
+
+    #[test]
+    fn test_md008_case_insensitive() {
+        let content = "---\nName: my-skill\nlicense: MIT\n---\n# Skill";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md008: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-008")
+            .collect();
+        assert!(md008.is_empty());
+    }
+
+    // MD-009 tests
+
+    #[test]
+    fn test_md009_triggers_when_no_description() {
+        let content = "---\nname: my-skill\nlicense: MIT\n---\n# Skill";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md009: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-009")
+            .collect();
+        assert_eq!(md009.len(), 1);
+        assert_eq!(md009[0].level, RiskLevel::Info);
+    }
+
+    #[test]
+    fn test_md009_not_triggered_when_description_present() {
+        let content = "---\nname: my-skill\ndescription: A test skill\nlicense: MIT\n---\n# Skill";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md009: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-009")
+            .collect();
+        assert!(md009.is_empty());
+    }
+
+    #[test]
+    fn test_md008_md009_both_trigger() {
+        let content = "---\nversion: 1.0\n---\n# Skill";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md008: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-008")
+            .collect();
+        let md009: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-009")
+            .collect();
+        assert_eq!(md008.len(), 1);
+        assert_eq!(md009.len(), 1);
     }
 }
