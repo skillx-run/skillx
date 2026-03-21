@@ -25,7 +25,7 @@ pub enum SkillxError {
     #[error("agent error: {0}")]
     Agent(String),
 
-    #[error("no agent detected")]
+    #[error("no agent detected. Install a supported AI agent (e.g. Claude Code, Cursor) or use --agent to specify one")]
     NoAgentDetected,
 
     #[error("session error: {0}")]
