@@ -121,7 +121,8 @@ fn test_error_display() {
     assert_eq!(err.to_string(), "scan blocked: risk level BLOCK detected");
 
     let err = skillx::error::SkillxError::NoAgentDetected;
-    assert_eq!(err.to_string(), "no agent detected");
+    assert!(err.to_string().contains("no agent detected"));
+    assert!(err.to_string().contains("--agent"));
 
     let err = skillx::error::SkillxError::UserCancelled;
     assert_eq!(err.to_string(), "user cancelled");
@@ -397,7 +398,7 @@ fn test_scan_report_overall_level() {
 
 #[test]
 fn test_markdown_analyzer_clean() {
-    let content = "---\nname: clean\nlicense: MIT\n---\n\n# A Clean Skill\n\nJust does good things.";
+    let content = "---\nname: clean\ndescription: A clean skill\nlicense: MIT\n---\n\n# A Clean Skill\n\nJust does good things.";
     let report = skillx::scanner::markdown_analyzer::MarkdownAnalyzer::analyze(content, "SKILL.md");
     assert_eq!(report.overall_level(), skillx::scanner::RiskLevel::Pass);
 }
