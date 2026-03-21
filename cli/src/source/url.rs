@@ -499,8 +499,7 @@ mod tests {
 
     #[test]
     fn test_gitlab_url() {
-        let source =
-            resolve_url("https://gitlab.com/owner/repo/-/tree/main/skills/pdf").unwrap();
+        let source = resolve_url("https://gitlab.com/owner/repo/-/tree/main/skills/pdf").unwrap();
         match source {
             SkillSource::GitLab {
                 host,
@@ -536,8 +535,7 @@ mod tests {
 
     #[test]
     fn test_bitbucket_url() {
-        let source =
-            resolve_url("https://bitbucket.org/owner/repo/src/main/skills/pdf").unwrap();
+        let source = resolve_url("https://bitbucket.org/owner/repo/src/main/skills/pdf").unwrap();
         match source {
             SkillSource::Bitbucket {
                 owner,
@@ -556,8 +554,7 @@ mod tests {
 
     #[test]
     fn test_codeberg_url() {
-        let source =
-            resolve_url("https://codeberg.org/owner/repo/src/branch/main/path").unwrap();
+        let source = resolve_url("https://codeberg.org/owner/repo/src/branch/main/path").unwrap();
         match source {
             SkillSource::Gitea {
                 host,
@@ -614,8 +611,7 @@ mod tests {
     #[test]
     fn test_speculative_gitea() {
         let source =
-            resolve_url("https://mygitea.example.com/owner/repo/src/branch/main/path")
-                .unwrap();
+            resolve_url("https://mygitea.example.com/owner/repo/src/branch/main/path").unwrap();
         match source {
             SkillSource::Gitea {
                 host, owner, repo, ..
@@ -642,13 +638,18 @@ mod tests {
     #[test]
     fn test_archive_zip_with_query() {
         let source = resolve_url("https://example.com/skill.zip?token=abc").unwrap();
-        assert!(matches!(source, SkillSource::Archive { format: ArchiveFormat::Zip, .. }));
+        assert!(matches!(
+            source,
+            SkillSource::Archive {
+                format: ArchiveFormat::Zip,
+                ..
+            }
+        ));
     }
 
     #[test]
     fn test_sourcehut_url_basic() {
-        let source =
-            resolve_url("https://git.sr.ht/~sircmpwn/hare/tree/master/item/cmd").unwrap();
+        let source = resolve_url("https://git.sr.ht/~sircmpwn/hare/tree/master/item/cmd").unwrap();
         match source {
             SkillSource::SourceHut {
                 owner,
@@ -705,8 +706,7 @@ mod tests {
 
     #[test]
     fn test_huggingface_url_basic() {
-        let source =
-            resolve_url("https://huggingface.co/org/repo/tree/main/skills/pdf").unwrap();
+        let source = resolve_url("https://huggingface.co/org/repo/tree/main/skills/pdf").unwrap();
         match source {
             SkillSource::HuggingFace {
                 owner,
@@ -751,7 +751,10 @@ mod tests {
         let source = resolve_url("https://huggingface.co/datasets/org/repo").unwrap();
         match source {
             SkillSource::HuggingFace {
-                repo_type, owner, repo, ..
+                repo_type,
+                owner,
+                repo,
+                ..
             } => {
                 assert_eq!(repo_type, HfRepoType::Datasets);
                 assert_eq!(owner, "org");
@@ -782,10 +785,11 @@ mod tests {
             ..Config::default()
         };
         let source =
-            resolve_url_with_config("https://mygitea.company.com/owner/repo", &config)
-                .unwrap();
+            resolve_url_with_config("https://mygitea.company.com/owner/repo", &config).unwrap();
         match source {
-            SkillSource::Gitea { host, owner, repo, .. } => {
+            SkillSource::Gitea {
+                host, owner, repo, ..
+            } => {
                 assert_eq!(host, "mygitea.company.com");
                 assert_eq!(owner, "owner");
                 assert_eq!(repo, "repo");

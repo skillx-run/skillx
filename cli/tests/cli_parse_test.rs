@@ -396,8 +396,7 @@ fn test_run_basic() {
     }
 
     // Test: run with prompt file
-    let cli =
-        Cli::try_parse_from(["skillx", "run", "./skill", "-f", "prompt.txt"]).unwrap();
+    let cli = Cli::try_parse_from(["skillx", "run", "./skill", "-f", "prompt.txt"]).unwrap();
     match cli.command {
         Commands::Run(args) => {
             assert_eq!(args.prompt_file.as_deref(), Some("prompt.txt"));
@@ -416,8 +415,15 @@ fn test_run_basic() {
 
     // Test: install --agent and --all conflict
     assert!(
-        Cli::try_parse_from(["skillx", "install", "./skill", "--agent", "claude-code", "--all"])
-            .is_err(),
+        Cli::try_parse_from([
+            "skillx",
+            "install",
+            "./skill",
+            "--agent",
+            "claude-code",
+            "--all"
+        ])
+        .is_err(),
         "--agent and --all should conflict"
     );
 

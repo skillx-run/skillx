@@ -7,7 +7,10 @@ fn test_resolve_github_url() {
     let result = source::resolve("https://github.com/owner/repo/tree/main/path").unwrap();
     match result {
         source::SkillSource::GitHub {
-            owner, repo, path, ref_,
+            owner,
+            repo,
+            path,
+            ref_,
         } => {
             assert_eq!(owner, "owner");
             assert_eq!(repo, "repo");
@@ -44,11 +47,14 @@ fn test_resolve_gist_prefix_with_revision() {
 
 #[test]
 fn test_resolve_gitlab_url() {
-    let result =
-        source::resolve("https://gitlab.com/owner/repo/-/tree/main/skills/pdf").unwrap();
+    let result = source::resolve("https://gitlab.com/owner/repo/-/tree/main/skills/pdf").unwrap();
     match result {
         source::SkillSource::GitLab {
-            host, owner, repo, path, ref_,
+            host,
+            owner,
+            repo,
+            path,
+            ref_,
         } => {
             assert_eq!(host, "gitlab.com");
             assert_eq!(owner, "owner");
@@ -67,7 +73,11 @@ fn test_resolve_gitlab_nested_group_url() {
             .unwrap();
     match result {
         source::SkillSource::GitLab {
-            host, owner, repo, path, ref_,
+            host,
+            owner,
+            repo,
+            path,
+            ref_,
         } => {
             assert_eq!(host, "gitlab.com");
             assert_eq!(owner, "group/subgroup");
@@ -81,11 +91,13 @@ fn test_resolve_gitlab_nested_group_url() {
 
 #[test]
 fn test_resolve_bitbucket_url() {
-    let result =
-        source::resolve("https://bitbucket.org/owner/repo/src/main/skills/pdf").unwrap();
+    let result = source::resolve("https://bitbucket.org/owner/repo/src/main/skills/pdf").unwrap();
     match result {
         source::SkillSource::Bitbucket {
-            owner, repo, path, ref_,
+            owner,
+            repo,
+            path,
+            ref_,
         } => {
             assert_eq!(owner, "owner");
             assert_eq!(repo, "repo");
@@ -98,11 +110,14 @@ fn test_resolve_bitbucket_url() {
 
 #[test]
 fn test_resolve_codeberg_url() {
-    let result =
-        source::resolve("https://codeberg.org/owner/repo/src/branch/main/path").unwrap();
+    let result = source::resolve("https://codeberg.org/owner/repo/src/branch/main/path").unwrap();
     match result {
         source::SkillSource::Gitea {
-            host, owner, repo, path, ref_,
+            host,
+            owner,
+            repo,
+            path,
+            ref_,
         } => {
             assert_eq!(host, "codeberg.org");
             assert_eq!(owner, "owner");
@@ -153,14 +168,16 @@ fn test_resolve_archive_tar_gz_url() {
 #[test]
 fn test_resolve_skills_directory_url() {
     let result = source::resolve("https://skills.sh/some/skill").unwrap();
-    assert!(matches!(result, source::SkillSource::SkillsDirectory { .. }));
+    assert!(matches!(
+        result,
+        source::SkillSource::SkillsDirectory { .. }
+    ));
 }
 
 #[test]
 fn test_resolve_speculative_gitea() {
     let result =
-        source::resolve("https://mygitea.example.com/owner/repo/src/branch/main/path")
-            .unwrap();
+        source::resolve("https://mygitea.example.com/owner/repo/src/branch/main/path").unwrap();
     match result {
         source::SkillSource::Gitea {
             host, owner, repo, ..
@@ -401,9 +418,7 @@ fn test_roo_inject_path_project() {
 
 #[test]
 fn test_sarif_empty_report() {
-    let report = skillx::scanner::ScanReport {
-        findings: vec![],
-    };
+    let report = skillx::scanner::ScanReport { findings: vec![] };
     let sarif = skillx::scanner::report::SarifFormatter::format(&report);
     let parsed: serde_json::Value = serde_json::from_str(&sarif).unwrap();
     assert_eq!(parsed["version"], "2.1.0");
@@ -480,22 +495,21 @@ fn test_sarif_level_mapping() {
         let sarif = skillx::scanner::report::SarifFormatter::format(&report);
         let parsed: serde_json::Value = serde_json::from_str(&sarif).unwrap();
         assert_eq!(
-            parsed["runs"][0]["results"][0]["level"],
-            expected_sarif,
+            parsed["runs"][0]["results"][0]["level"], expected_sarif,
             "RiskLevel::{:?} should map to '{}'",
-            risk_level,
-            expected_sarif
+            risk_level, expected_sarif
         );
     }
 }
 
 #[test]
 fn test_sarif_schema() {
-    let report = skillx::scanner::ScanReport {
-        findings: vec![],
-    };
+    let report = skillx::scanner::ScanReport { findings: vec![] };
     let sarif = skillx::scanner::report::SarifFormatter::format(&report);
     let parsed: serde_json::Value = serde_json::from_str(&sarif).unwrap();
-    assert!(parsed["$schema"].as_str().unwrap().contains("sarif-schema-2.1.0"));
+    assert!(parsed["$schema"]
+        .as_str()
+        .unwrap()
+        .contains("sarif-schema-2.1.0"));
     assert_eq!(parsed["runs"][0]["tool"]["driver"]["name"], "skillx");
 }

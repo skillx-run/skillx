@@ -61,9 +61,7 @@ impl AgentAdapter for GeminiCliAdapter {
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
         match scope {
-            Scope::Project => PathBuf::from(".gemini")
-                .join("skills")
-                .join(skill_name),
+            Scope::Project => PathBuf::from(".gemini").join("skills").join(skill_name),
             Scope::Global => super::home_dir_or_fallback()
                 .join(".gemini")
                 .join("skills")
@@ -88,9 +86,9 @@ impl AgentAdapter for GeminiCliAdapter {
             cmd.arg(arg);
         }
 
-        let child = cmd.spawn().map_err(|e| {
-            SkillxError::Agent(format!("failed to launch gemini: {e}"))
-        })?;
+        let child = cmd
+            .spawn()
+            .map_err(|e| SkillxError::Agent(format!("failed to launch gemini: {e}")))?;
 
         Ok(SessionHandle {
             child: Some(child),

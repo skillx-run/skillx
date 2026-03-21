@@ -49,10 +49,7 @@ pub fn is_local_source(source: &str) -> bool {
 
 /// Percent-encode each segment of a URL path (split by `/`).
 pub fn urlencode_path(s: &str) -> String {
-    s.split('/')
-        .map(|seg| urlencoding(seg))
-        .collect::<Vec<_>>()
-        .join("/")
+    s.split('/').map(urlencoding).collect::<Vec<_>>().join("/")
 }
 
 /// Archive format for downloaded skill packages.

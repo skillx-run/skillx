@@ -19,15 +19,10 @@ impl AgentAdapter for WindsurfAdapter {
 
     async fn detect(&self) -> DetectResult {
         let has_binary = which::which("windsurf").is_ok();
-        let has_process = sysinfo::System::new_all()
-            .processes()
-            .values()
-            .any(|p| {
-                let name = p.name().to_string_lossy().to_lowercase();
-                name == "windsurf"
-                    || name.starts_with("windsurf ")
-                    || name.starts_with("windsurf.")
-            });
+        let has_process = sysinfo::System::new_all().processes().values().any(|p| {
+            let name = p.name().to_string_lossy().to_lowercase();
+            name == "windsurf" || name.starts_with("windsurf ") || name.starts_with("windsurf.")
+        });
 
         let version = if has_binary {
             super::detect_binary_version("windsurf").await
@@ -63,9 +58,7 @@ impl AgentAdapter for WindsurfAdapter {
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
         match scope {
-            Scope::Project => PathBuf::from(".windsurf")
-                .join("skills")
-                .join(skill_name),
+            Scope::Project => PathBuf::from(".windsurf").join("skills").join(skill_name),
             Scope::Global => super::home_dir_or_fallback()
                 .join(".windsurf")
                 .join("skills")

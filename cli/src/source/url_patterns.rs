@@ -135,7 +135,10 @@ fn parse_source_type_str(s: &str) -> Option<UrlSourceType> {
 /// Look up the source type for a domain, checking custom patterns first.
 ///
 /// Custom patterns from config.toml take priority over built-in patterns.
-pub fn lookup_domain_with_custom(domain: &str, custom: &[CustomUrlPattern]) -> Option<UrlSourceType> {
+pub fn lookup_domain_with_custom(
+    domain: &str,
+    custom: &[CustomUrlPattern],
+) -> Option<UrlSourceType> {
     let domain_lower = domain.to_lowercase();
 
     // Custom patterns take priority
@@ -169,10 +172,7 @@ mod tests {
 
     #[test]
     fn test_lookup_gist() {
-        assert_eq!(
-            lookup_domain("gist.github.com"),
-            Some(&UrlSourceType::Gist)
-        );
+        assert_eq!(lookup_domain("gist.github.com"), Some(&UrlSourceType::Gist));
     }
 
     #[test]
@@ -230,10 +230,7 @@ mod tests {
 
     #[test]
     fn test_lookup_sourcehut() {
-        assert_eq!(
-            lookup_domain("git.sr.ht"),
-            Some(&UrlSourceType::SourceHut)
-        );
+        assert_eq!(lookup_domain("git.sr.ht"), Some(&UrlSourceType::SourceHut));
     }
 
     #[test]
@@ -289,9 +286,6 @@ mod tests {
             lookup_domain_with_custom("github.com", &custom),
             Some(UrlSourceType::GitHub)
         );
-        assert_eq!(
-            lookup_domain_with_custom("unknown.org", &custom),
-            None
-        );
+        assert_eq!(lookup_domain_with_custom("unknown.org", &custom), None);
     }
 }

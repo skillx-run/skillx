@@ -100,9 +100,8 @@ impl ProjectConfig {
             return Ok(None);
         }
 
-        let content = std::fs::read_to_string(&path).map_err(|e| {
-            SkillxError::ProjectConfig(format!("failed to read skillx.toml: {e}"))
-        })?;
+        let content = std::fs::read_to_string(&path)
+            .map_err(|e| SkillxError::ProjectConfig(format!("failed to read skillx.toml: {e}")))?;
 
         // Detect old [[skills]] array format
         if content.contains("[[skills]]") {
@@ -117,9 +116,8 @@ impl ProjectConfig {
             ));
         }
 
-        let config: ProjectConfig = toml::from_str(&content).map_err(|e| {
-            SkillxError::ProjectConfig(format!("failed to parse skillx.toml: {e}"))
-        })?;
+        let config: ProjectConfig = toml::from_str(&content)
+            .map_err(|e| SkillxError::ProjectConfig(format!("failed to parse skillx.toml: {e}")))?;
 
         // Validate: source fields must not be empty
         for (name, value) in &config.skills.entries {
@@ -146,9 +144,8 @@ impl ProjectConfig {
         let content = toml::to_string_pretty(self).map_err(|e| {
             SkillxError::ProjectConfig(format!("failed to serialize skillx.toml: {e}"))
         })?;
-        std::fs::write(&path, content).map_err(|e| {
-            SkillxError::ProjectConfig(format!("failed to write skillx.toml: {e}"))
-        })?;
+        std::fs::write(&path, content)
+            .map_err(|e| SkillxError::ProjectConfig(format!("failed to write skillx.toml: {e}")))?;
         Ok(())
     }
 
@@ -293,7 +290,10 @@ review = { source = "github:org/skills/cr", scope = "project" }
         let config = ProjectConfig::load(dir.path()).unwrap().unwrap();
 
         assert_eq!(config.skills.entries.len(), 2);
-        assert!(matches!(config.skills.entries["pdf"], SkillValue::Simple(_)));
+        assert!(matches!(
+            config.skills.entries["pdf"],
+            SkillValue::Simple(_)
+        ));
         assert!(matches!(
             config.skills.entries["review"],
             SkillValue::Detailed { .. }
@@ -409,10 +409,10 @@ bad = { source = "  " }
         let mut config = ProjectConfig::default();
         config.project.name = Some("roundtrip-test".to_string());
         config.agent.preferred = Some("claude-code".to_string());
-        config
-            .skills
-            .entries
-            .insert("pdf".to_string(), SkillValue::Simple("github:org/pdf".to_string()));
+        config.skills.entries.insert(
+            "pdf".to_string(),
+            SkillValue::Simple("github:org/pdf".to_string()),
+        );
         config.skills.entries.insert(
             "review".to_string(),
             SkillValue::Detailed {

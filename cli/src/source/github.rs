@@ -46,9 +46,9 @@ impl GitHubSource {
 
         let parts: Vec<&str> = url.splitn(4, '/').collect();
         if parts.len() < 2 {
-            return Err(SkillxError::InvalidSource(format!(
-                "invalid GitHub URL: cannot extract owner/repo"
-            )));
+            return Err(SkillxError::InvalidSource(
+                "invalid GitHub URL: cannot extract owner/repo".to_string(),
+            ));
         }
 
         let owner = parts[0].to_string();
@@ -63,8 +63,6 @@ impl GitHubSource {
             } else {
                 (None, Some(rest.to_string()))
             }
-        } else if parts.len() >= 3 {
-            (None, None)
         } else {
             (None, None)
         };
@@ -98,9 +96,7 @@ impl GitHubSource {
             Some(p) => super::urlencode_path(p),
             None => String::new(),
         };
-        let mut url = format!(
-            "https://api.github.com/repos/{owner}/{repo}/contents/{api_path}"
-        );
+        let mut url = format!("https://api.github.com/repos/{owner}/{repo}/contents/{api_path}");
         if let Some(r) = ref_ {
             let encoded_ref = super::urlencoding(r);
             url.push_str(&format!("?ref={encoded_ref}"));
@@ -111,9 +107,10 @@ impl GitHubSource {
             req = req.header("Authorization", format!("Bearer {t}"));
         }
 
-        let resp = req.send().await.map_err(|e| {
-            SkillxError::Network(format!("GitHub API request failed: {e}"))
-        })?;
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| SkillxError::Network(format!("GitHub API request failed: {e}")))?;
 
         if resp.status() == 403 {
             // Distinguish rate limit from permission denied
@@ -198,7 +195,10 @@ impl GitHubSource {
                             })?;
                         }
                         std::fs::write(&dest_path, &bytes).map_err(|e| {
-                            SkillxError::Source(format!("failed to write {}: {e}", dest_path.display()))
+                            SkillxError::Source(format!(
+                                "failed to write {}: {e}",
+                                dest_path.display()
+                            ))
                         })?;
                         Ok::<PathBuf, SkillxError>(dest_path)
                     })
@@ -219,14 +219,9 @@ impl GitHubSource {
                             None => name.to_string(),
                         };
                         let sub_dest = dest.join(name);
-                        let sub_files = Box::pin(Self::fetch(
-                            owner,
-                            repo,
-                            Some(&sub_path),
-                            ref_,
-                            &sub_dest,
-                        ))
-                        .await?;
+                        let sub_files =
+                            Box::pin(Self::fetch(owner, repo, Some(&sub_path), ref_, &sub_dest))
+                                .await?;
                         downloaded_files.extend(sub_files);
                     }
                 }

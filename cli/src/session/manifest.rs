@@ -83,8 +83,10 @@ impl Manifest {
 
     /// Add an injected attachment record.
     pub fn add_attachment(&mut self, original: String, copied_to: String) {
-        self.injected_attachments
-            .push(InjectedAttachment { original, copied_to });
+        self.injected_attachments.push(InjectedAttachment {
+            original,
+            copied_to,
+        });
     }
 
     /// Manifest file path within a session directory.

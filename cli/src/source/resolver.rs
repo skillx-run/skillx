@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
-use crate::source::local::LocalSource;
-use crate::source::{self, SkillSource};
 use crate::cache::CacheManager;
 use crate::config::Config;
+use crate::source::local::LocalSource;
+use crate::source::{self, SkillSource};
 use crate::ui;
 
 /// A resolved skill with its local directory and name.
@@ -27,15 +27,11 @@ pub async fn resolve_and_fetch(
     match skill_source {
         SkillSource::Local(path) => {
             let resolved = LocalSource::fetch(&path)?;
-            let name = resolved
-                .metadata
-                .name
-                .clone()
-                .unwrap_or_else(|| {
-                    path.file_name()
-                        .map(|n| n.to_string_lossy().to_string())
-                        .unwrap_or("skill".into())
-                });
+            let name = resolved.metadata.name.clone().unwrap_or_else(|| {
+                path.file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or("skill".into())
+            });
             Ok(FetchedSkill {
                 dir: resolved.root_dir,
                 name,
@@ -68,7 +64,11 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
+            Ok(FetchedSkill {
+                dir,
+                name,
+                resolved_ref: ref_.clone(),
+            })
         }
         SkillSource::GitLab {
             host,
@@ -98,7 +98,11 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
+            Ok(FetchedSkill {
+                dir,
+                name,
+                resolved_ref: ref_.clone(),
+            })
         }
         SkillSource::Bitbucket {
             owner,
@@ -126,7 +130,11 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
+            Ok(FetchedSkill {
+                dir,
+                name,
+                resolved_ref: ref_.clone(),
+            })
         }
         SkillSource::Gitea {
             host,
@@ -156,18 +164,17 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
+            Ok(FetchedSkill {
+                dir,
+                name,
+                resolved_ref: ref_.clone(),
+            })
         }
         SkillSource::Gist { id, revision } => {
             let cache_key = input.to_string();
             let dir = fetch_with_cache(&cache_key, no_cache, || async {
                 let dest = cache_dest(&cache_key)?;
-                source::gist::GistSource::fetch(
-                    &id,
-                    revision.as_deref(),
-                    &dest,
-                )
-                .await?;
+                source::gist::GistSource::fetch(&id, revision.as_deref(), &dest).await?;
                 Ok(dest)
             })
             .await?;
@@ -177,7 +184,11 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| format!("gist-{}", &id[..8.min(id.len())]));
-            Ok(FetchedSkill { dir, name, resolved_ref: revision.clone() })
+            Ok(FetchedSkill {
+                dir,
+                name,
+                resolved_ref: revision.clone(),
+            })
         }
         SkillSource::SourceHut {
             owner,
@@ -205,7 +216,11 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
+            Ok(FetchedSkill {
+                dir,
+                name,
+                resolved_ref: ref_.clone(),
+            })
         }
         SkillSource::HuggingFace {
             owner,
@@ -235,7 +250,11 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| path.as_deref().unwrap_or(&repo).to_string());
-            Ok(FetchedSkill { dir, name, resolved_ref: ref_.clone() })
+            Ok(FetchedSkill {
+                dir,
+                name,
+                resolved_ref: ref_.clone(),
+            })
         }
         SkillSource::Archive { url, format } => {
             // Gitea API probe: for fallback Archive URLs (no archive extension),
@@ -249,9 +268,7 @@ pub async fn resolve_and_fetch(
             };
 
             if is_fallback {
-                if let Some(gitea_result) =
-                    try_gitea_probe(&url, no_cache, config).await
-                {
+                if let Some(gitea_result) = try_gitea_probe(&url, no_cache, config).await {
                     return gitea_result;
                 }
             }
@@ -269,7 +286,11 @@ pub async fn resolve_and_fetch(
                 .name
                 .clone()
                 .unwrap_or_else(|| "archive-skill".into());
-            Ok(FetchedSkill { dir, name, resolved_ref: None })
+            Ok(FetchedSkill {
+                dir,
+                name,
+                resolved_ref: None,
+            })
         }
         SkillSource::SkillsDirectory { platform, path } => {
             // Resolve to underlying GitHub source, then fetch
@@ -278,7 +299,10 @@ pub async fn resolve_and_fetch(
                 source::skills_directory::resolve_skills_directory(&platform, &path).await?;
             match resolved_source {
                 SkillSource::GitHub {
-                    owner, repo, path, ref_,
+                    owner,
+                    repo,
+                    path,
+                    ref_,
                 } => {
                     let mut source_url = format!("https://github.com/{owner}/{repo}");
                     if let Some(r) = &ref_ {

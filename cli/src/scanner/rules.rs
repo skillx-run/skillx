@@ -1,8 +1,8 @@
-/// Rule definitions for security scanning.
-///
-/// MD = Markdown/SKILL.md rules
-/// SC = Script rules
-/// RS = Resource rules
+// Rule definitions for security scanning.
+//
+// MD = Markdown/SKILL.md rules
+// SC = Script rules
+// RS = Resource rules
 
 // --- Markdown rules (MD-001 ~ MD-006) ---
 

@@ -42,9 +42,7 @@ impl AgentAdapter for UniversalAdapter {
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
         match scope {
-            Scope::Project => PathBuf::from(".agents")
-                .join("skills")
-                .join(skill_name),
+            Scope::Project => PathBuf::from(".agents").join("skills").join(skill_name),
             Scope::Global => super::home_dir_or_fallback()
                 .join(".agents")
                 .join("skills")

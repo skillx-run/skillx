@@ -101,8 +101,9 @@ impl ScanEngine {
         // Scan SKILL.md
         let skill_md = skill_dir.join("SKILL.md");
         if skill_md.exists() {
-            let content = std::fs::read_to_string(&skill_md)
-                .map_err(|e| crate::error::SkillxError::Scan(format!("failed to read SKILL.md: {e}")))?;
+            let content = std::fs::read_to_string(&skill_md).map_err(|e| {
+                crate::error::SkillxError::Scan(format!("failed to read SKILL.md: {e}"))
+            })?;
             let md_report = markdown_analyzer::MarkdownAnalyzer::analyze(&content, "SKILL.md");
             report.merge(md_report);
         }
@@ -187,7 +188,10 @@ impl ScanEngine {
 
             // Check if it's a script-like file
             let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-            if matches!(ext, "py" | "sh" | "bash" | "js" | "ts" | "rb" | "pl" | "ps1") {
+            if matches!(
+                ext,
+                "py" | "sh" | "bash" | "js" | "ts" | "rb" | "pl" | "ps1"
+            ) {
                 let script_report = script_analyzer::ScriptAnalyzer::analyze(&path, &rel_path)?;
                 report.merge(script_report);
             }

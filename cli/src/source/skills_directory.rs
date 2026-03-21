@@ -28,9 +28,11 @@ pub async fn resolve_skills_directory(
     }
 
     // Strategy 2+3: Fetch HTML page and extract GitHub link
-    let resp = client.get(&url).send().await.map_err(|e| {
-        SkillxError::Network(format!("failed to fetch {url}: {e}"))
-    })?;
+    let resp = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| SkillxError::Network(format!("failed to fetch {url}: {e}")))?;
 
     if !resp.status().is_success() {
         return Err(SkillxError::Source(format!(
@@ -39,9 +41,10 @@ pub async fn resolve_skills_directory(
         )));
     }
 
-    let html = resp.text().await.map_err(|e| {
-        SkillxError::Network(format!("failed to read response from {url}: {e}"))
-    })?;
+    let html = resp
+        .text()
+        .await
+        .map_err(|e| SkillxError::Network(format!("failed to read response from {url}: {e}")))?;
 
     // Try to extract GitHub URL from HTML
     if let Some(github_url) = extract_github_url_from_html(&html) {
@@ -89,9 +92,7 @@ async fn try_api_endpoint(
                             .or_else(|| body["source_url"].as_str())
                             .or_else(|| body["repository_url"].as_str())
                         {
-                            return Ok(Some(
-                                crate::source::url::resolve_url(github_url)?,
-                            ));
+                            return Ok(Some(crate::source::url::resolve_url(github_url)?));
                         }
                     }
                 }
@@ -117,9 +118,10 @@ fn extract_github_url_from_html(html: &str) -> Option<String> {
     }
 
     // Strategy 2: Look for meta tags with GitHub URLs
-    let meta_selector =
-        scraper::Selector::parse(r#"meta[property="og:url"], meta[name="source"], meta[property="og:see_also"]"#)
-            .ok()?;
+    let meta_selector = scraper::Selector::parse(
+        r#"meta[property="og:url"], meta[name="source"], meta[property="og:see_also"]"#,
+    )
+    .ok()?;
     for element in document.select(&meta_selector) {
         if let Some(content) = element.value().attr("content") {
             if is_github_repo_url(content) {
@@ -187,10 +189,7 @@ mod tests {
             </html>
         "#;
         let result = extract_github_url_from_html(html);
-        assert_eq!(
-            result,
-            Some("https://github.com/owner/repo".into())
-        );
+        assert_eq!(result, Some("https://github.com/owner/repo".into()));
     }
 
     #[test]

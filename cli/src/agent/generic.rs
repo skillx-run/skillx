@@ -182,41 +182,36 @@ impl AgentAdapter for GenericAdapter {
                 }
                 has_binary || has_dir
             }
-            DetectionMethod::VscodeExtension(prefix) => {
-                home.as_ref()
-                    .map(|h| {
-                        let ext_dir = h.join(".vscode").join("extensions");
-                        if ext_dir.is_dir() {
-                            if let Ok(entries) = std::fs::read_dir(&ext_dir) {
-                                for entry in entries.flatten() {
-                                    let name = entry.file_name().to_string_lossy().to_string();
-                                    if name.starts_with(prefix.as_str()) {
-                                        version = super::extract_vscode_extension_version(&name);
-                                        return true;
-                                    }
+            DetectionMethod::VscodeExtension(prefix) => home
+                .as_ref()
+                .map(|h| {
+                    let ext_dir = h.join(".vscode").join("extensions");
+                    if ext_dir.is_dir() {
+                        if let Ok(entries) = std::fs::read_dir(&ext_dir) {
+                            for entry in entries.flatten() {
+                                let name = entry.file_name().to_string_lossy().to_string();
+                                if name.starts_with(prefix.as_str()) {
+                                    version = super::extract_vscode_extension_version(&name);
+                                    return true;
                                 }
                             }
                         }
-                        false
-                    })
-                    .unwrap_or(false)
-            }
+                    }
+                    false
+                })
+                .unwrap_or(false),
             DetectionMethod::Process(proc_name) => {
-                sysinfo::System::new_all()
-                    .processes()
-                    .values()
-                    .any(|p| {
-                        let name = p.name().to_string_lossy().to_lowercase();
-                        name == proc_name.to_lowercase()
-                            || name.starts_with(&format!("{} ", proc_name.to_lowercase()))
-                            || name.starts_with(&format!("{}.", proc_name.to_lowercase()))
-                    })
+                sysinfo::System::new_all().processes().values().any(|p| {
+                    let name = p.name().to_string_lossy().to_lowercase();
+                    name == proc_name.to_lowercase()
+                        || name.starts_with(&format!("{} ", proc_name.to_lowercase()))
+                        || name.starts_with(&format!("{}.", proc_name.to_lowercase()))
+                })
             }
-            DetectionMethod::ConfigDirOnly => {
-                home.as_ref()
-                    .map(|h| h.join(&def.config_dir).exists())
-                    .unwrap_or(false)
-            }
+            DetectionMethod::ConfigDirOnly => home
+                .as_ref()
+                .map(|h| h.join(&def.config_dir).exists())
+                .unwrap_or(false),
         };
 
         DetectResult {
@@ -274,10 +269,7 @@ impl AgentAdapter for GenericAdapter {
                 let mut cmd = tokio::process::Command::new(binary);
 
                 if let Some(ref prompt) = config.prompt {
-                    let flag = def
-                        .prompt_flag
-                        .as_deref()
-                        .unwrap_or("--prompt");
+                    let flag = def.prompt_flag.as_deref().unwrap_or("--prompt");
                     cmd.arg(flag).arg(prompt);
                 }
 
@@ -291,9 +283,9 @@ impl AgentAdapter for GenericAdapter {
                     cmd.arg(arg);
                 }
 
-                let child = cmd.spawn().map_err(|e| {
-                    SkillxError::Agent(format!("failed to launch {binary}: {e}"))
-                })?;
+                let child = cmd
+                    .spawn()
+                    .map_err(|e| SkillxError::Agent(format!("failed to launch {binary}: {e}")))?;
 
                 Ok(SessionHandle {
                     child: Some(child),
@@ -330,30 +322,104 @@ impl AgentAdapter for GenericAdapter {
 pub fn tier3_adapters() -> Vec<Box<dyn AgentAdapter>> {
     vec![
         // CLI agents (ManagedProcess, Binary detection)
-        Box::new(GenericAdapter(AgentDef::cli("goose", "Goose", "goose", ".goose"))),
-        Box::new(GenericAdapter(AgentDef::cli("kiro", "Kiro", "kiro", ".kiro"))),
-        Box::new(GenericAdapter(AgentDef::cli("aider", "Aider", "aider", ".aider"))),
-        Box::new(GenericAdapter(AgentDef::cli("openclaw", "OpenClaw", "openclaw", ".openclaw"))),
-        Box::new(GenericAdapter(AgentDef::cli("qwen-code", "Qwen Code", "qwen-code", ".qwen-code"))),
-        Box::new(GenericAdapter(AgentDef::cli("droid", "Droid", "droid", ".droid"))),
-        Box::new(GenericAdapter(AgentDef::cli("warp", "Warp", "warp", ".warp"))),
-        Box::new(GenericAdapter(AgentDef::cli("openhands", "OpenHands", "openhands", ".openhands"))),
-        Box::new(GenericAdapter(AgentDef::cli("command-code", "Command Code", "command-code", ".command-code"))),
-        Box::new(GenericAdapter(AgentDef::cli("mistral-vibe", "Mistral Vibe", "mistral-vibe", ".mistral-vibe"))),
-        Box::new(GenericAdapter(AgentDef::cli("qoder", "Qoder", "qoder", ".qoder"))),
-        Box::new(GenericAdapter(AgentDef::cli("kode", "Kode", "kode", ".kode"))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "goose", "Goose", "goose", ".goose",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "kiro", "Kiro", "kiro", ".kiro",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "aider", "Aider", "aider", ".aider",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "openclaw",
+            "OpenClaw",
+            "openclaw",
+            ".openclaw",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "qwen-code",
+            "Qwen Code",
+            "qwen-code",
+            ".qwen-code",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "droid", "Droid", "droid", ".droid",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "warp", "Warp", "warp", ".warp",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "openhands",
+            "OpenHands",
+            "openhands",
+            ".openhands",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "command-code",
+            "Command Code",
+            "command-code",
+            ".command-code",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "mistral-vibe",
+            "Mistral Vibe",
+            "mistral-vibe",
+            ".mistral-vibe",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "qoder", "Qoder", "qoder", ".qoder",
+        ))),
+        Box::new(GenericAdapter(AgentDef::cli(
+            "kode", "Kode", "kode", ".kode",
+        ))),
         // IDE agents with VS Code extension detection
-        Box::new(GenericAdapter(AgentDef::ide_vscode("kilo", "Kilo Code", ".kilo", "kilocode."))),
-        Box::new(GenericAdapter(AgentDef::ide_vscode("augment", "Augment", ".augment", "augment."))),
-        Box::new(GenericAdapter(AgentDef::ide_vscode("continue", "Continue", ".continue", "continue."))),
-        Box::new(GenericAdapter(AgentDef::ide_vscode("codebuddy", "CodeBuddy", ".codebuddy", "codebuddy."))),
-        Box::new(GenericAdapter(AgentDef::ide_vscode("antigravity", "Antigravity", ".antigravity", "antigravity."))),
-        Box::new(GenericAdapter(AgentDef::ide_vscode("zencoder", "Zencoder", ".zencoder", "zencoder."))),
-        Box::new(GenericAdapter(AgentDef::ide_vscode("junie", "Junie", ".junie", "junie."))),
+        Box::new(GenericAdapter(AgentDef::ide_vscode(
+            "kilo",
+            "Kilo Code",
+            ".kilo",
+            "kilocode.",
+        ))),
+        Box::new(GenericAdapter(AgentDef::ide_vscode(
+            "augment", "Augment", ".augment", "augment.",
+        ))),
+        Box::new(GenericAdapter(AgentDef::ide_vscode(
+            "continue",
+            "Continue",
+            ".continue",
+            "continue.",
+        ))),
+        Box::new(GenericAdapter(AgentDef::ide_vscode(
+            "codebuddy",
+            "CodeBuddy",
+            ".codebuddy",
+            "codebuddy.",
+        ))),
+        Box::new(GenericAdapter(AgentDef::ide_vscode(
+            "antigravity",
+            "Antigravity",
+            ".antigravity",
+            "antigravity.",
+        ))),
+        Box::new(GenericAdapter(AgentDef::ide_vscode(
+            "zencoder",
+            "Zencoder",
+            ".zencoder",
+            "zencoder.",
+        ))),
+        Box::new(GenericAdapter(AgentDef::ide_vscode(
+            "junie", "Junie", ".junie", "junie.",
+        ))),
         // IDE agent with process detection
-        Box::new(GenericAdapter(AgentDef::ide_process("trae", "Trae", ".trae", "trae"))),
+        Box::new(GenericAdapter(AgentDef::ide_process(
+            "trae", "Trae", ".trae", "trae",
+        ))),
         // ConfigDirOnly detection
-        Box::new(GenericAdapter(AgentDef::config_dir_only("replit-agent", "Replit Agent", ".replit"))),
+        Box::new(GenericAdapter(AgentDef::config_dir_only(
+            "replit-agent",
+            "Replit Agent",
+            ".replit",
+        ))),
     ]
 }
 
@@ -397,7 +463,9 @@ mod tests {
         assert_eq!(def.name, "kilo");
         assert_eq!(def.lifecycle, LifecycleMode::FileInjectAndWait);
         assert!(!def.supports_prompt);
-        assert!(matches!(def.detection, DetectionMethod::VscodeExtension(ref p) if p == "kilocode."));
+        assert!(
+            matches!(def.detection, DetectionMethod::VscodeExtension(ref p) if p == "kilocode.")
+        );
     }
 
     #[test]
@@ -429,7 +497,11 @@ mod tests {
         let mut unique = names.clone();
         unique.sort();
         unique.dedup();
-        assert_eq!(names.len(), unique.len(), "duplicate Tier 3 agent names found");
+        assert_eq!(
+            names.len(),
+            unique.len(),
+            "duplicate Tier 3 agent names found"
+        );
     }
 
     #[test]
@@ -441,15 +513,29 @@ mod tests {
     #[test]
     fn test_tier3_no_conflict_with_tier12() {
         let tier12_dirs = [
-            ".claude", ".codex", ".copilot", ".cursor",
-            ".gemini", ".opencode", ".amp", ".windsurf", ".cline", ".roo",
+            ".claude",
+            ".codex",
+            ".copilot",
+            ".cursor",
+            ".gemini",
+            ".opencode",
+            ".amp",
+            ".windsurf",
+            ".cline",
+            ".roo",
         ];
         let adapters = tier3_adapters();
         for adapter in &adapters {
             let generic = adapter.as_ref();
             // Check inject path uses config_dir
             let path = generic.inject_path("test", &Scope::Project);
-            let config_dir = path.components().next().unwrap().as_os_str().to_string_lossy().to_string();
+            let config_dir = path
+                .components()
+                .next()
+                .unwrap()
+                .as_os_str()
+                .to_string_lossy()
+                .to_string();
             assert!(
                 !tier12_dirs.contains(&config_dir.as_str()),
                 "Tier 3 agent '{}' config_dir '{}' conflicts with Tier 1/2",

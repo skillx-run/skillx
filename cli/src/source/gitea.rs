@@ -59,11 +59,7 @@ impl GiteaSource {
     }
 
     /// Recursively fetch a directory from a Gitea instance.
-    async fn fetch_dir(
-        ctx: &FetchContext,
-        path: &str,
-        dest: &Path,
-    ) -> Result<Vec<PathBuf>> {
+    async fn fetch_dir(ctx: &FetchContext, path: &str, dest: &Path) -> Result<Vec<PathBuf>> {
         let mut url = format!(
             "https://{}/api/v1/repos/{}/{}/contents/{path}",
             ctx.host, ctx.owner, ctx.repo,
@@ -77,9 +73,10 @@ impl GiteaSource {
             req = req.header("Authorization", format!("token {t}"));
         }
 
-        let resp = req.send().await.map_err(|e| {
-            SkillxError::Network(format!("Gitea API request failed: {e}"))
-        })?;
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| SkillxError::Network(format!("Gitea API request failed: {e}")))?;
 
         match resp.status().as_u16() {
             401 => {
@@ -105,9 +102,10 @@ impl GiteaSource {
             _ => {}
         }
 
-        let body: serde_json::Value = resp.json().await.map_err(|e| {
-            SkillxError::GiteaApi(format!("failed to parse Gitea response: {e}"))
-        })?;
+        let body: serde_json::Value = resp
+            .json()
+            .await
+            .map_err(|e| SkillxError::GiteaApi(format!("failed to parse Gitea response: {e}")))?;
 
         let mut downloaded = Vec::new();
 
@@ -149,9 +147,10 @@ impl GiteaSource {
                             resp.status()
                         )));
                     }
-                    let bytes = resp.bytes().await.map_err(|e| {
-                        SkillxError::Network(format!("failed to read {name}: {e}"))
-                    })?;
+                    let bytes = resp
+                        .bytes()
+                        .await
+                        .map_err(|e| SkillxError::Network(format!("failed to read {name}: {e}")))?;
                     if let Some(parent) = dest_path.parent() {
                         std::fs::create_dir_all(parent).map_err(|e| {
                             SkillxError::Source(format!(
@@ -161,10 +160,7 @@ impl GiteaSource {
                         })?;
                     }
                     std::fs::write(&dest_path, &bytes).map_err(|e| {
-                        SkillxError::Source(format!(
-                            "failed to write {}: {e}",
-                            dest_path.display()
-                        ))
+                        SkillxError::Source(format!("failed to write {}: {e}", dest_path.display()))
                     })?;
                     Ok::<PathBuf, SkillxError>(dest_path)
                 })
@@ -182,8 +178,7 @@ impl GiteaSource {
                 if let Some(dir_path) = item["path"].as_str() {
                     let relative = strip_root_prefix(dir_path, &ctx.root_path);
                     let sub_dest = dest.join(relative);
-                    let sub_files =
-                        Box::pin(Self::fetch_dir(ctx, dir_path, &sub_dest)).await?;
+                    let sub_files = Box::pin(Self::fetch_dir(ctx, dir_path, &sub_dest)).await?;
                     downloaded.extend(sub_files);
                 }
             }

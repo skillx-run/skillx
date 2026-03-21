@@ -20,10 +20,7 @@ impl TextFormatter {
             return output;
         }
 
-        output.push_str(&format!(
-            "  Found {} issue(s):\n\n",
-            report.findings.len()
-        ));
+        output.push_str(&format!("  Found {} issue(s):\n\n", report.findings.len()));
 
         // Group by level (highest first)
         let mut sorted = report.findings.clone();
@@ -48,10 +45,7 @@ impl TextFormatter {
             finding.rule_id,
         ));
 
-        s.push_str(&format!(
-            "     File: {}",
-            finding.file,
-        ));
+        s.push_str(&format!("     File: {}", finding.file,));
         if let Some(line) = finding.line {
             s.push_str(&format!(":{line}"));
         }
@@ -63,10 +57,7 @@ impl TextFormatter {
             } else {
                 ctx.clone()
             };
-            s.push_str(&format!(
-                "     Context: {}\n",
-                style(&truncated).dim()
-            ));
+            s.push_str(&format!("     Context: {}\n", style(&truncated).dim()));
         }
 
         s

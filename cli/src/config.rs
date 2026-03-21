@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use crate::error::{Result, SkillxError};
 
 /// Global configuration loaded from `~/.skillx/config.toml`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
     pub cache: CacheConfig,
@@ -61,7 +61,7 @@ pub struct ScanConfig {
     pub default_fail_on: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct AgentConfig {
     pub defaults: AgentDefaults,
@@ -83,19 +83,6 @@ pub struct HistoryConfig {
     pub max_entries: u32,
 }
 
-impl Default for Config {
-    fn default() -> Self {
-        Config {
-            cache: CacheConfig::default(),
-            scan: ScanConfig::default(),
-            agent: AgentConfig::default(),
-            history: HistoryConfig::default(),
-            url_patterns: Vec::new(),
-            custom_agents: Vec::new(),
-        }
-    }
-}
-
 impl Default for CacheConfig {
     fn default() -> Self {
         CacheConfig {
@@ -109,14 +96,6 @@ impl Default for ScanConfig {
     fn default() -> Self {
         ScanConfig {
             default_fail_on: "danger".to_string(),
-        }
-    }
-}
-
-impl Default for AgentConfig {
-    fn default() -> Self {
-        AgentConfig {
-            defaults: AgentDefaults::default(),
         }
     }
 }
@@ -161,8 +140,9 @@ impl Config {
             base.join("history"),
         ];
         for dir in &dirs {
-            std::fs::create_dir_all(dir)
-                .map_err(|e| SkillxError::Config(format!("failed to create {}: {e}", dir.display())))?;
+            std::fs::create_dir_all(dir).map_err(|e| {
+                SkillxError::Config(format!("failed to create {}: {e}", dir.display()))
+            })?;
         }
         Ok(())
     }
@@ -208,13 +188,13 @@ pub fn parse_duration_secs(s: &str) -> Option<u64> {
     }
 
     let (num_str, suffix) = if s.ends_with('s') && !s.ends_with("ms") {
-        (&s[..s.len() - 1], "s")
+        (s.strip_suffix('s').unwrap_or(s), "s")
     } else if s.ends_with('m') && !s.ends_with("ms") {
-        (&s[..s.len() - 1], "m")
-    } else if s.ends_with('h') {
-        (&s[..s.len() - 1], "h")
-    } else if s.ends_with('d') {
-        (&s[..s.len() - 1], "d")
+        (s.strip_suffix('m').unwrap_or(s), "m")
+    } else if let Some(stripped) = s.strip_suffix('h') {
+        (stripped, "h")
+    } else if let Some(stripped) = s.strip_suffix('d') {
+        (stripped, "d")
     } else {
         (s, "s")
     };
@@ -331,7 +311,10 @@ lifecycle = "managed_process"
         let config: Config = toml::from_str(toml_str).unwrap();
         assert_eq!(config.cache.ttl, "48h");
         assert_eq!(config.scan.default_fail_on, "warn");
-        assert_eq!(config.agent.defaults.preferred.as_deref(), Some("claude-code"));
+        assert_eq!(
+            config.agent.defaults.preferred.as_deref(),
+            Some("claude-code")
+        );
         assert_eq!(config.history.max_entries, 100);
         assert_eq!(config.url_patterns.len(), 1);
         assert_eq!(config.custom_agents.len(), 1);

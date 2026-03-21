@@ -27,8 +27,7 @@ use crate::types::Scope;
 /// strings. This is acceptable because callers only feed it `--version` command
 /// output or VS Code extension dir suffixes, where such inputs don't occur.
 static VERSION_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
-    regex::Regex::new(r"(?:^|[^.\w])v?(\d+\.\d+(?:\.\d+)?)\b")
-        .expect("BUG: invalid version regex")
+    regex::Regex::new(r"(?:^|[^.\w])v?(\d+\.\d+(?:\.\d+)?)\b").expect("BUG: invalid version regex")
 });
 
 /// Extract a version string from command output (e.g. `claude v1.5.2`, `codex 0.9.1`).
@@ -58,13 +57,10 @@ pub async fn detect_binary_version(binary: &str) -> Option<String> {
         .spawn()
         .ok()?;
 
-    let output = tokio::time::timeout(
-        std::time::Duration::from_secs(3),
-        child.wait_with_output(),
-    )
-    .await
-    .ok()?
-    .ok()?;
+    let output = tokio::time::timeout(std::time::Duration::from_secs(3), child.wait_with_output())
+        .await
+        .ok()?
+        .ok()?;
 
     let text = String::from_utf8_lossy(&output.stdout);
     // Some tools write version to stderr
@@ -240,10 +236,7 @@ mod version_tests {
     #[test]
     fn test_extract_vscode_version_no_version() {
         assert_eq!(extract_vscode_extension_version("some.extension"), None);
-        assert_eq!(
-            extract_vscode_extension_version("publisher.name-abc"),
-            None
-        );
+        assert_eq!(extract_vscode_extension_version("publisher.name-abc"), None);
     }
 }
 

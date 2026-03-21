@@ -61,8 +61,8 @@ fn collect_files_recursive(dir: &Path, files: &mut Vec<PathBuf>) -> Result<()> {
         .map_err(|e| SkillxError::Source(format!("failed to read dir {}: {e}", dir.display())))?;
 
     for entry in entries {
-        let entry = entry
-            .map_err(|e| SkillxError::Source(format!("failed to read dir entry: {e}")))?;
+        let entry =
+            entry.map_err(|e| SkillxError::Source(format!("failed to read dir entry: {e}")))?;
         let path = entry.path();
         if path.is_dir() {
             collect_files_recursive(&path, files)?;

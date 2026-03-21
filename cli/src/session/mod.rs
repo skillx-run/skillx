@@ -53,8 +53,7 @@ impl Session {
             .map_err(|e| SkillxError::Session(format!("failed to read active dir: {e}")))?;
 
         for entry in entries {
-            let entry = entry
-                .map_err(|e| SkillxError::Session(format!("dir entry error: {e}")))?;
+            let entry = entry.map_err(|e| SkillxError::Session(format!("dir entry error: {e}")))?;
             if entry.path().is_dir() {
                 if let Some(name) = entry.file_name().to_str() {
                     sessions.push(name.to_string());

@@ -19,17 +19,14 @@ impl AgentAdapter for CursorAdapter {
 
     async fn detect(&self) -> DetectResult {
         let has_binary = which::which("cursor").is_ok();
-        let has_process = sysinfo::System::new_all()
-            .processes()
-            .values()
-            .any(|p| {
-                let name = p.name().to_string_lossy().to_lowercase();
-                // Match "cursor", "cursor helper", "Cursor.app" etc. but not "postcursor"
-                name == "cursor"
-                    || name.starts_with("cursor ")
-                    || name.starts_with("cursor.")
-                    || name.starts_with("cursor helper")
-            });
+        let has_process = sysinfo::System::new_all().processes().values().any(|p| {
+            let name = p.name().to_string_lossy().to_lowercase();
+            // Match "cursor", "cursor helper", "Cursor.app" etc. but not "postcursor"
+            name == "cursor"
+                || name.starts_with("cursor ")
+                || name.starts_with("cursor.")
+                || name.starts_with("cursor helper")
+        });
 
         let version = if has_binary {
             super::detect_binary_version("cursor").await
@@ -65,9 +62,7 @@ impl AgentAdapter for CursorAdapter {
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
         match scope {
-            Scope::Project => PathBuf::from(".cursor")
-                .join("skills")
-                .join(skill_name),
+            Scope::Project => PathBuf::from(".cursor").join("skills").join(skill_name),
             Scope::Global => super::home_dir_or_fallback()
                 .join(".cursor")
                 .join("skills")

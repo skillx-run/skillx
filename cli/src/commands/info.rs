@@ -43,9 +43,7 @@ pub async fn execute(args: InfoArgs) -> anyhow::Result<()> {
     eprintln!();
     ui::header("Files");
     for file in &files {
-        let rel = file
-            .strip_prefix(&root_dir)
-            .unwrap_or(file);
+        let rel = file.strip_prefix(&root_dir).unwrap_or(file);
         eprintln!("  {}", rel.display());
     }
     eprintln!("  ({} files total)", files.len());

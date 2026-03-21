@@ -73,10 +73,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     // Recover orphaned sessions from previous runs
     let orphans = recover_orphaned_sessions()?;
     if !orphans.is_empty() {
-        ui::info(&format!(
-            "Recovered {} orphaned session(s)",
-            orphans.len()
-        ));
+        ui::info(&format!("Recovered {} orphaned session(s)", orphans.len()));
     }
 
     // ── Phase 0: Load config ──
@@ -106,9 +103,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         pc.all_skills()
             .iter()
             .map(|(_name, value, _is_dev)| {
-                let skip = value
-                    .skip_scan()
-                    .unwrap_or(args.skip_scan);
+                let skip = value.skip_scan().unwrap_or(args.skip_scan);
                 let scope = value
                     .scope()
                     .map(|s| s.to_string())

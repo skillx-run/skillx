@@ -27,11 +27,7 @@ impl GistSource {
     /// Fetch all files from a GitHub Gist.
     ///
     /// API: GET /gists/:id returns JSON with `files` map containing content.
-    pub async fn fetch(
-        id: &str,
-        revision: Option<&str>,
-        dest: &Path,
-    ) -> Result<Vec<PathBuf>> {
+    pub async fn fetch(id: &str, revision: Option<&str>, dest: &Path) -> Result<Vec<PathBuf>> {
         let client = reqwest::Client::builder()
             .user_agent("skillx/0.3")
             .build()
@@ -49,9 +45,10 @@ impl GistSource {
             req = req.header("Authorization", format!("Bearer {t}"));
         }
 
-        let resp = req.send().await.map_err(|e| {
-            SkillxError::Network(format!("Gist API request failed: {e}"))
-        })?;
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| SkillxError::Network(format!("Gist API request failed: {e}")))?;
 
         match resp.status().as_u16() {
             401 => {
@@ -70,16 +67,15 @@ impl GistSource {
                 )));
             }
             s if !(200..300).contains(&s) => {
-                return Err(SkillxError::GistApi(format!(
-                    "Gist API returned HTTP {s}"
-                )));
+                return Err(SkillxError::GistApi(format!("Gist API returned HTTP {s}")));
             }
             _ => {}
         }
 
-        let body: serde_json::Value = resp.json().await.map_err(|e| {
-            SkillxError::GistApi(format!("failed to parse Gist response: {e}"))
-        })?;
+        let body: serde_json::Value = resp
+            .json()
+            .await
+            .map_err(|e| SkillxError::GistApi(format!("failed to parse Gist response: {e}")))?;
 
         let files = body["files"]
             .as_object()
@@ -105,9 +101,10 @@ impl GistSource {
                 let resp = req.send().await.map_err(|e| {
                     SkillxError::Network(format!("download failed for {filename}: {e}"))
                 })?;
-                let bytes = resp.bytes().await.map_err(|e| {
-                    SkillxError::Network(format!("failed to read {filename}: {e}"))
-                })?;
+                let bytes = resp
+                    .bytes()
+                    .await
+                    .map_err(|e| SkillxError::Network(format!("failed to read {filename}: {e}")))?;
                 let dest_path = dest.join(filename);
                 std::fs::write(&dest_path, &bytes).map_err(|e| {
                     SkillxError::Source(format!("failed to write {}: {e}", dest_path.display()))

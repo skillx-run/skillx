@@ -1,8 +1,8 @@
 use clap::Args;
 
 use skillx::config::Config;
-use skillx::scanner::{RiskLevel, ScanEngine};
 use skillx::scanner::report::{JsonFormatter, SarifFormatter, TextFormatter};
+use skillx::scanner::{RiskLevel, ScanEngine};
 use skillx::source::resolver;
 use skillx::ui;
 

@@ -64,10 +64,7 @@ impl HuggingFaceSource {
     }
 
     /// Recursively list and download files from a HuggingFace repo path.
-    async fn fetch_recursive(
-        ctx: &HfFetchContext<'_>,
-        api_path: &str,
-    ) -> Result<Vec<PathBuf>> {
+    async fn fetch_recursive(ctx: &HfFetchContext<'_>, api_path: &str) -> Result<Vec<PathBuf>> {
         let client = ctx.client;
         let token = ctx.token;
         let type_prefix = ctx.type_prefix;
@@ -79,9 +76,7 @@ impl HuggingFaceSource {
 
         // Build list URL
         let list_url = if api_path.is_empty() {
-            format!(
-                "https://huggingface.co/api/{type_prefix}/{owner}/{repo}/tree/{ref_name}"
-            )
+            format!("https://huggingface.co/api/{type_prefix}/{owner}/{repo}/tree/{ref_name}")
         } else {
             format!(
                 "https://huggingface.co/api/{type_prefix}/{owner}/{repo}/tree/{ref_name}/{api_path}"
@@ -93,9 +88,10 @@ impl HuggingFaceSource {
             req = req.header("Authorization", format!("Bearer {t}"));
         }
 
-        let resp = req.send().await.map_err(|e| {
-            SkillxError::Network(format!("HuggingFace API request failed: {e}"))
-        })?;
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| SkillxError::Network(format!("HuggingFace API request failed: {e}")))?;
 
         match resp.status().as_u16() {
             401 => {
@@ -122,9 +118,7 @@ impl HuggingFaceSource {
         }
 
         let entries: Vec<serde_json::Value> = resp.json().await.map_err(|e| {
-            SkillxError::HuggingFaceApi(format!(
-                "failed to parse HuggingFace API response: {e}"
-            ))
+            SkillxError::HuggingFaceApi(format!("failed to parse HuggingFace API response: {e}"))
         })?;
 
         let mut files = Vec::new();
@@ -154,9 +148,8 @@ impl HuggingFaceSource {
                 };
 
                 let dest_path = dest.join(&relative);
-                let download_url = Self::resolve_download_url(
-                    type_prefix, owner, repo, ref_name, rfilename,
-                );
+                let download_url =
+                    Self::resolve_download_url(type_prefix, owner, repo, ref_name, rfilename);
                 let client = client.clone();
                 let token = token.map(|t| t.to_string());
 
@@ -190,10 +183,7 @@ impl HuggingFaceSource {
                         })?;
                     }
                     std::fs::write(&dest_path, &bytes).map_err(|e| {
-                        SkillxError::Source(format!(
-                            "failed to write {}: {e}",
-                            dest_path.display()
-                        ))
+                        SkillxError::Source(format!("failed to write {}: {e}", dest_path.display()))
                     })?;
                     Ok::<PathBuf, SkillxError>(dest_path)
                 })
@@ -219,9 +209,8 @@ impl HuggingFaceSource {
                             .to_string()
                     };
                     let sub_dest = dest.join(&relative_dir);
-                    std::fs::create_dir_all(&sub_dest).map_err(|e| {
-                        SkillxError::Source(format!("failed to create dir: {e}"))
-                    })?;
+                    std::fs::create_dir_all(&sub_dest)
+                        .map_err(|e| SkillxError::Source(format!("failed to create dir: {e}")))?;
                     let sub_files = Box::pin(Self::fetch_recursive(ctx, dir_path)).await?;
                     files.extend(sub_files);
                 }
@@ -244,9 +233,7 @@ impl HuggingFaceSource {
         filepath: &str,
     ) -> String {
         if type_prefix == "models" {
-            format!(
-                "https://huggingface.co/{owner}/{repo}/resolve/{ref_name}/{filepath}"
-            )
+            format!("https://huggingface.co/{owner}/{repo}/resolve/{ref_name}/{filepath}")
         } else {
             format!(
                 "https://huggingface.co/{type_prefix}/{owner}/{repo}/resolve/{ref_name}/{filepath}"

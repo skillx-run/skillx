@@ -31,9 +31,9 @@ pub async fn execute(args: UninstallArgs) -> anyhow::Result<()> {
     let mut installed = InstalledState::load().unwrap_or_default();
 
     for name in &args.names {
-        let skill = installed.find_skill(name).ok_or_else(|| {
-            anyhow::anyhow!("skill '{}' is not installed", name)
-        })?;
+        let skill = installed
+            .find_skill(name)
+            .ok_or_else(|| anyhow::anyhow!("skill '{}' is not installed", name))?;
 
         if let Some(ref agent_filter) = args.agent {
             // Partial uninstall: only remove from specified agent
@@ -73,18 +73,12 @@ pub async fn execute(args: UninstallArgs) -> anyhow::Result<()> {
                     ));
                 }
             } else {
-                ui::warn(&format!(
-                    "{name} is not installed in {agent_filter}"
-                ));
+                ui::warn(&format!("{name} is not installed in {agent_filter}"));
             }
         } else {
             // Full uninstall
             let source = skill.source.clone();
-            let total_files: usize = skill
-                .injections
-                .iter()
-                .map(|inj| inj.files.len())
-                .sum();
+            let total_files: usize = skill.injections.iter().map(|inj| inj.files.len()).sum();
             let agents_list: Vec<&str> = skill
                 .injections
                 .iter()

@@ -52,9 +52,7 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
             if args.scope == "all" {
                 true
             } else {
-                s.injections
-                    .iter()
-                    .any(|inj| inj.scope == args.scope)
+                s.injections.iter().any(|inj| inj.scope == args.scope)
             }
         })
         .collect();
@@ -93,18 +91,13 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
             .map(|inj| inj.scope.as_str())
             .collect();
         let agents_str = agents.join(", ");
-        let scope_str = scopes
-            .first()
-            .copied()
-            .unwrap_or("n/a");
+        let scope_str = scopes.first().copied().unwrap_or("n/a");
 
         // Extract version from resolved_ref or source @ref
         let version = skill
             .resolved_ref
             .as_deref()
-            .or_else(|| {
-                skill.source.rsplit_once('@').map(|(_, v)| v)
-            })
+            .or_else(|| skill.source.rsplit_once('@').map(|(_, v)| v))
             .unwrap_or("-");
 
         let source_display = truncate_display(&skill.source, 36);
@@ -235,11 +228,7 @@ async fn check_outdated(
             .unwrap_or("-")
             .to_string();
 
-        let available_ref = fetched
-            .resolved_ref
-            .as_deref()
-            .unwrap_or("-")
-            .to_string();
+        let available_ref = fetched.resolved_ref.as_deref().unwrap_or("-").to_string();
 
         Ok(Some(OutdatedInfo {
             name: skill.name.clone(),

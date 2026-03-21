@@ -57,9 +57,7 @@ impl AgentAdapter for AmpAdapter {
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
         match scope {
-            Scope::Project => PathBuf::from(".amp")
-                .join("skills")
-                .join(skill_name),
+            Scope::Project => PathBuf::from(".amp").join("skills").join(skill_name),
             Scope::Global => super::home_dir_or_fallback()
                 .join(".amp")
                 .join("skills")
@@ -78,9 +76,9 @@ impl AgentAdapter for AmpAdapter {
             cmd.arg(arg);
         }
 
-        let child = cmd.spawn().map_err(|e| {
-            SkillxError::Agent(format!("failed to launch amp: {e}"))
-        })?;
+        let child = cmd
+            .spawn()
+            .map_err(|e| SkillxError::Agent(format!("failed to launch amp: {e}")))?;
 
         Ok(SessionHandle {
             child: Some(child),

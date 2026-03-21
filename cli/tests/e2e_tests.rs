@@ -23,11 +23,7 @@ fn test_version() {
 
 #[test]
 fn test_unknown_command() {
-    skillx()
-        .arg("foobar")
-        .assert()
-        .failure()
-        .code(2);
+    skillx().arg("foobar").assert().failure().code(2);
 }
 
 // ==================== scan ====================
@@ -52,7 +48,12 @@ fn test_scan_dangerous_skill_default() {
 #[test]
 fn test_scan_dangerous_skill_fail_on_warn() {
     skillx()
-        .args(["scan", "./tests/fixtures/dangerous-skill", "--fail-on", "warn"])
+        .args([
+            "scan",
+            "./tests/fixtures/dangerous-skill",
+            "--fail-on",
+            "warn",
+        ])
         .assert()
         .failure();
 }
@@ -66,7 +67,8 @@ fn test_scan_json_format() {
         .get_output()
         .stdout
         .clone();
-    let parsed: serde_json::Value = serde_json::from_slice(&output).expect("stdout should be valid JSON");
+    let parsed: serde_json::Value =
+        serde_json::from_slice(&output).expect("stdout should be valid JSON");
     assert!(parsed["findings"].is_array());
 }
 
@@ -80,7 +82,10 @@ fn test_scan_sarif_format() {
         .stdout
         .clone();
     let text = String::from_utf8_lossy(&output);
-    assert!(text.contains("$schema"), "SARIF output should contain $schema");
+    assert!(
+        text.contains("$schema"),
+        "SARIF output should contain $schema"
+    );
 }
 
 #[test]
@@ -159,7 +164,11 @@ fn test_init_creates_toml() {
 #[test]
 fn test_init_fails_if_exists() {
     let dir = tempfile::TempDir::new().unwrap();
-    std::fs::write(dir.path().join("skillx.toml"), "[project]\nname = \"test\"\n").unwrap();
+    std::fs::write(
+        dir.path().join("skillx.toml"),
+        "[project]\nname = \"test\"\n",
+    )
+    .unwrap();
     skillx()
         .arg("init")
         .current_dir(dir.path())

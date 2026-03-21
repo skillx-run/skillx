@@ -35,10 +35,7 @@ pub fn gate_scan_result(
         RiskLevel::Pass | RiskLevel::Info => {}
         RiskLevel::Warn => {
             if !auto_yes {
-                eprint!(
-                    "{} Continue? [Y/n] ",
-                    style("⚠").yellow().bold()
-                );
+                eprint!("{} Continue? [Y/n] ", style("⚠").yellow().bold());
                 std::io::stderr().flush().ok();
                 let mut input = String::new();
                 std::io::stdin().lock().read_line(&mut input)?;
@@ -51,7 +48,9 @@ pub fn gate_scan_result(
         RiskLevel::Danger => {
             eprintln!(
                 "\n{}",
-                style("DANGER level findings detected. Review carefully.").red().bold()
+                style("DANGER level findings detected. Review carefully.")
+                    .red()
+                    .bold()
             );
             eprintln!(
                 "Type '{}' to see finding details, or type '{}' to continue:",
@@ -83,11 +82,7 @@ pub fn gate_scan_result(
                         if n > 0 && n <= sorted_findings.len() {
                             let finding = &sorted_findings[n - 1];
                             eprintln!("\n{}", style("─".repeat(SEPARATOR_WIDTH)).dim());
-                            eprintln!(
-                                "  Rule:    {} ({})",
-                                finding.rule_id,
-                                finding.level
-                            );
+                            eprintln!("  Rule:    {} ({})", finding.rule_id, finding.level);
                             eprintln!("  File:    {}", finding.file);
                             if let Some(line) = finding.line {
                                 eprintln!("  Line:    {line}");
@@ -138,15 +133,16 @@ pub fn gate_scan_result(
                             }
                             eprintln!("{}", style("─".repeat(SEPARATOR_WIDTH)).dim());
                         } else {
-                            eprintln!("  Invalid finding number. Valid range: 1-{}", sorted_findings.len());
+                            eprintln!(
+                                "  Invalid finding number. Valid range: 1-{}",
+                                sorted_findings.len()
+                            );
                         }
                     } else {
                         eprintln!("  Usage: detail <number>");
                     }
                 } else {
-                    eprintln!(
-                        "  Type 'yes' to continue, 'no' to abort, or 'detail N' to inspect"
-                    );
+                    eprintln!("  Type 'yes' to continue, 'no' to abort, or 'detail N' to inspect");
                 }
             }
         }
@@ -188,9 +184,7 @@ mod tests {
 
     #[test]
     fn test_gate_pass_auto() {
-        let report = ScanReport {
-            findings: vec![],
-        };
+        let report = ScanReport { findings: vec![] };
         let result = gate_scan_result(&Some(report), Path::new("."), false);
         assert!(result.is_ok());
     }

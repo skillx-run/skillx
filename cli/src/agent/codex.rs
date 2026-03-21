@@ -61,9 +61,7 @@ impl AgentAdapter for CodexAdapter {
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
         match scope {
-            Scope::Project => PathBuf::from(".agents")
-                .join("skills")
-                .join(skill_name),
+            Scope::Project => PathBuf::from(".agents").join("skills").join(skill_name),
             Scope::Global => super::home_dir_or_fallback()
                 .join(".codex")
                 .join("skills")
@@ -88,9 +86,9 @@ impl AgentAdapter for CodexAdapter {
             cmd.arg(arg);
         }
 
-        let child = cmd.spawn().map_err(|e| {
-            SkillxError::Agent(format!("failed to launch codex: {e}"))
-        })?;
+        let child = cmd
+            .spawn()
+            .map_err(|e| SkillxError::Agent(format!("failed to launch codex: {e}")))?;
 
         Ok(SessionHandle {
             child: Some(child),

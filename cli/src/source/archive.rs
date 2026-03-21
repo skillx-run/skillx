@@ -13,19 +13,17 @@ pub struct ArchiveSource;
 
 impl ArchiveSource {
     /// Download and extract an archive to the destination directory.
-    pub async fn fetch(
-        url: &str,
-        format: &ArchiveFormat,
-        dest: &Path,
-    ) -> Result<Vec<PathBuf>> {
+    pub async fn fetch(url: &str, format: &ArchiveFormat, dest: &Path) -> Result<Vec<PathBuf>> {
         let client = reqwest::Client::builder()
             .user_agent("skillx/0.3")
             .build()
             .map_err(|e| SkillxError::Network(format!("failed to create HTTP client: {e}")))?;
 
-        let resp = client.get(url).send().await.map_err(|e| {
-            SkillxError::Network(format!("archive download failed: {e}"))
-        })?;
+        let resp = client
+            .get(url)
+            .send()
+            .await
+            .map_err(|e| SkillxError::Network(format!("archive download failed: {e}")))?;
 
         if !resp.status().is_success() {
             return Err(SkillxError::Archive(format!(
@@ -34,9 +32,10 @@ impl ArchiveSource {
             )));
         }
 
-        let bytes = resp.bytes().await.map_err(|e| {
-            SkillxError::Network(format!("failed to read archive: {e}"))
-        })?;
+        let bytes = resp
+            .bytes()
+            .await
+            .map_err(|e| SkillxError::Network(format!("failed to read archive: {e}")))?;
 
         if bytes.len() as u64 > MAX_TOTAL_SIZE {
             return Err(SkillxError::Archive(format!(
@@ -84,10 +83,7 @@ impl ArchiveSource {
             let raw_name = entry
                 .enclosed_name()
                 .ok_or_else(|| {
-                    SkillxError::Archive(format!(
-                        "zip entry has unsafe path: {}",
-                        entry.name()
-                    ))
+                    SkillxError::Archive(format!("zip entry has unsafe path: {}", entry.name()))
                 })?
                 .to_path_buf();
 
@@ -121,9 +117,8 @@ impl ArchiveSource {
             }
 
             if entry.is_dir() {
-                std::fs::create_dir_all(&out_path).map_err(|e| {
-                    SkillxError::Source(format!("failed to create dir: {e}"))
-                })?;
+                std::fs::create_dir_all(&out_path)
+                    .map_err(|e| SkillxError::Source(format!("failed to create dir: {e}")))?;
             } else {
                 total_size += entry.size();
                 if total_size > MAX_TOTAL_SIZE {
@@ -133,19 +128,15 @@ impl ArchiveSource {
                 }
 
                 if let Some(parent) = out_path.parent() {
-                    std::fs::create_dir_all(parent).map_err(|e| {
-                        SkillxError::Source(format!("failed to create dir: {e}"))
-                    })?;
+                    std::fs::create_dir_all(parent)
+                        .map_err(|e| SkillxError::Source(format!("failed to create dir: {e}")))?;
                 }
                 let mut buf = Vec::new();
-                entry.read_to_end(&mut buf).map_err(|e| {
-                    SkillxError::Archive(format!("failed to read zip entry: {e}"))
-                })?;
+                entry
+                    .read_to_end(&mut buf)
+                    .map_err(|e| SkillxError::Archive(format!("failed to read zip entry: {e}")))?;
                 std::fs::write(&out_path, &buf).map_err(|e| {
-                    SkillxError::Source(format!(
-                        "failed to write {}: {e}",
-                        out_path.display()
-                    ))
+                    SkillxError::Source(format!("failed to write {}: {e}", out_path.display()))
                 })?;
                 files.push(out_path);
             }
@@ -179,12 +170,12 @@ impl ArchiveSource {
         }
         let single_root = detect_single_root_tar(&paths);
 
-        for entry in archive.entries().map_err(|e| {
-            SkillxError::Archive(format!("failed to read tar entries: {e}"))
-        })? {
-            let mut entry = entry.map_err(|e| {
-                SkillxError::Archive(format!("failed to read tar entry: {e}"))
-            })?;
+        for entry in archive
+            .entries()
+            .map_err(|e| SkillxError::Archive(format!("failed to read tar entries: {e}")))?
+        {
+            let mut entry = entry
+                .map_err(|e| SkillxError::Archive(format!("failed to read tar entry: {e}")))?;
 
             file_count += 1;
             if file_count > MAX_FILE_COUNT {
@@ -193,9 +184,10 @@ impl ArchiveSource {
                 )));
             }
 
-            let raw_path = entry.path().map_err(|e| {
-                SkillxError::Archive(format!("invalid tar entry path: {e}"))
-            })?.to_path_buf();
+            let raw_path = entry
+                .path()
+                .map_err(|e| SkillxError::Archive(format!("invalid tar entry path: {e}")))?
+                .to_path_buf();
 
             // Path traversal protection
             let path_str = raw_path.to_string_lossy();
@@ -242,20 +234,15 @@ impl ArchiveSource {
             }
 
             if entry_type.is_dir() {
-                std::fs::create_dir_all(&out_path).map_err(|e| {
-                    SkillxError::Source(format!("failed to create dir: {e}"))
-                })?;
+                std::fs::create_dir_all(&out_path)
+                    .map_err(|e| SkillxError::Source(format!("failed to create dir: {e}")))?;
             } else if entry_type.is_file() {
                 if let Some(parent) = out_path.parent() {
-                    std::fs::create_dir_all(parent).map_err(|e| {
-                        SkillxError::Source(format!("failed to create dir: {e}"))
-                    })?;
+                    std::fs::create_dir_all(parent)
+                        .map_err(|e| SkillxError::Source(format!("failed to create dir: {e}")))?;
                 }
                 entry.unpack(&out_path).map_err(|e| {
-                    SkillxError::Archive(format!(
-                        "failed to unpack {}: {e}",
-                        out_path.display()
-                    ))
+                    SkillxError::Archive(format!("failed to unpack {}: {e}", out_path.display()))
                 })?;
                 files.push(out_path);
             }
@@ -290,7 +277,9 @@ fn path_is_within(parent: &Path, child: &Path) -> bool {
 }
 
 /// Detect if all entries in a zip share a single root directory.
-fn detect_single_root_zip(archive: &mut zip::ZipArchive<std::io::Cursor<&[u8]>>) -> Option<PathBuf> {
+fn detect_single_root_zip(
+    archive: &mut zip::ZipArchive<std::io::Cursor<&[u8]>>,
+) -> Option<PathBuf> {
     let mut root: Option<String> = None;
     for i in 0..archive.len() {
         if let Ok(entry) = archive.by_index_raw(i) {
@@ -350,10 +339,7 @@ mod tests {
 
     #[test]
     fn test_detect_no_single_root_tar() {
-        let paths = vec![
-            PathBuf::from("SKILL.md"),
-            PathBuf::from("prompt.md"),
-        ];
+        let paths = vec![PathBuf::from("SKILL.md"), PathBuf::from("prompt.md")];
         // All entries at root level — each file is its own "root"
         // This should still return Some since SKILL.md and prompt.md have different first components
         let result = detect_single_root_tar(&paths);

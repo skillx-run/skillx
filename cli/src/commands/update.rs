@@ -54,9 +54,9 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
     } else {
         let mut entries = Vec::new();
         for name in &args.names {
-            let skill = installed.find_skill(name).ok_or_else(|| {
-                anyhow::anyhow!("skill '{}' is not installed", name)
-            })?;
+            let skill = installed
+                .find_skill(name)
+                .ok_or_else(|| anyhow::anyhow!("skill '{}' is not installed", name))?;
             entries.push((skill.name.clone(), skill.source.clone()));
         }
         entries
@@ -100,7 +100,9 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
                     .collect();
 
                 if new_hashes != installed_hashes {
-                    let old_version = skill.resolved_ref.as_deref()
+                    let old_version = skill
+                        .resolved_ref
+                        .as_deref()
                         .or_else(|| skill.source.rsplit_once('@').map(|(_, v)| v))
                         .map(|s| s.to_string());
                     let files_changed: usize = new_hashes
@@ -249,4 +251,3 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
     ui::success(&format!("Updated {} skill(s)", updated_count));
     Ok(())
 }
-

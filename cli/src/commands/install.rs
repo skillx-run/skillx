@@ -69,10 +69,7 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
     }
 
     // Explicit install mode
-    let scope: Scope = args
-        .scope
-        .parse()
-        .map_err(|e: String| anyhow::anyhow!(e))?;
+    let scope: Scope = args.scope.parse().map_err(|e: String| anyhow::anyhow!(e))?;
 
     // Resolve and scan each source
     struct Resolved {
@@ -127,9 +124,9 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
     // Install each skill to each agent
     for skill in &resolved {
         for agent_name in &target_agents {
-            let adapter = registry.get(agent_name).ok_or_else(|| {
-                anyhow::anyhow!("agent not found: {agent_name}")
-            })?;
+            let adapter = registry
+                .get(agent_name)
+                .ok_or_else(|| anyhow::anyhow!("agent not found: {agent_name}"))?;
             let inject_path = adapter.inject_path(&skill.name, &scope);
 
             // Conflict detection
@@ -210,13 +207,11 @@ async fn install_from_toml(
     config: &Config,
     installed: &mut InstalledState,
 ) -> anyhow::Result<()> {
-    let pc = ProjectConfig::load(Path::new("."))?
-        .ok_or_else(|| anyhow::anyhow!("No skillx.toml found. Provide source arguments or run 'skillx init'."))?;
+    let pc = ProjectConfig::load(Path::new("."))?.ok_or_else(|| {
+        anyhow::anyhow!("No skillx.toml found. Provide source arguments or run 'skillx init'.")
+    })?;
 
-    let scope: Scope = args
-        .scope
-        .parse()
-        .map_err(|e: String| anyhow::anyhow!(e))?;
+    let scope: Scope = args.scope.parse().map_err(|e: String| anyhow::anyhow!(e))?;
 
     let all_skills = pc.all_skills();
     let skills_to_install: Vec<_> = all_skills
@@ -294,9 +289,9 @@ async fn install_from_toml(
         };
 
         for agent_name in &target_agents {
-            let adapter = registry.get(agent_name).ok_or_else(|| {
-                anyhow::anyhow!("agent not found: {agent_name}")
-            })?;
+            let adapter = registry
+                .get(agent_name)
+                .ok_or_else(|| anyhow::anyhow!("agent not found: {agent_name}"))?;
             let inject_path = adapter.inject_path(&fetched.name, &skill_scope);
 
             let records = inject_and_collect(&fetched.dir, &inject_path)?;
@@ -346,8 +341,10 @@ async fn install_from_toml(
 
     // Prune: remove skills not in toml (skip those with active sessions)
     if args.prune {
-        let toml_names: std::collections::HashSet<String> =
-            skills_to_install.iter().map(|(n, _, _)| n.clone()).collect();
+        let toml_names: std::collections::HashSet<String> = skills_to_install
+            .iter()
+            .map(|(n, _, _)| n.clone())
+            .collect();
         let to_remove: Vec<String> = installed
             .skills
             .iter()
@@ -384,9 +381,9 @@ async fn select_agents(
 ) -> anyhow::Result<Vec<String>> {
     if let Some(ref agent) = args.agent {
         // Verify it exists
-        registry.get(agent).ok_or_else(|| {
-            anyhow::anyhow!("unknown agent: '{agent}'")
-        })?;
+        registry
+            .get(agent)
+            .ok_or_else(|| anyhow::anyhow!("unknown agent: '{agent}'"))?;
         return Ok(vec![agent.clone()]);
     }
 
@@ -412,14 +409,17 @@ async fn select_agents(
 
     // config.toml preferred (no interaction for install)
     if let Some(ref preferred) = config.agent.defaults.preferred {
-        registry.get(preferred).ok_or_else(|| {
-            anyhow::anyhow!("preferred agent not found: '{preferred}'")
-        })?;
+        registry
+            .get(preferred)
+            .ok_or_else(|| anyhow::anyhow!("preferred agent not found: '{preferred}'"))?;
         return Ok(vec![preferred.clone()]);
     }
 
     // Auto-detect
-    let adapter = registry.select(None).await.map_err(|e| anyhow::anyhow!("{e}"))?;
+    let adapter = registry
+        .select(None)
+        .await
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
     Ok(vec![adapter.name().to_string()])
 }
 
@@ -438,8 +438,12 @@ fn check_conflicts(
                     let manifest_path = entry.path().join("manifest.json");
                     if manifest_path.exists() {
                         if let Ok(content) = std::fs::read_to_string(&manifest_path) {
-                            if let Ok(manifest) = serde_json::from_str::<serde_json::Value>(&content) {
-                                if manifest.get("skill_name").and_then(|v| v.as_str()) == Some(skill_name) {
+                            if let Ok(manifest) =
+                                serde_json::from_str::<serde_json::Value>(&content)
+                            {
+                                if manifest.get("skill_name").and_then(|v| v.as_str())
+                                    == Some(skill_name)
+                                {
                                     return Err(anyhow::anyhow!(
                                         "skill '{}' has an active run session. Wait for it to finish or clean up first.",
                                         skill_name
@@ -497,7 +501,8 @@ pub fn remove_injected_files(skill: &InstalledSkill) {
 /// Clean up empty parent directories after file removal.
 fn cleanup_empty_parents(base_path: &str, files: &[InjectedFileRecord]) {
     let base = std::path::Path::new(base_path);
-    let mut dirs: std::collections::BTreeSet<std::path::PathBuf> = std::collections::BTreeSet::new();
+    let mut dirs: std::collections::BTreeSet<std::path::PathBuf> =
+        std::collections::BTreeSet::new();
 
     for file in files {
         let full = base.join(&file.relative);

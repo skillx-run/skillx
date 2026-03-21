@@ -75,9 +75,9 @@ impl AgentRegistry {
     /// Select an agent, with auto-detection or explicit name.
     pub async fn select(&self, name: Option<&str>) -> Result<&dyn AgentAdapter> {
         if let Some(name) = name {
-            return self.get(name).ok_or_else(|| {
-                SkillxError::Agent(format!("unknown agent: '{name}'"))
-            });
+            return self
+                .get(name)
+                .ok_or_else(|| SkillxError::Agent(format!("unknown agent: '{name}'")));
         }
 
         let detected: Vec<_> = self
@@ -117,9 +117,8 @@ impl AgentRegistry {
                     .interact()
                     .map_err(|e| SkillxError::Agent(format!("selection failed: {e}")))?;
 
-                self.get(&detected[selection].name).ok_or_else(|| {
-                    SkillxError::Agent("selected agent not found".into())
-                })
+                self.get(&detected[selection].name)
+                    .ok_or_else(|| SkillxError::Agent("selected agent not found".into()))
             }
         }
     }

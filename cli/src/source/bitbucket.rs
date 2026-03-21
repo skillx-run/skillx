@@ -73,20 +73,17 @@ impl BitbucketSource {
     }
 
     /// Recursively fetch a Bitbucket directory.
-    async fn fetch_dir(
-        ctx: &FetchContext,
-        path: &str,
-        dest: &Path,
-    ) -> Result<Vec<PathBuf>> {
+    async fn fetch_dir(ctx: &FetchContext, path: &str, dest: &Path) -> Result<Vec<PathBuf>> {
         let url = format!(
             "https://api.bitbucket.org/2.0/repositories/{}/{}/src/{}/{path}",
             ctx.owner, ctx.repo, ctx.ref_,
         );
 
         let req = ctx.auth_request(ctx.client.get(&url));
-        let resp = req.send().await.map_err(|e| {
-            SkillxError::Network(format!("Bitbucket API request failed: {e}"))
-        })?;
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| SkillxError::Network(format!("Bitbucket API request failed: {e}")))?;
 
         match resp.status().as_u16() {
             401 => {
@@ -116,11 +113,9 @@ impl BitbucketSource {
             SkillxError::BitbucketApi(format!("failed to parse Bitbucket response: {e}"))
         })?;
 
-        let values = body["values"]
-            .as_array()
-            .ok_or_else(|| {
-                SkillxError::BitbucketApi("unexpected Bitbucket API response format".into())
-            })?;
+        let values = body["values"].as_array().ok_or_else(|| {
+            SkillxError::BitbucketApi("unexpected Bitbucket API response format".into())
+        })?;
 
         let mut downloaded = Vec::new();
 
@@ -161,9 +156,10 @@ impl BitbucketSource {
                             resp.status()
                         )));
                     }
-                    let bytes = resp.bytes().await.map_err(|e| {
-                        SkillxError::Network(format!("failed to read {name}: {e}"))
-                    })?;
+                    let bytes = resp
+                        .bytes()
+                        .await
+                        .map_err(|e| SkillxError::Network(format!("failed to read {name}: {e}")))?;
                     if let Some(parent) = dest_path.parent() {
                         std::fs::create_dir_all(parent).map_err(|e| {
                             SkillxError::Source(format!(
@@ -173,10 +169,7 @@ impl BitbucketSource {
                         })?;
                     }
                     std::fs::write(&dest_path, &bytes).map_err(|e| {
-                        SkillxError::Source(format!(
-                            "failed to write {}: {e}",
-                            dest_path.display()
-                        ))
+                        SkillxError::Source(format!("failed to write {}: {e}", dest_path.display()))
                     })?;
                     Ok::<PathBuf, SkillxError>(dest_path)
                 })

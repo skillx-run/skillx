@@ -28,10 +28,7 @@ pub async fn execute(args: CacheArgs) -> anyhow::Result<()> {
 
             ui::header("Cached Skills");
             for entry in &entries {
-                let name = entry
-                    .skill_name
-                    .as_deref()
-                    .unwrap_or("(unnamed)");
+                let name = entry.skill_name.as_deref().unwrap_or("(unnamed)");
                 eprintln!(
                     "  {} — {} (cached {})",
                     console::style(name).bold(),

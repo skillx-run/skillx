@@ -13,10 +13,7 @@ use super::manifest::Manifest;
 pub fn cleanup_session(session_dir: &Path) -> Result<()> {
     let manifest_path = Manifest::manifest_path(session_dir);
     if !manifest_path.exists() {
-        ui::warn(&format!(
-            "No manifest found in {}",
-            session_dir.display()
-        ));
+        ui::warn(&format!("No manifest found in {}", session_dir.display()));
         return Ok(());
     }
 
@@ -37,10 +34,7 @@ pub fn cleanup_session(session_dir: &Path) -> Result<()> {
             };
 
             if modified {
-                ui::warn(&format!(
-                    "File was modified during session: {}",
-                    file.path
-                ));
+                ui::warn(&format!("File was modified during session: {}", file.path));
                 // Only prompt interactively when stdin is a TTY;
                 // in non-interactive contexts (piped, CI, signal handler)
                 // fall through to remove the file with the warning above.
@@ -216,8 +210,7 @@ fn recover_orphaned_sessions_inner(interactive: bool) -> Result<Vec<String>> {
         .map_err(|e| SkillxError::Session(format!("failed to read active dir: {e}")))?;
 
     for entry in entries {
-        let entry = entry
-            .map_err(|e| SkillxError::Session(format!("dir entry error: {e}")))?;
+        let entry = entry.map_err(|e| SkillxError::Session(format!("dir entry error: {e}")))?;
         if entry.path().is_dir() {
             orphan_entries.push(entry);
         }

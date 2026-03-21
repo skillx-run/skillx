@@ -43,17 +43,17 @@ impl ResourceAnalyzer {
         }
 
         // RS-003: Executable in references/ (shared detection)
-        if rel_path.starts_with("references/") || rel_path.starts_with("references\\") {
-            if BinaryAnalyzer::is_executable(path)? {
-                report.add(Finding {
-                    rule_id: "RS-003".to_string(),
-                    level: RiskLevel::Danger,
-                    message: "executable file in references directory".to_string(),
-                    file: rel_path.to_string(),
-                    line: None,
-                    context: None,
-                });
-            }
+        if (rel_path.starts_with("references/") || rel_path.starts_with("references\\"))
+            && BinaryAnalyzer::is_executable(path)?
+        {
+            report.add(Finding {
+                rule_id: "RS-003".to_string(),
+                level: RiskLevel::Danger,
+                message: "executable file in references directory".to_string(),
+                file: rel_path.to_string(),
+                line: None,
+                context: None,
+            });
         }
 
         Ok(report)
@@ -90,8 +90,14 @@ impl ResourceAnalyzer {
             ("zip", &["application/zip"]),
             ("gz", &["application/gzip"]),
             ("tar", &["application/x-tar"]),
-            ("doc", &["application/msword", "application/vnd.openxmlformats"]),
-            ("docx", &["application/vnd.openxmlformats", "application/zip"]),
+            (
+                "doc",
+                &["application/msword", "application/vnd.openxmlformats"],
+            ),
+            (
+                "docx",
+                &["application/vnd.openxmlformats", "application/zip"],
+            ),
             ("txt", &[]), // text has no magic bytes
         ];
 

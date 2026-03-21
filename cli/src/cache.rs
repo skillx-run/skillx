@@ -79,9 +79,8 @@ impl CacheManager {
         }
 
         // Copy files
-        std::fs::create_dir_all(&skill_dir).map_err(|e| {
-            SkillxError::Cache(format!("failed to create cache dir: {e}"))
-        })?;
+        std::fs::create_dir_all(&skill_dir)
+            .map_err(|e| SkillxError::Cache(format!("failed to create cache dir: {e}")))?;
         copy_dir_all(source_dir, &skill_dir)?;
 
         // Write meta
@@ -112,8 +111,7 @@ impl CacheManager {
             .map_err(|e| SkillxError::Cache(format!("failed to read cache dir: {e}")))?;
 
         for entry in dir_entries {
-            let entry = entry
-                .map_err(|e| SkillxError::Cache(format!("dir entry error: {e}")))?;
+            let entry = entry.map_err(|e| SkillxError::Cache(format!("dir entry error: {e}")))?;
             let meta_path = entry.path().join("meta.json");
             if meta_path.exists() {
                 if let Ok(content) = std::fs::read_to_string(&meta_path) {
@@ -139,8 +137,7 @@ impl CacheManager {
             .map_err(|e| SkillxError::Cache(format!("failed to read cache dir: {e}")))?;
 
         for entry in entries {
-            let entry = entry
-                .map_err(|e| SkillxError::Cache(format!("dir entry error: {e}")))?;
+            let entry = entry.map_err(|e| SkillxError::Cache(format!("dir entry error: {e}")))?;
             if entry.path().is_dir() {
                 if let Err(e) = std::fs::remove_dir_all(entry.path()) {
                     ui::warn(&format!(

@@ -48,9 +48,10 @@ impl GitLabSource {
             req = req.header("PRIVATE-TOKEN", t.as_str());
         }
 
-        let resp = req.send().await.map_err(|e| {
-            SkillxError::Network(format!("GitLab API request failed: {e}"))
-        })?;
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| SkillxError::Network(format!("GitLab API request failed: {e}")))?;
 
         match resp.status().as_u16() {
             401 => {
@@ -126,9 +127,10 @@ impl GitLabSource {
                             resp.status()
                         )));
                     }
-                    let bytes = resp.bytes().await.map_err(|e| {
-                        SkillxError::Network(format!("failed to read {name}: {e}"))
-                    })?;
+                    let bytes = resp
+                        .bytes()
+                        .await
+                        .map_err(|e| SkillxError::Network(format!("failed to read {name}: {e}")))?;
                     if let Some(parent) = dest_path.parent() {
                         std::fs::create_dir_all(parent).map_err(|e| {
                             SkillxError::Source(format!(
@@ -138,10 +140,7 @@ impl GitLabSource {
                         })?;
                     }
                     std::fs::write(&dest_path, &bytes).map_err(|e| {
-                        SkillxError::Source(format!(
-                            "failed to write {}: {e}",
-                            dest_path.display()
-                        ))
+                        SkillxError::Source(format!("failed to write {}: {e}", dest_path.display()))
                     })?;
                     Ok::<PathBuf, SkillxError>(dest_path)
                 })

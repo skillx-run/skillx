@@ -65,12 +65,10 @@ impl InstalledState {
         if !path.exists() {
             return Ok(Self::default());
         }
-        let content = std::fs::read_to_string(&path).map_err(|e| {
-            SkillxError::Install(format!("failed to read installed.json: {e}"))
-        })?;
-        let state: InstalledState = serde_json::from_str(&content).map_err(|e| {
-            SkillxError::Install(format!("failed to parse installed.json: {e}"))
-        })?;
+        let content = std::fs::read_to_string(&path)
+            .map_err(|e| SkillxError::Install(format!("failed to read installed.json: {e}")))?;
+        let state: InstalledState = serde_json::from_str(&content)
+            .map_err(|e| SkillxError::Install(format!("failed to parse installed.json: {e}")))?;
         // Version check for future format migrations
         if state.version > 1 {
             return Err(SkillxError::Install(format!(
@@ -360,10 +358,7 @@ mod tests {
         assert!(json.contains("\"resolved_ref\": \"v1.3\""));
 
         let loaded: InstalledState = serde_json::from_str(&json).unwrap();
-        assert_eq!(
-            loaded.skills[0].resolved_ref.as_deref(),
-            Some("v1.3")
-        );
+        assert_eq!(loaded.skills[0].resolved_ref.as_deref(), Some("v1.3"));
     }
 
     #[test]

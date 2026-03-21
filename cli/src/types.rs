@@ -2,10 +2,11 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Injection scope: project-level or global-level.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Scope {
     Project,
+    #[default]
     Global,
 }
 
@@ -25,13 +26,9 @@ impl std::str::FromStr for Scope {
         match s.to_lowercase().as_str() {
             "project" => Ok(Scope::Project),
             "global" => Ok(Scope::Global),
-            _ => Err(format!("invalid scope: '{s}', expected 'project' or 'global'")),
+            _ => Err(format!(
+                "invalid scope: '{s}', expected 'project' or 'global'"
+            )),
         }
-    }
-}
-
-impl Default for Scope {
-    fn default() -> Self {
-        Scope::Global
     }
 }

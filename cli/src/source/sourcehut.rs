@@ -18,9 +18,7 @@ impl SourceHutSource {
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
         let ref_name = ref_.unwrap_or("HEAD");
-        let tarball_url = format!(
-            "https://git.sr.ht/~{owner}/{repo}/archive/{ref_name}.tar.gz"
-        );
+        let tarball_url = format!("https://git.sr.ht/~{owner}/{repo}/archive/{ref_name}.tar.gz");
 
         let client = reqwest::Client::builder()
             .user_agent("skillx/0.3")
@@ -34,9 +32,10 @@ impl SourceHutSource {
             req = req.header("Authorization", format!("Bearer {t}"));
         }
 
-        let resp = req.send().await.map_err(|e| {
-            SkillxError::Network(format!("SourceHut tarball download failed: {e}"))
-        })?;
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| SkillxError::Network(format!("SourceHut tarball download failed: {e}")))?;
 
         match resp.status().as_u16() {
             401 => {
@@ -62,14 +61,14 @@ impl SourceHutSource {
             _ => {}
         }
 
-        let bytes = resp.bytes().await.map_err(|e| {
-            SkillxError::Network(format!("failed to read SourceHut tarball: {e}"))
-        })?;
+        let bytes = resp
+            .bytes()
+            .await
+            .map_err(|e| SkillxError::Network(format!("failed to read SourceHut tarball: {e}")))?;
 
         if let Some(sub_path) = path {
             // Extract to temp dir, then copy the target sub-path to dest
-            let tmp_dir = Config::cache_dir()?
-                .join(format!("tmp-{}", uuid::Uuid::new_v4()));
+            let tmp_dir = Config::cache_dir()?.join(format!("tmp-{}", uuid::Uuid::new_v4()));
             std::fs::create_dir_all(&tmp_dir)
                 .map_err(|e| SkillxError::Source(format!("failed to create temp dir: {e}")))?;
 
@@ -110,8 +109,7 @@ fn copy_dir_contents(src: &Path, dest: &Path) -> Result<Vec<PathBuf>> {
     for entry in std::fs::read_dir(src)
         .map_err(|e| SkillxError::Source(format!("failed to read dir: {e}")))?
     {
-        let entry =
-            entry.map_err(|e| SkillxError::Source(format!("failed to read entry: {e}")))?;
+        let entry = entry.map_err(|e| SkillxError::Source(format!("failed to read entry: {e}")))?;
         let file_type = entry
             .file_type()
             .map_err(|e| SkillxError::Source(format!("failed to get file type: {e}")))?;
