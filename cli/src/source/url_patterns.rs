@@ -141,13 +141,20 @@ pub fn lookup_domain_with_custom(domain: &str, custom: &[CustomUrlPattern]) -> O
     // Custom patterns take priority
     for pattern in custom {
         if domain_lower == pattern.domain.to_lowercase() {
-            if let Some(st) = parse_source_type_str(&pattern.source_type) {
-                return Some(st);
+            match parse_source_type_str(&pattern.source_type) {
+                Some(st) => return Some(st),
+                None => {
+                    eprintln!(
+                        "warning: custom URL pattern for '{}' has unknown source_type '{}' (expected: github, gitlab, bitbucket, gitea, sourcehut, huggingface)",
+                        pattern.domain, pattern.source_type
+                    );
+                }
             }
         }
     }
 
-    // Fall back to built-in
+    // Fall back to built-in (lookup_domain lowercases internally, passing
+    // domain_lower avoids an extra allocation when the input is already lowercase)
     lookup_domain(&domain_lower).cloned()
 }
 

@@ -206,9 +206,6 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         &format!("{:?}", adapter.lifecycle_mode()),
         &scope.to_string(),
     );
-    // NOTE: scan_report is moved here. Phase 3 (Gate) borrows it above via `ref`,
-    // which is fine because the borrow ends before this point. If you reorganize
-    // the phases, ensure Gate completes before this move.
     manifest.scan_result = scan_report;
 
     inject_skill(&skill_dir, &inject_path, &mut manifest)?;
