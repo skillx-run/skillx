@@ -5,13 +5,11 @@ use crate::error::{Result, SkillxError};
 
 use super::manifest::Manifest;
 
-/// Inject skill files from source_dir into target_dir, recording in manifest.
-pub fn inject_skill(
+/// Core inject: copy files from source to target, return (relative_path, sha256) records.
+pub fn inject_and_collect(
     source_dir: &Path,
     target_dir: &Path,
-    manifest: &mut Manifest,
-) -> Result<()> {
-    // Create target directory
+) -> Result<Vec<(String, String)>> {
     std::fs::create_dir_all(target_dir).map_err(|e| {
         SkillxError::Session(format!(
             "failed to create target dir {}: {e}",
@@ -19,17 +17,30 @@ pub fn inject_skill(
         ))
     })?;
 
-    // Recursively copy files
-    copy_dir_recursive(source_dir, source_dir, target_dir, manifest)?;
+    let mut records = Vec::new();
+    collect_dir_recursive(source_dir, source_dir, target_dir, &mut records)?;
+    Ok(records)
+}
 
+/// Inject skill files from source_dir into target_dir, recording in manifest.
+pub fn inject_skill(
+    source_dir: &Path,
+    target_dir: &Path,
+    manifest: &mut Manifest,
+) -> Result<()> {
+    let records = inject_and_collect(source_dir, target_dir)?;
+    for (relative, sha256) in records {
+        let full_path = target_dir.join(&relative);
+        manifest.add_file(full_path.to_string_lossy().to_string(), sha256);
+    }
     Ok(())
 }
 
-fn copy_dir_recursive(
+fn collect_dir_recursive(
     src: &Path,
     src_root: &Path,
     dst_root: &Path,
-    manifest: &mut Manifest,
+    records: &mut Vec<(String, String)>,
 ) -> Result<()> {
     let entries = std::fs::read_dir(src).map_err(|e| {
         SkillxError::Session(format!("failed to read dir {}: {e}", src.display()))
@@ -50,7 +61,7 @@ fn copy_dir_recursive(
                     dst_path.display()
                 ))
             })?;
-            copy_dir_recursive(&src_path, src_root, dst_root, manifest)?;
+            collect_dir_recursive(&src_path, src_root, dst_root, records)?;
         } else {
             // Read, hash, and copy file
             let content = std::fs::read(&src_path).map_err(|e| {
@@ -80,10 +91,10 @@ fn copy_dir_recursive(
                 ))
             })?;
 
-            manifest.add_file(
-                dst_path.to_string_lossy().to_string(),
+            records.push((
+                rel_path.to_string_lossy().to_string(),
                 sha256,
-            );
+            ));
         }
     }
 

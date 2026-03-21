@@ -64,6 +64,9 @@ pub enum SkillxError {
     #[error("HuggingFace API error: {0}")]
     HuggingFaceApi(String),
 
+    #[error("install error: {0}")]
+    Install(String),
+
     #[error("project config error: {0}")]
     ProjectConfig(String),
 
