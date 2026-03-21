@@ -12,8 +12,20 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # Gate: run tests before building release artifacts
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --workspace
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+
   build:
     name: Build (${{ matrix.target }})
+    needs: test
     strategy:
       fail-fast: false
       matrix:
@@ -27,7 +39,7 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact: skillx-aarch64-apple-darwin.tar.gz
-          - os: macos-13
+          - os: macos-14
             target: x86_64-apple-darwin
             artifact: skillx-x86_64-apple-darwin.tar.gz
           - os: windows-latest
