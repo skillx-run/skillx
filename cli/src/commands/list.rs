@@ -1,4 +1,5 @@
 use clap::Args;
+use console::style;
 
 use skillx::config::Config;
 use skillx::installed::InstalledState;
@@ -120,7 +121,12 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
         ui::step("Checking for updates...");
         let config = Config::load()?;
 
-        let mut outdated_count = 0;
+        let mut outdated_entries: Vec<OutdatedInfo> = Vec::new();
+        let total_checked = filtered
+            .iter()
+            .filter(|s| !skillx::source::is_local_source(&s.source))
+            .count();
+
         for skill in &filtered {
             // Skip local sources
             if skillx::source::is_local_source(&skill.source) {
@@ -129,11 +135,7 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
 
             match check_outdated(skill, &config).await {
                 Ok(Some(info)) => {
-                    ui::warn(&format!(
-                        "{}: update available ({} files changed)",
-                        skill.name, info.files_changed
-                    ));
-                    outdated_count += 1;
+                    outdated_entries.push(info);
                 }
                 Ok(None) => {}
                 Err(e) => {
@@ -141,13 +143,44 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
                 }
             }
         }
-        if outdated_count > 0 {
-            eprintln!();
-            ui::info(
-                "Run `skillx update` to update all, or `skillx update <name>` to update one."
-            );
-        } else {
+
+        if outdated_entries.is_empty() {
             ui::success("All skills are up to date.");
+        } else {
+            eprintln!();
+            eprintln!(
+                "{}",
+                style(format!(
+                    "Outdated skills ({} of {total_checked}):",
+                    outdated_entries.len()
+                ))
+                .bold()
+            );
+            eprintln!();
+            eprintln!(
+                "{:<20} {:<12} {:<12} Source",
+                "Name", "Installed", "Available"
+            );
+            eprintln!(
+                "{:<20} {:<12} {:<12} {}",
+                "─".repeat(18),
+                "─".repeat(10),
+                "─".repeat(10),
+                "─".repeat(30)
+            );
+
+            for entry in &outdated_entries {
+                eprintln!(
+                    "{:<20} {:<12} {:<12} {}",
+                    entry.name,
+                    entry.installed_ref,
+                    entry.available_ref,
+                    truncate_display(&entry.source, 30)
+                );
+            }
+
+            eprintln!();
+            ui::info("Run `skillx update` to update all.");
         }
     }
 
@@ -155,6 +188,11 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
 }
 
 struct OutdatedInfo {
+    name: String,
+    installed_ref: String,
+    available_ref: String,
+    source: String,
+    #[allow(dead_code)]
     files_changed: usize,
 }
 
@@ -184,7 +222,27 @@ async fn check_outdated(
             .map(|(path, _)| path.as_str())
             .collect::<std::collections::BTreeSet<&str>>()
             .len();
-        Ok(Some(OutdatedInfo { files_changed }))
+
+        let installed_ref = skill
+            .resolved_ref
+            .as_deref()
+            .or_else(|| skill.source.rsplit_once('@').map(|(_, v)| v))
+            .unwrap_or("-")
+            .to_string();
+
+        let available_ref = fetched
+            .resolved_ref
+            .as_deref()
+            .unwrap_or("-")
+            .to_string();
+
+        Ok(Some(OutdatedInfo {
+            name: skill.name.clone(),
+            installed_ref,
+            available_ref,
+            source: skill.source.clone(),
+            files_changed,
+        }))
     } else {
         Ok(None)
     }
