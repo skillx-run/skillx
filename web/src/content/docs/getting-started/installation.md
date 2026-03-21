@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: How to install skillx via Cargo, Homebrew, or from source.
+description: How to install skillx via Cargo, cargo-binstall, or from source.
 ---
 
 ## Requirements
@@ -34,16 +34,12 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 Then restart your shell or run `source ~/.cargo/env`.
 
-## Install via Homebrew (macOS/Linux)
+## Install via cargo-binstall (fast binary install)
+
+If you have [cargo-binstall](https://github.com/cargo-bins/cargo-binstall) installed, you can download a pre-compiled binary instead of building from source:
 
 ```bash
-brew install skillx
-```
-
-To update:
-
-```bash
-brew upgrade skillx
+cargo binstall skillx
 ```
 
 ## Build from Source
@@ -84,7 +80,7 @@ skillx --version
 You should see output like:
 
 ```
-skillx 0.1.0
+skillx 0.3.0
 ```
 
 Check that an agent is detected:
@@ -125,13 +121,6 @@ You can customize behavior by creating `~/.skillx/config.toml`. See [config.toml
 ```bash
 cargo uninstall skillx
 rm -rf ~/.skillx  # Remove data directory
-```
-
-### Homebrew
-
-```bash
-brew uninstall skillx
-rm -rf ~/.skillx
 ```
 
 ## Troubleshooting
