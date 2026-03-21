@@ -29,7 +29,7 @@ Key modules:
   - `skills_directory.rs` — Skills directory platform HTML parsing (10 platforms)
   - `local.rs` — Local filesystem source
 - `scanner/` — Security scanning with 5 risk levels (Pass/Info/Warn/Danger/Block)
-  - `markdown_analyzer.rs` — MD-001~006 (prompt injection, sensitive dirs, etc.)
+  - `markdown_analyzer.rs` — MD-001~006 (prompt injection, sensitive dirs, etc.) + MD-007 (license not declared, structural check)
   - `script_analyzer.rs` — SC-001~011 (binary detection, eval, rm -rf, etc.)
   - `resource_analyzer.rs` — RS-001~003 (disguised files, large files, executable in refs)
   - `rules.rs` — All regex patterns (use `r#"..."#` format for Rust 2021 compat)
@@ -141,6 +141,10 @@ cargo run -- cache ls            # List cache
 - `skillx.toml` uses `[skills]` table format (not `[[skills]]` array)
 - SkillSource has 10 variants: Local, GitHub, GitLab, Bitbucket, Gitea, Gist, SourceHut, HuggingFace, Archive, SkillsDirectory
 - FetchedSkill carries resolved_ref from source for version tracking in installed state
+- Agent version detection: `detect_binary_version()` runs `<binary> --version` and parses semver; `extract_vscode_extension_version()` parses from dir name. Both gracefully degrade to `None` on failure.
+- SkillMetadata includes `license: Option<String>` field (parsed from frontmatter)
+- MD-007 scanner rule: INFO level, triggers when frontmatter exists but has no `license` field (structural check in markdown_analyzer, not regex)
+- `installed.json` uses `scan_level: String` (intentional deviation from design doc's `scan_result` object — session manifest already stores full ScanReport for audit)
 
 ## Data Directories
 
