@@ -23,10 +23,16 @@ impl AgentAdapter for OpenCodeAdapter {
             .map(|h| h.join(".config").join("opencode").exists())
             .unwrap_or(false);
 
+        let version = if has_binary {
+            super::detect_binary_version("opencode").await
+        } else {
+            None
+        };
+
         DetectResult {
             name: self.name().to_string(),
             detected: has_binary || has_dir,
-            version: None,
+            version,
             info: if has_binary {
                 Some("opencode binary found".into())
             } else if has_dir {

@@ -19,6 +19,45 @@ use std::path::PathBuf;
 use crate::error::Result;
 use crate::types::Scope;
 
+/// Extract a version string from command output (e.g. `claude v1.5.2`, `codex 0.9.1`).
+///
+/// Looks for a semver-like pattern (`X.Y.Z` or `X.Y`) anywhere in the output.
+/// Returns `None` if no version pattern is found.
+pub fn parse_version_output(output: &str) -> Option<String> {
+    let re = regex::Regex::new(r"(\d+\.\d+(?:\.\d+)?)").ok()?;
+    re.find(output).map(|m| m.as_str().to_string())
+}
+
+/// Run `<binary> --version` and parse the version string.
+///
+/// Returns `None` on any failure (binary not found, timeout, parse error).
+pub async fn detect_binary_version(binary: &str) -> Option<String> {
+    let output = tokio::process::Command::new(binary)
+        .arg("--version")
+        .output()
+        .await
+        .ok()?;
+    let text = String::from_utf8_lossy(&output.stdout);
+    // Some tools write version to stderr
+    let stderr_text = String::from_utf8_lossy(&output.stderr);
+    parse_version_output(&text).or_else(|| parse_version_output(&stderr_text))
+}
+
+/// Extract version from a VS Code extension directory name.
+///
+/// Extension dirs are named like `publisher.extension-name-1.82.0`.
+/// Returns the version portion after the last `-` if it looks like a version.
+pub fn extract_vscode_extension_version(dir_name: &str) -> Option<String> {
+    let last_dash = dir_name.rfind('-')?;
+    let version_part = &dir_name[last_dash + 1..];
+    // Validate it looks like a version
+    if parse_version_output(version_part).is_some() {
+        Some(version_part.to_string())
+    } else {
+        None
+    }
+}
+
 /// How the agent lifecycle is managed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum LifecycleMode {
@@ -89,6 +128,67 @@ pub trait AgentAdapter: Send + Sync {
     /// Optional cleanup when session ends.
     fn on_cleanup(&self) -> Result<()> {
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod version_tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_version_semver() {
+        assert_eq!(parse_version_output("v1.5.2"), Some("1.5.2".into()));
+        assert_eq!(parse_version_output("claude v1.5.2"), Some("1.5.2".into()));
+        assert_eq!(parse_version_output("codex 0.9.1"), Some("0.9.1".into()));
+        assert_eq!(
+            parse_version_output("gemini-cli version 1.0.0"),
+            Some("1.0.0".into())
+        );
+    }
+
+    #[test]
+    fn test_parse_version_two_part() {
+        assert_eq!(parse_version_output("cursor 0.48"), Some("0.48".into()));
+    }
+
+    #[test]
+    fn test_parse_version_no_match() {
+        assert_eq!(parse_version_output(""), None);
+        assert_eq!(parse_version_output("no version here"), None);
+        assert_eq!(parse_version_output("abc"), None);
+    }
+
+    #[test]
+    fn test_parse_version_stderr_format() {
+        assert_eq!(
+            parse_version_output("tool (version 2.3.1-beta)"),
+            Some("2.3.1".into())
+        );
+    }
+
+    #[test]
+    fn test_extract_vscode_version() {
+        assert_eq!(
+            extract_vscode_extension_version("github.copilot-1.82.0"),
+            Some("1.82.0".into())
+        );
+        assert_eq!(
+            extract_vscode_extension_version("saoudrizwan.claude-dev-3.2.1"),
+            Some("3.2.1".into())
+        );
+        assert_eq!(
+            extract_vscode_extension_version("rooveterinaryinc.roo-cline-2.0.5"),
+            Some("2.0.5".into())
+        );
+    }
+
+    #[test]
+    fn test_extract_vscode_version_no_version() {
+        assert_eq!(extract_vscode_extension_version("some.extension"), None);
+        assert_eq!(
+            extract_vscode_extension_version("publisher.name-abc"),
+            None
+        );
     }
 }
 

@@ -19,16 +19,19 @@ impl AgentAdapter for RooAdapter {
 
     async fn detect(&self) -> DetectResult {
         // Check for VS Code extension
+        let mut version = None;
         let has_extension = dirs::home_dir()
             .map(|h| {
                 let ext_dir = h.join(".vscode").join("extensions");
                 if ext_dir.is_dir() {
                     if let Ok(entries) = std::fs::read_dir(&ext_dir) {
-                        return entries.flatten().any(|e| {
-                            e.file_name()
-                                .to_string_lossy()
-                                .starts_with("rooveterinaryinc.roo-cline-")
-                        });
+                        for entry in entries.flatten() {
+                            let name = entry.file_name().to_string_lossy().to_string();
+                            if name.starts_with("rooveterinaryinc.roo-cline-") {
+                                version = super::extract_vscode_extension_version(&name);
+                                return true;
+                            }
+                        }
                     }
                 }
                 false
@@ -38,7 +41,7 @@ impl AgentAdapter for RooAdapter {
         DetectResult {
             name: self.name().to_string(),
             detected: has_extension,
-            version: None,
+            version,
             info: if has_extension {
                 Some("VS Code extension rooveterinaryinc.roo-cline found".into())
             } else {

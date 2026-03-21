@@ -2,8 +2,9 @@ use clap::Args;
 use console::style;
 
 use skillx::agent::registry::AgentRegistry;
+use skillx::agent::LifecycleMode;
 use skillx::config::Config;
-use skillx::ui;
+use skillx::types::Scope;
 
 #[derive(Args, Debug)]
 pub struct AgentsArgs {
@@ -17,7 +18,17 @@ pub async fn execute(args: AgentsArgs) -> anyhow::Result<()> {
     let registry = AgentRegistry::new(&config);
     let results = registry.detect_all().await;
 
-    ui::header("Agent Environments");
+    let total = results.len();
+    let detected_count = results.iter().filter(|r| r.detected).count();
+
+    eprintln!(
+        "\n{}",
+        style(format!(
+            "Detected Agent environments ({detected_count} of {total} supported):"
+        ))
+        .bold()
+        .underlined()
+    );
     eprintln!();
 
     let mut found_any = false;
@@ -29,45 +40,70 @@ pub async fn execute(args: AgentsArgs) -> anyhow::Result<()> {
 
         found_any = true;
 
-        let status = if result.detected {
-            style("✓ detected").green().to_string()
+        let adapter = registry.get(&result.name);
+
+        let status_icon = if result.detected {
+            style("✓").green().to_string()
         } else {
-            style("✗ not found").dim().to_string()
+            style("✗").dim().to_string()
         };
 
-        let adapter = registry.get(&result.name);
-        let display_name = adapter
-            .map(|a| a.display_name())
-            .unwrap_or(&result.name);
-        let lifecycle = adapter
-            .map(|a| format!("{:?}", a.lifecycle_mode()))
-            .unwrap_or_default();
-        let yolo = adapter.map(|a| a.supports_yolo()).unwrap_or(false);
+        let name_display = format!("{:<16}", result.name);
 
-        eprintln!(
-            "  {} [{}]",
-            style(display_name).bold(),
-            status
-        );
+        let version_display = if result.detected {
+            result
+                .version
+                .as_ref()
+                .map(|v| format!("v{v}"))
+                .unwrap_or_else(|| "—".to_string())
+        } else {
+            "—".to_string()
+        };
 
         if result.detected {
-            if let Some(ref info) = result.info {
-                eprintln!("    {}", style(info).dim());
-            }
-            eprintln!("    Lifecycle: {lifecycle}");
-            if yolo {
-                let yolo_args = adapter
-                    .map(|a| a.yolo_args().join(" "))
-                    .unwrap_or_default();
-                eprintln!("    YOLO: {yolo_args}");
-            }
-        }
+            let inject_path = adapter
+                .map(|a| {
+                    let p = a.inject_path("<skill>", &Scope::Project);
+                    p.display().to_string()
+                })
+                .unwrap_or_default();
 
-        eprintln!();
+            let mode_label = adapter
+                .map(|a| match a.lifecycle_mode() {
+                    LifecycleMode::ManagedProcess => "CLI, managed-process",
+                    LifecycleMode::FileInjectAndWait => "IDE, file-inject",
+                })
+                .unwrap_or("unknown");
+
+            eprintln!(
+                "  {} {}  {:<12} {:<28} ({})",
+                status_icon, name_display, version_display, inject_path, mode_label
+            );
+        } else {
+            eprintln!(
+                "  {} {}  {:<12} {}",
+                status_icon,
+                name_display,
+                version_display,
+                style("not detected").dim()
+            );
+        }
     }
 
     if !found_any {
-        ui::warn("No agents detected. Install an agent like Claude Code or Cursor.");
+        eprintln!(
+            "  {} {}",
+            style("⚠").yellow().bold(),
+            "No agents detected. Install an agent like Claude Code or Cursor."
+        );
+    }
+
+    if !args.all {
+        eprintln!();
+        eprintln!(
+            "Run `{}` to see all {total} supported agents.",
+            style("skillx agents --all").cyan()
+        );
     }
 
     Ok(())

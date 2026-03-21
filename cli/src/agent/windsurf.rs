@@ -29,10 +29,16 @@ impl AgentAdapter for WindsurfAdapter {
                     || name.starts_with("windsurf.")
             });
 
+        let version = if has_binary {
+            super::detect_binary_version("windsurf").await
+        } else {
+            None
+        };
+
         DetectResult {
             name: self.name().to_string(),
             detected: has_binary || has_process,
-            version: None,
+            version,
             info: if has_process {
                 Some("windsurf process running".into())
             } else if has_binary {

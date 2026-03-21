@@ -23,10 +23,16 @@ impl AgentAdapter for GeminiCliAdapter {
             .map(|h| h.join(".gemini").exists())
             .unwrap_or(false);
 
+        let version = if has_binary {
+            super::detect_binary_version("gemini").await
+        } else {
+            None
+        };
+
         DetectResult {
             name: self.name().to_string(),
             detected: has_binary || has_dir,
-            version: None,
+            version,
             info: if has_binary {
                 Some("gemini binary found".into())
             } else if has_dir {

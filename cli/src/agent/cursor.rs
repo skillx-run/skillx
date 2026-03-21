@@ -31,10 +31,16 @@ impl AgentAdapter for CursorAdapter {
                     || name.starts_with("cursor helper")
             });
 
+        let version = if has_binary {
+            super::detect_binary_version("cursor").await
+        } else {
+            None
+        };
+
         DetectResult {
             name: self.name().to_string(),
             detected: has_binary || has_process,
-            version: None,
+            version,
             info: if has_binary {
                 Some("cursor binary found".into())
             } else if has_process {

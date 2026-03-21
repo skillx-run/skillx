@@ -19,16 +19,19 @@ impl AgentAdapter for CopilotAdapter {
 
     async fn detect(&self) -> DetectResult {
         // Check for VS Code extensions directory
+        let mut version = None;
         let has_extension = dirs::home_dir()
             .map(|h| {
                 let ext_dir = h.join(".vscode").join("extensions");
                 if ext_dir.is_dir() {
                     if let Ok(entries) = std::fs::read_dir(&ext_dir) {
-                        return entries.filter_map(|e| e.ok()).any(|e| {
-                            e.file_name()
-                                .to_string_lossy()
-                                .starts_with("github.copilot-")
-                        });
+                        for entry in entries.filter_map(|e| e.ok()) {
+                            let name = entry.file_name().to_string_lossy().to_string();
+                            if name.starts_with("github.copilot-") {
+                                version = super::extract_vscode_extension_version(&name);
+                                return true;
+                            }
+                        }
                     }
                 }
                 false
@@ -38,7 +41,7 @@ impl AgentAdapter for CopilotAdapter {
         DetectResult {
             name: self.name().to_string(),
             detected: has_extension,
-            version: None,
+            version,
             info: if has_extension {
                 Some("VS Code Copilot extension found".into())
             } else {

@@ -23,10 +23,16 @@ impl AgentAdapter for CodexAdapter {
             .map(|h| h.join(".codex").exists())
             .unwrap_or(false);
 
+        let version = if has_binary {
+            super::detect_binary_version("codex").await
+        } else {
+            None
+        };
+
         DetectResult {
             name: self.name().to_string(),
             detected: has_binary || has_dir,
-            version: None,
+            version,
             info: if has_binary {
                 Some("codex binary found".into())
             } else if has_dir {

@@ -162,6 +162,8 @@ impl AgentAdapter for GenericAdapter {
         let def = &self.0;
         let home = dirs::home_dir();
 
+        let mut version = None;
+
         let detected = match &def.detection {
             DetectionMethod::Binary => {
                 let has_binary = def
@@ -173,6 +175,11 @@ impl AgentAdapter for GenericAdapter {
                     .as_ref()
                     .map(|h| h.join(&def.config_dir).exists())
                     .unwrap_or(false);
+                if has_binary {
+                    if let Some(bin) = &def.binary_name {
+                        version = super::detect_binary_version(bin).await;
+                    }
+                }
                 has_binary || has_dir
             }
             DetectionMethod::VscodeExtension(prefix) => {
@@ -181,11 +188,13 @@ impl AgentAdapter for GenericAdapter {
                         let ext_dir = h.join(".vscode").join("extensions");
                         if ext_dir.is_dir() {
                             if let Ok(entries) = std::fs::read_dir(&ext_dir) {
-                                return entries.flatten().any(|e| {
-                                    e.file_name()
-                                        .to_string_lossy()
-                                        .starts_with(prefix.as_str())
-                                });
+                                for entry in entries.flatten() {
+                                    let name = entry.file_name().to_string_lossy().to_string();
+                                    if name.starts_with(prefix.as_str()) {
+                                        version = super::extract_vscode_extension_version(&name);
+                                        return true;
+                                    }
+                                }
                             }
                         }
                         false
@@ -213,7 +222,7 @@ impl AgentAdapter for GenericAdapter {
         DetectResult {
             name: def.name.clone(),
             detected,
-            version: None,
+            version,
             info: if detected {
                 Some(format!("{} detected", def.display_name))
             } else {
