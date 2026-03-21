@@ -158,6 +158,7 @@ pub struct SkillMetadata {
     pub description: Option<String>,
     pub author: Option<String>,
     pub version: Option<String>,
+    pub license: Option<String>,
     pub tags: Option<Vec<String>>,
 }
 

@@ -31,6 +31,7 @@ pub async fn execute(args: InfoArgs) -> anyhow::Result<()> {
     );
     ui::kv("Author", metadata.author.as_deref().unwrap_or("(unknown)"));
     ui::kv("Version", metadata.version.as_deref().unwrap_or("(none)"));
+    ui::kv("License", metadata.license.as_deref().unwrap_or("(none)"));
 
     if let Some(ref tags) = metadata.tags {
         ui::kv("Tags", &tags.join(", "));

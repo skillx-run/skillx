@@ -73,6 +73,8 @@ pub const MD_006_PATTERNS: &[&str] = &[
     r#"(?i)--no-verify"#,
 ];
 
+// MD-007 is handled by structural analysis in markdown_analyzer (no regex patterns)
+
 // --- Script rules (SC-001 ~ SC-011) ---
 
 // SC-001 is handled by binary detection (magic bytes), not regex

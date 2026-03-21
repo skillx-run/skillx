@@ -397,7 +397,7 @@ fn test_scan_report_overall_level() {
 
 #[test]
 fn test_markdown_analyzer_clean() {
-    let content = "---\nname: clean\n---\n\n# A Clean Skill\n\nJust does good things.";
+    let content = "---\nname: clean\nlicense: MIT\n---\n\n# A Clean Skill\n\nJust does good things.";
     let report = skillx::scanner::markdown_analyzer::MarkdownAnalyzer::analyze(content, "SKILL.md");
     assert_eq!(report.overall_level(), skillx::scanner::RiskLevel::Pass);
 }
