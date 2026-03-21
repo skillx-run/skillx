@@ -122,10 +122,7 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
         let config = Config::load()?;
 
         let mut outdated_entries: Vec<OutdatedInfo> = Vec::new();
-        let total_checked = filtered
-            .iter()
-            .filter(|s| !skillx::source::is_local_source(&s.source))
-            .count();
+        let mut checked_ok = 0usize;
 
         for skill in &filtered {
             // Skip local sources
@@ -135,9 +132,12 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
 
             match check_outdated(skill, &config).await {
                 Ok(Some(info)) => {
+                    checked_ok += 1;
                     outdated_entries.push(info);
                 }
-                Ok(None) => {}
+                Ok(None) => {
+                    checked_ok += 1;
+                }
                 Err(e) => {
                     ui::warn(&format!("{}: check failed ({})", skill.name, e));
                 }
@@ -151,30 +151,32 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
             eprintln!(
                 "{}",
                 style(format!(
-                    "Outdated skills ({} of {total_checked}):",
+                    "Outdated skills ({} of {checked_ok} checked):",
                     outdated_entries.len()
                 ))
                 .bold()
             );
             eprintln!();
             eprintln!(
-                "{:<20} {:<12} {:<12} Source",
-                "Name", "Installed", "Available"
+                "{:<20} {:<12} {:<12} {:<8} Source",
+                "Name", "Installed", "Available", "Changed"
             );
             eprintln!(
-                "{:<20} {:<12} {:<12} {}",
+                "{:<20} {:<12} {:<12} {:<8} {}",
                 "─".repeat(18),
                 "─".repeat(10),
                 "─".repeat(10),
+                "─".repeat(7),
                 "─".repeat(30)
             );
 
             for entry in &outdated_entries {
                 eprintln!(
-                    "{:<20} {:<12} {:<12} {}",
+                    "{:<20} {:<12} {:<12} {:<8} {}",
                     entry.name,
                     entry.installed_ref,
                     entry.available_ref,
+                    format!("{} files", entry.files_changed),
                     truncate_display(&entry.source, 30)
                 );
             }
@@ -192,7 +194,6 @@ struct OutdatedInfo {
     installed_ref: String,
     available_ref: String,
     source: String,
-    #[allow(dead_code)]
     files_changed: usize,
 }
 

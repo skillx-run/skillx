@@ -5,6 +5,7 @@ use skillx::agent::registry::AgentRegistry;
 use skillx::agent::LifecycleMode;
 use skillx::config::Config;
 use skillx::types::Scope;
+use skillx::ui;
 
 #[derive(Args, Debug)]
 pub struct AgentsArgs {
@@ -91,11 +92,7 @@ pub async fn execute(args: AgentsArgs) -> anyhow::Result<()> {
     }
 
     if !found_any {
-        eprintln!(
-            "  {} {}",
-            style("⚠").yellow().bold(),
-            "No agents detected. Install an agent like Claude Code or Cursor."
-        );
+        ui::warn("No agents detected. Install an agent like Claude Code or Cursor.");
     }
 
     if !args.all {

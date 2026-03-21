@@ -15,28 +15,52 @@ pub mod windsurf;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use std::sync::LazyLock;
 
 use crate::error::Result;
 use crate::types::Scope;
 
+/// Pre-compiled regex for extracting semver-like version strings.
+/// Matches `X.Y.Z` or `X.Y` preceded by a word boundary or `v`/`V` prefix.
+static VERSION_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r"(?:^|[^.\w])v?(\d+\.\d+(?:\.\d+)?)\b")
+        .expect("BUG: invalid version regex")
+});
+
 /// Extract a version string from command output (e.g. `claude v1.5.2`, `codex 0.9.1`).
 ///
-/// Looks for a semver-like pattern (`X.Y.Z` or `X.Y`) anywhere in the output.
+/// Looks for a semver-like pattern (`X.Y.Z` or `X.Y`) preceded by a non-word char or `v` prefix.
 /// Returns `None` if no version pattern is found.
 pub fn parse_version_output(output: &str) -> Option<String> {
-    let re = regex::Regex::new(r"(\d+\.\d+(?:\.\d+)?)").ok()?;
-    re.find(output).map(|m| m.as_str().to_string())
+    VERSION_RE
+        .captures(output)
+        .and_then(|caps| caps.get(1))
+        .map(|m| m.as_str().to_string())
 }
 
 /// Run `<binary> --version` and parse the version string.
 ///
 /// Returns `None` on any failure (binary not found, timeout, parse error).
+/// Uses a 3-second timeout to prevent blocking on unresponsive binaries.
 pub async fn detect_binary_version(binary: &str) -> Option<String> {
-    let output = tokio::process::Command::new(binary)
+    use std::process::Stdio;
+
+    let child = tokio::process::Command::new(binary)
         .arg("--version")
-        .output()
-        .await
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
         .ok()?;
+
+    let output = tokio::time::timeout(
+        std::time::Duration::from_secs(3),
+        child.wait_with_output(),
+    )
+    .await
+    .ok()?
+    .ok()?;
+
     let text = String::from_utf8_lossy(&output.stdout);
     // Some tools write version to stderr
     let stderr_text = String::from_utf8_lossy(&output.stderr);
@@ -163,6 +187,18 @@ mod version_tests {
         assert_eq!(
             parse_version_output("tool (version 2.3.1-beta)"),
             Some("2.3.1".into())
+        );
+    }
+
+    #[test]
+    fn test_parse_version_word_boundary() {
+        // Date-like strings: \b prevents matching partial tokens
+        // "2025.03.21" still matches as digits.digits.digits on word boundaries,
+        // but in practice version output is short and unambiguous.
+        // The key protection is against embedded-in-word matches.
+        assert_eq!(
+            parse_version_output("version 1.2.3 released"),
+            Some("1.2.3".into())
         );
     }
 

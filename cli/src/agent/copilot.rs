@@ -25,7 +25,7 @@ impl AgentAdapter for CopilotAdapter {
                 let ext_dir = h.join(".vscode").join("extensions");
                 if ext_dir.is_dir() {
                     if let Ok(entries) = std::fs::read_dir(&ext_dir) {
-                        for entry in entries.filter_map(|e| e.ok()) {
+                        for entry in entries.flatten() {
                             let name = entry.file_name().to_string_lossy().to_string();
                             if name.starts_with("github.copilot-") {
                                 version = super::extract_vscode_extension_version(&name);
