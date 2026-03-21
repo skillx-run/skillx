@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- MD-008 scanner rule: INFO level when frontmatter exists but has no `name` field
+- MD-009 scanner rule: INFO level when frontmatter exists but has no `description` field
+- Binary finding detail view shows file metadata (size, SHA-256, detected type)
+- Shell one-liner install script (`install.sh`) for Linux and macOS
+- E2E integration tests for scan, agents, info, init, cache, and CLI basics
+
+### Fixed
+
+- `history.max_entries` config setting now respected (was hardcoded to 50)
+- `NoAgentDetected` error now includes actionable guidance (install agent or use --agent)
+- HTTP 401/403/404 responses from GitLab, Bitbucket, Gitea, Gist, SourceHut, and HuggingFace now show specific error messages with token environment variable guidance
+
 ## [0.3.0] - 2026-03-21
 
 ### Added
