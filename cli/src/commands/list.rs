@@ -68,13 +68,13 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
 
     // Table header
     eprintln!(
-        "{:<20} {:<10} {:<38} {:<16} Scope",
+        "{:<20} {:<12} {:<38} {:<16} Scope",
         "Name", "Version", "Source", "Agents"
     );
     eprintln!(
-        "{:<20} {:<10} {:<38} {:<16} {}",
+        "{:<20} {:<12} {:<38} {:<16} {}",
         "─".repeat(18),
-        "─".repeat(8),
+        "─".repeat(10),
         "─".repeat(36),
         "─".repeat(14),
         "─".repeat(7)
@@ -109,7 +109,7 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
         let source_display = truncate_display(&skill.source, 36);
 
         eprintln!(
-            "{:<20} {:<10} {:<38} {:<16} {}",
+            "{:<20} {:<12} {:<38} {:<16} {}",
             skill.name, version, source_display, agents_str, scope_str
         );
     }
@@ -128,11 +128,14 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
             }
 
             match check_outdated(skill, &config).await {
-                Ok(true) => {
-                    ui::warn(&format!("{}: update available", skill.name));
+                Ok(Some(info)) => {
+                    ui::warn(&format!(
+                        "{}: update available ({} files changed)",
+                        skill.name, info.files_changed
+                    ));
                     outdated_count += 1;
                 }
-                Ok(false) => {}
+                Ok(None) => {}
                 Err(e) => {
                     ui::warn(&format!("{}: check failed ({})", skill.name, e));
                 }
@@ -151,11 +154,15 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
+struct OutdatedInfo {
+    files_changed: usize,
+}
+
 /// Check if a skill has updates by comparing (relative_path, sha256) pairs.
 async fn check_outdated(
     skill: &skillx::installed::InstalledSkill,
     config: &Config,
-) -> anyhow::Result<bool> {
+) -> anyhow::Result<Option<OutdatedInfo>> {
     let fetched = resolver::resolve_and_fetch(&skill.source, true, config).await?;
 
     let new_hashes = skillx::installed::collect_file_hashes(&fetched.dir)?;
@@ -171,7 +178,12 @@ async fn check_outdated(
         })
         .collect();
 
-    Ok(new_hashes != installed_hashes)
+    if new_hashes != installed_hashes {
+        let files_changed = new_hashes.symmetric_difference(&installed_hashes).count();
+        Ok(Some(OutdatedInfo { files_changed }))
+    } else {
+        Ok(None)
+    }
 }
 
 /// Truncate a string for display, safe for multi-byte UTF-8.

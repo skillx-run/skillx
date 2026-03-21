@@ -124,10 +124,24 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
     }
 
     // Show summary table
-    eprintln!("\n{:<20} {:<12} Source", "Name", "Status");
-    eprintln!("{:<20} {:<12} {}", "─".repeat(18), "─".repeat(10), "─".repeat(30));
+    eprintln!(
+        "\n{:<20} {:<12} {:<12} {}",
+        "Name", "Installed", "Available", "Change"
+    );
+    eprintln!(
+        "{:<20} {:<12} {:<12} {}",
+        "─".repeat(18),
+        "─".repeat(10),
+        "─".repeat(10),
+        "─".repeat(20)
+    );
     for c in &candidates {
-        eprintln!("{:<20} {:<12} {}", c.name, "outdated", c.source);
+        let old_ver = c.old_version.as_deref().unwrap_or("-");
+        let new_ver = c.resolved_ref.as_deref().unwrap_or("-");
+        eprintln!(
+            "{:<20} {:<12} {:<12} {} files changed",
+            c.name, old_ver, new_ver, c.files_changed
+        );
     }
 
     if args.dry_run {
