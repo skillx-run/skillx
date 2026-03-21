@@ -2,6 +2,7 @@ pub mod agent;
 pub mod cache;
 pub mod config;
 pub mod error;
+pub mod project_config;
 pub mod scanner;
 pub mod session;
 pub mod source;

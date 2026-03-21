@@ -11,6 +11,38 @@ pub struct Config {
     pub scan: ScanConfig,
     pub agent: AgentConfig,
     pub history: HistoryConfig,
+    pub url_patterns: Vec<CustomUrlPattern>,
+    pub custom_agents: Vec<CustomAgentConfig>,
+}
+
+/// User-defined URL pattern mapping a domain to a source type.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomUrlPattern {
+    pub domain: String,
+    /// Source type string: "gitea", "gitlab", "sourcehut", "huggingface"
+    pub source_type: String,
+}
+
+fn default_true() -> bool {
+    true
+}
+
+/// User-defined agent configuration from config.toml `[[custom_agents]]`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomAgentConfig {
+    pub name: String,
+    pub display_name: Option<String>,
+    pub binary: Option<String>,
+    pub config_dir: String,
+    /// "managed_process" or "file_inject_and_wait"
+    pub lifecycle: String,
+    #[serde(default = "default_true")]
+    pub supports_prompt: bool,
+    #[serde(default)]
+    pub supports_yolo: bool,
+    #[serde(default)]
+    pub yolo_args: Vec<String>,
+    pub prompt_flag: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -58,6 +90,8 @@ impl Default for Config {
             scan: ScanConfig::default(),
             agent: AgentConfig::default(),
             history: HistoryConfig::default(),
+            url_patterns: Vec::new(),
+            custom_agents: Vec::new(),
         }
     }
 }
@@ -195,4 +229,111 @@ pub fn parse_duration_secs(s: &str) -> Option<u64> {
     };
 
     Some(num * multiplier)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_url_patterns() {
+        let toml_str = r#"
+[[url_patterns]]
+domain = "mygitea.company.com"
+source_type = "gitea"
+
+[[url_patterns]]
+domain = "mylab.example.com"
+source_type = "gitlab"
+"#;
+        let config: Config = toml::from_str(toml_str).unwrap();
+        assert_eq!(config.url_patterns.len(), 2);
+        assert_eq!(config.url_patterns[0].domain, "mygitea.company.com");
+        assert_eq!(config.url_patterns[0].source_type, "gitea");
+        assert_eq!(config.url_patterns[1].source_type, "gitlab");
+    }
+
+    #[test]
+    fn test_parse_custom_agents() {
+        let toml_str = r#"
+[[custom_agents]]
+name = "my-cli-agent"
+display_name = "My CLI Agent"
+binary = "mycli"
+config_dir = ".mycli"
+lifecycle = "managed_process"
+supports_prompt = true
+supports_yolo = true
+yolo_args = ["--yes"]
+prompt_flag = "--message"
+
+[[custom_agents]]
+name = "my-ide-agent"
+config_dir = ".myide"
+lifecycle = "file_inject_and_wait"
+"#;
+        let config: Config = toml::from_str(toml_str).unwrap();
+        assert_eq!(config.custom_agents.len(), 2);
+
+        let cli = &config.custom_agents[0];
+        assert_eq!(cli.name, "my-cli-agent");
+        assert_eq!(cli.display_name.as_deref(), Some("My CLI Agent"));
+        assert_eq!(cli.binary.as_deref(), Some("mycli"));
+        assert_eq!(cli.lifecycle, "managed_process");
+        assert!(cli.supports_prompt);
+        assert!(cli.supports_yolo);
+        assert_eq!(cli.yolo_args, vec!["--yes"]);
+        assert_eq!(cli.prompt_flag.as_deref(), Some("--message"));
+
+        let ide = &config.custom_agents[1];
+        assert_eq!(ide.name, "my-ide-agent");
+        assert!(ide.display_name.is_none());
+        assert!(ide.binary.is_none());
+        assert_eq!(ide.lifecycle, "file_inject_and_wait");
+        // default: supports_prompt = true
+        assert!(ide.supports_prompt);
+        // default: supports_yolo = false
+        assert!(!ide.supports_yolo);
+    }
+
+    #[test]
+    fn test_empty_url_patterns_and_custom_agents_default() {
+        let config: Config = toml::from_str("").unwrap();
+        assert!(config.url_patterns.is_empty());
+        assert!(config.custom_agents.is_empty());
+    }
+
+    #[test]
+    fn test_full_config_with_all_sections() {
+        let toml_str = r#"
+[cache]
+ttl = "48h"
+
+[scan]
+default_fail_on = "warn"
+
+[agent.defaults]
+preferred = "claude-code"
+scope = "project"
+
+[history]
+max_entries = 100
+
+[[url_patterns]]
+domain = "git.example.com"
+source_type = "gitea"
+
+[[custom_agents]]
+name = "test-agent"
+config_dir = ".test"
+lifecycle = "managed_process"
+"#;
+        let config: Config = toml::from_str(toml_str).unwrap();
+        assert_eq!(config.cache.ttl, "48h");
+        assert_eq!(config.scan.default_fail_on, "warn");
+        assert_eq!(config.agent.defaults.preferred.as_deref(), Some("claude-code"));
+        assert_eq!(config.history.max_entries, 100);
+        assert_eq!(config.url_patterns.len(), 1);
+        assert_eq!(config.custom_agents.len(), 1);
+    }
 }

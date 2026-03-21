@@ -58,6 +58,15 @@ pub enum SkillxError {
     #[error("archive error: {0}")]
     Archive(String),
 
+    #[error("SourceHut API error: {0}")]
+    SourceHutApi(String),
+
+    #[error("HuggingFace API error: {0}")]
+    HuggingFaceApi(String),
+
+    #[error("project config error: {0}")]
+    ProjectConfig(String),
+
     #[error("unsupported URL: {0}")]
     UnsupportedUrl(String),
 
