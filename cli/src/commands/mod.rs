@@ -1,8 +1,13 @@
 pub mod agents;
 pub mod cache;
 pub mod info;
+pub mod init;
+pub mod install;
+pub mod list;
 pub mod run;
 pub mod scan;
+pub mod uninstall;
+pub mod update;
 
 use clap::{Parser, Subcommand};
 
@@ -22,6 +27,21 @@ pub struct Cli {
 pub enum Commands {
     /// Fetch, scan, inject, and run a skill (temporary — auto-cleanup after use)
     Run(run::RunArgs),
+
+    /// Install skill(s) persistently
+    Install(install::InstallArgs),
+
+    /// Uninstall skill(s)
+    Uninstall(uninstall::UninstallArgs),
+
+    /// List installed skills
+    List(list::ListArgs),
+
+    /// Update installed skill(s)
+    Update(update::UpdateArgs),
+
+    /// Initialize a new skillx.toml
+    Init(init::InitArgs),
 
     /// Security scan a skill
     Scan(scan::ScanArgs),

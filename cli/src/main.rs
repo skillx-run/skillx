@@ -14,6 +14,11 @@ async fn main() -> Result<()> {
 
     let result = match cli.command {
         Commands::Run(args) => commands::run::execute(args).await,
+        Commands::Install(args) => commands::install::execute(args).await,
+        Commands::Uninstall(args) => commands::uninstall::execute(args).await,
+        Commands::List(args) => commands::list::execute(args).await,
+        Commands::Update(args) => commands::update::execute(args).await,
+        Commands::Init(args) => commands::init::execute(args).await,
         Commands::Scan(args) => commands::scan::execute(args).await,
         Commands::Agents(args) => commands::agents::execute(args).await,
         Commands::Info(args) => commands::info::execute(args).await,
