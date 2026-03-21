@@ -77,9 +77,12 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         ));
     }
 
+    // ── Phase 0: Load config ──
+    let config = Config::load()?;
+
     // ── Phase 1: Resolve ──
     ui::step("Resolving source...");
-    let fetched = resolver::resolve_and_fetch(&args.source, args.no_cache).await?;
+    let fetched = resolver::resolve_and_fetch(&args.source, args.no_cache, &config).await?;
     let skill_dir = fetched.dir;
     let skill_name = fetched.name;
 

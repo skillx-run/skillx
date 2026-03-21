@@ -1,5 +1,6 @@
 use clap::Args;
 
+use skillx::config::Config;
 use skillx::source::local::LocalSource;
 use skillx::source::resolver;
 use skillx::ui;
@@ -11,8 +12,9 @@ pub struct InfoArgs {
 }
 
 pub async fn execute(args: InfoArgs) -> anyhow::Result<()> {
+    let config = Config::load()?;
     ui::step("Resolving source...");
-    let fetched = resolver::resolve_and_fetch(&args.source, false).await?;
+    let fetched = resolver::resolve_and_fetch(&args.source, false, &config).await?;
 
     // Re-fetch metadata from the resolved directory
     let resolved = LocalSource::fetch(&fetched.dir)?;

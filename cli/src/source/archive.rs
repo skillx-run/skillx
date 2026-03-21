@@ -155,7 +155,7 @@ impl ArchiveSource {
     }
 
     /// Extract a tar.gz archive with security checks.
-    fn extract_tar_gz(data: &[u8], dest: &Path) -> Result<Vec<PathBuf>> {
+    pub fn extract_tar_gz(data: &[u8], dest: &Path) -> Result<Vec<PathBuf>> {
         use flate2::read::GzDecoder;
         use tar::Archive;
 

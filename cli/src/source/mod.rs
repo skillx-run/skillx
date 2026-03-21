@@ -4,9 +4,11 @@ pub mod gist;
 pub mod gitea;
 pub mod github;
 pub mod gitlab;
+pub mod huggingface;
 pub mod local;
 pub mod resolver;
 pub mod skills_directory;
+pub mod sourcehut;
 pub mod url;
 pub mod url_patterns;
 
@@ -61,6 +63,14 @@ pub enum SkillsDirectoryPlatform {
     PromptsChat,
 }
 
+/// HuggingFace repository type.
+#[derive(Debug, Clone, PartialEq)]
+pub enum HfRepoType {
+    Models,
+    Datasets,
+    Spaces,
+}
+
 /// Represents where a skill comes from.
 #[derive(Debug, Clone)]
 pub enum SkillSource {
@@ -98,6 +108,19 @@ pub enum SkillSource {
     Archive {
         url: String,
         format: ArchiveFormat,
+    },
+    SourceHut {
+        owner: String,
+        repo: String,
+        path: Option<String>,
+        ref_: Option<String>,
+    },
+    HuggingFace {
+        owner: String,
+        repo: String,
+        path: Option<String>,
+        ref_: Option<String>,
+        repo_type: HfRepoType,
     },
     SkillsDirectory {
         platform: SkillsDirectoryPlatform,
@@ -166,6 +189,49 @@ pub fn resolve(input: &str) -> Result<SkillSource> {
     }
 
     // 4. Bare name — reserved for v0.4 registry
+    Err(SkillxError::InvalidSource(format!(
+        "cannot resolve source: '{input}'. Use a local path (./skill), github:/gist: prefix, or a full URL"
+    )))
+}
+
+/// Resolve a source string into a `SkillSource`, using custom URL patterns from config.
+pub fn resolve_with_config(input: &str, config: &crate::config::Config) -> Result<SkillSource> {
+    let input = input.trim();
+
+    // 1. Local path
+    if input.starts_with("./")
+        || input.starts_with('/')
+        || input.starts_with("~/")
+        || input.starts_with(".\\")
+    {
+        let path = if let Some(rest) = input.strip_prefix("~/") {
+            dirs::home_dir()
+                .ok_or_else(|| SkillxError::Source("cannot determine home directory".into()))?
+                .join(rest)
+        } else {
+            std::path::PathBuf::from(input)
+        };
+        return Ok(SkillSource::Local(path));
+    }
+
+    let as_path = std::path::PathBuf::from(input);
+    if as_path.exists() {
+        return Ok(SkillSource::Local(as_path));
+    }
+
+    // 2. Explicit prefixes
+    if let Some(rest) = input.strip_prefix("github:") {
+        return github::GitHubSource::parse(rest);
+    }
+    if let Some(rest) = input.strip_prefix("gist:") {
+        return gist::GistSource::parse(rest);
+    }
+
+    // 3. Full URL — with custom patterns
+    if input.starts_with("https://") || input.starts_with("http://") {
+        return url::resolve_url_with_config(input, config);
+    }
+
     Err(SkillxError::InvalidSource(format!(
         "cannot resolve source: '{input}'. Use a local path (./skill), github:/gist: prefix, or a full URL"
     )))

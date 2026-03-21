@@ -1,5 +1,6 @@
 use clap::Args;
 
+use skillx::config::Config;
 use skillx::scanner::{RiskLevel, ScanEngine};
 use skillx::scanner::report::{JsonFormatter, SarifFormatter, TextFormatter};
 use skillx::source::resolver;
@@ -26,8 +27,9 @@ pub async fn execute(args: ScanArgs) -> anyhow::Result<()> {
         .map_err(|e: String| anyhow::anyhow!(e))?;
 
     // Resolve source
+    let config = Config::load()?;
     ui::step("Resolving source...");
-    let fetched = resolver::resolve_and_fetch(&args.source, false).await?;
+    let fetched = resolver::resolve_and_fetch(&args.source, false, &config).await?;
 
     // Run scan
     ui::step("Scanning...");

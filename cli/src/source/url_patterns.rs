@@ -1,3 +1,5 @@
+use crate::config::CustomUrlPattern;
+
 /// URL source type classification for skill source resolution.
 #[derive(Debug, Clone, PartialEq)]
 pub enum UrlSourceType {
@@ -6,6 +8,8 @@ pub enum UrlSourceType {
     Bitbucket,
     Gitea,
     Gist,
+    SourceHut,
+    HuggingFace,
     SkillsDirectory,
 }
 
@@ -43,6 +47,16 @@ pub static URL_PATTERNS: &[UrlPattern] = &[
     UrlPattern {
         domain: "codeberg.org",
         source_type: UrlSourceType::Gitea,
+    },
+    // SourceHut
+    UrlPattern {
+        domain: "git.sr.ht",
+        source_type: UrlSourceType::SourceHut,
+    },
+    // HuggingFace
+    UrlPattern {
+        domain: "huggingface.co",
+        source_type: UrlSourceType::HuggingFace,
     },
     // Skills directory platforms
     UrlPattern {
@@ -103,6 +117,38 @@ pub fn lookup_domain(domain: &str) -> Option<&UrlSourceType> {
     // Check subdomain match (e.g., gitlab.mycompany.com → not matched,
     // but we don't do subdomain matching for security reasons)
     None
+}
+
+/// Map a source type string from config to `UrlSourceType`.
+fn parse_source_type_str(s: &str) -> Option<UrlSourceType> {
+    match s.to_lowercase().as_str() {
+        "github" => Some(UrlSourceType::GitHub),
+        "gitlab" => Some(UrlSourceType::GitLab),
+        "bitbucket" => Some(UrlSourceType::Bitbucket),
+        "gitea" => Some(UrlSourceType::Gitea),
+        "sourcehut" => Some(UrlSourceType::SourceHut),
+        "huggingface" => Some(UrlSourceType::HuggingFace),
+        _ => None,
+    }
+}
+
+/// Look up the source type for a domain, checking custom patterns first.
+///
+/// Custom patterns from config.toml take priority over built-in patterns.
+pub fn lookup_domain_with_custom(domain: &str, custom: &[CustomUrlPattern]) -> Option<UrlSourceType> {
+    let domain_lower = domain.to_lowercase();
+
+    // Custom patterns take priority
+    for pattern in custom {
+        if domain_lower == pattern.domain.to_lowercase() {
+            if let Some(st) = parse_source_type_str(&pattern.source_type) {
+                return Some(st);
+            }
+        }
+    }
+
+    // Fall back to built-in
+    lookup_domain(&domain_lower).cloned()
 }
 
 #[cfg(test)]
@@ -173,5 +219,72 @@ mod tests {
     fn test_lookup_case_insensitive() {
         assert_eq!(lookup_domain("GitHub.com"), Some(&UrlSourceType::GitHub));
         assert_eq!(lookup_domain("GITLAB.COM"), Some(&UrlSourceType::GitLab));
+    }
+
+    #[test]
+    fn test_lookup_sourcehut() {
+        assert_eq!(
+            lookup_domain("git.sr.ht"),
+            Some(&UrlSourceType::SourceHut)
+        );
+    }
+
+    #[test]
+    fn test_lookup_huggingface() {
+        assert_eq!(
+            lookup_domain("huggingface.co"),
+            Some(&UrlSourceType::HuggingFace)
+        );
+    }
+
+    #[test]
+    fn test_lookup_domain_with_custom_overrides_builtin() {
+        // Custom pattern overrides codeberg.org from Gitea to GitLab
+        let custom = vec![CustomUrlPattern {
+            domain: "codeberg.org".to_string(),
+            source_type: "gitlab".to_string(),
+        }];
+        assert_eq!(
+            lookup_domain_with_custom("codeberg.org", &custom),
+            Some(UrlSourceType::GitLab)
+        );
+    }
+
+    #[test]
+    fn test_lookup_domain_with_custom_new_domain() {
+        let custom = vec![CustomUrlPattern {
+            domain: "mygitea.company.com".to_string(),
+            source_type: "gitea".to_string(),
+        }];
+        assert_eq!(
+            lookup_domain_with_custom("mygitea.company.com", &custom),
+            Some(UrlSourceType::Gitea)
+        );
+    }
+
+    #[test]
+    fn test_lookup_domain_with_custom_fallback_builtin() {
+        let custom = vec![CustomUrlPattern {
+            domain: "other.example.com".to_string(),
+            source_type: "gitea".to_string(),
+        }];
+        // github.com not in custom, should fallback to builtin
+        assert_eq!(
+            lookup_domain_with_custom("github.com", &custom),
+            Some(UrlSourceType::GitHub)
+        );
+    }
+
+    #[test]
+    fn test_lookup_domain_with_custom_empty_list() {
+        let custom: Vec<CustomUrlPattern> = vec![];
+        assert_eq!(
+            lookup_domain_with_custom("github.com", &custom),
+            Some(UrlSourceType::GitHub)
+        );
+        assert_eq!(
+            lookup_domain_with_custom("unknown.org", &custom),
+            None
+        );
     }
 }
