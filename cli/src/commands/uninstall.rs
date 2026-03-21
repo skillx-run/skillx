@@ -80,10 +80,23 @@ pub async fn execute(args: UninstallArgs) -> anyhow::Result<()> {
         } else {
             // Full uninstall
             let source = skill.source.clone();
+            let total_files: usize = skill
+                .injections
+                .iter()
+                .map(|inj| inj.files.len())
+                .sum();
+            let agents_list: Vec<&str> = skill
+                .injections
+                .iter()
+                .map(|inj| inj.agent.as_str())
+                .collect();
+            let agents_display = agents_list.join(", ");
             remove_injected_files(skill);
 
             installed.remove_skill(name);
-            ui::success(&format!("Uninstalled {name}"));
+            ui::success(&format!(
+                "Uninstalled {name} ({total_files} files removed from {agents_display})"
+            ));
 
             // Purge cache
             if args.purge {
@@ -103,7 +116,7 @@ pub async fn execute(args: UninstallArgs) -> anyhow::Result<()> {
             if let Some(mut pc) = ProjectConfig::load(Path::new("."))? {
                 if pc.remove_skill(name) {
                     pc.save(Path::new("."))?;
-                    ui::info("Updated skillx.toml");
+                    ui::info(&format!("Removed {name} from skillx.toml"));
                 }
             }
         }

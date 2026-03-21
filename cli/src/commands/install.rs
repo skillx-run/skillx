@@ -87,13 +87,23 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
     for source_str in &args.sources {
         ui::step(&format!("Resolving: {source_str}"));
         let fetched = resolver::resolve_and_fetch(source_str, args.no_cache, &config).await?;
-        ui::success(&format!("Resolved: {}", fetched.name));
+        ui::success(&format!("Fetched {} from {}", fetched.name, source_str));
 
         let scan_level = if !args.skip_scan {
             ui::step("Scanning...");
             let report = ScanEngine::scan(&fetched.dir)?;
             eprint!("{}", TextFormatter::format(&report));
             gate_scan_result(&Some(report.clone()), &fetched.dir, args.yes)?;
+            let findings_count = report.findings.len();
+            if findings_count == 0 {
+                ui::success("Security scan passed");
+            } else {
+                ui::success(&format!(
+                    "Security scan: {} ({} findings)",
+                    report.overall_level(),
+                    findings_count
+                ));
+            }
             format!("{}", report.overall_level())
         } else {
             ui::warn("Security scan skipped");
@@ -171,10 +181,10 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
             }
 
             ui::success(&format!(
-                "{} is now available in {} ({} files)",
-                skill.name,
+                "Installed to {} ({}: {})",
                 adapter.display_name(),
-                records.len()
+                scope,
+                inject_path.display()
             ));
         }
     }
