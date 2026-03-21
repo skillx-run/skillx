@@ -87,13 +87,13 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     let multi_skill_mode = args.source.is_none()
         && project_config
             .as_ref()
-            .map(|pc| !pc.skills.is_empty())
+            .map(|pc| pc.has_skills())
             .unwrap_or(false);
 
     if args.source.is_none() && !multi_skill_mode {
         return Err(anyhow::anyhow!(
             "no source specified and no skillx.toml found. \
-             Provide a source argument or create a skillx.toml with [[skills]] entries."
+             Provide a source argument or create a skillx.toml with [skills] entries."
         ));
     }
 
@@ -102,18 +102,17 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         vec![(source.clone(), args.skip_scan, None)]
     } else {
         let pc = project_config.as_ref().unwrap();
-        pc.skills
+        pc.all_skills()
             .iter()
-            .map(|entry| {
-                let skip = entry
-                    .skip_scan
-                    .or(pc.defaults.skip_scan)
+            .map(|(_name, value, _is_dev)| {
+                let skip = value
+                    .skip_scan()
                     .unwrap_or(args.skip_scan);
-                let scope = entry
-                    .scope
-                    .clone()
-                    .or_else(|| pc.defaults.scope.clone());
-                (entry.source.clone(), skip, scope)
+                let scope = value
+                    .scope()
+                    .map(|s| s.to_string())
+                    .or_else(|| pc.agent.scope.clone());
+                (value.source().to_string(), skip, scope)
             })
             .collect()
     };
@@ -177,7 +176,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         .or_else(|| {
             project_config
                 .as_ref()
-                .and_then(|pc| pc.defaults.agent.as_deref())
+                .and_then(|pc| pc.agent.preferred.as_deref())
         })
         .or(config.agent.defaults.preferred.as_deref());
     let adapter = registry.select(agent_name).await?;
