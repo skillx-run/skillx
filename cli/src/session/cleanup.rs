@@ -21,20 +21,34 @@ pub fn cleanup_session(session_dir: &Path) -> Result<()> {
 
     let manifest = Manifest::load(&manifest_path)?;
 
-    // Remove injected files (with mtime change detection)
+    // Remove injected files (with change detection via SHA-256)
     for file in &manifest.injected_files {
         let path = PathBuf::from(&file.path);
         if path.exists() {
             // Check if file was modified by user
-            if let Ok(content) = std::fs::read(&path) {
+            let modified = if let Ok(content) = std::fs::read(&path) {
                 let mut hasher = Sha256::new();
                 hasher.update(&content);
                 let current_sha = format!("{:x}", hasher.finalize());
-                if current_sha != file.sha256 {
-                    ui::warn(&format!(
-                        "File was modified during session: {}",
-                        file.path
-                    ));
+                current_sha != file.sha256
+            } else {
+                false
+            };
+
+            if modified {
+                ui::warn(&format!(
+                    "File was modified during session: {}",
+                    file.path
+                ));
+                eprint!("  Remove modified file? [y/N] ");
+                std::io::Write::flush(&mut std::io::stderr()).ok();
+                let mut input = String::new();
+                if std::io::BufRead::read_line(&mut std::io::stdin().lock(), &mut input).is_ok() {
+                    let input = input.trim().to_lowercase();
+                    if input != "y" && input != "yes" {
+                        ui::info(&format!("Keeping: {}", file.path));
+                        continue;
+                    }
                 }
             }
 
