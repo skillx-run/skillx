@@ -133,6 +133,9 @@ Most contributions will target `cli/`. Key directories within it:
 - Consistent error handling following the project's `thiserror`/`anyhow` split
 - Documentation updates if user-facing behavior changes
 
-## License
+## Contributor License Agreement
 
-By contributing to skillx, you agree that your contributions will be licensed under the [Apache License 2.0](LICENSE) for code and [CC-BY-4.0](LICENSE-DOCS) for documentation.
+By submitting a pull request, you represent that you have the right to license your contribution to the project, and you agree that your contribution will be licensed under the project's existing licenses:
+
+- Code: [Apache License 2.0](LICENSE)
+- Documentation: [CC-BY-4.0](LICENSE-DOCS)

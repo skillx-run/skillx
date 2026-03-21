@@ -15,24 +15,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Tier 2: Gemini CLI, OpenCode, Amp, Windsurf, Cline, Roo
   - Tier 3: 21 agents via data-driven generic adapter
   - User-defined custom agents from `config.toml` `[[custom_agents]]`
-- `skillx.toml` project configuration with `[skills]` table format
-- 5 persistent management commands: `install`, `uninstall`, `list`, `update`, `init`
 - URL smart recognition engine supporting 20+ platforms
 - `config.toml` support for custom `[[url_patterns]]` and `[[custom_agents]]`
-- `install --prune`, `--dev`, `--prod` flags
+- `skillx.toml` `[skills]` table format with string shorthand and detailed object syntax
+- `install --prune`, `--dev`, `--prod`, `--no-save` flags
 - `list --outdated` with dedicated table format
-- `update --dry-run` with confirmation prompt
+- `update --dry-run` with confirmation prompt and per-skill progress saving
 - `license` field to `SkillMetadata` (parsed from frontmatter)
 - MD-007 scanner rule: INFO level when frontmatter exists but has no `license` field
+- `install --all` to install to all detected agents simultaneously
+- Conflict detection: active session check, upgrade detection, unmanaged path prompt
+
+### Changed
+
+- `install` now saves sources to skillx.toml by default (use `--no-save` to skip)
+- Cleanup prompts `[y/N]` before removing user-modified files (TTY only)
 
 ## [0.2.0] - 2026-03-19
 
 ### Added
 
-- Persistent skill management: `install`, `uninstall`, `list`, `update`, `init` commands
+- Persistent skill management commands: `install`, `uninstall`, `list`, `update`, `init`
 - `installed.json` state tracking with SHA-256 content hashing
-- Multi-agent injection support (install skills to multiple agents simultaneously)
-- `skillx.toml` project configuration
+- Multi-agent injection support (install skills to multiple agents)
+- `skillx.toml` project configuration for declaring project skill dependencies
 - `--attach` flag for attaching context files to sessions
 - `--stdin` and `--prompt-file` input modes
 - Session orphan recovery with metadata display
