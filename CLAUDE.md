@@ -29,7 +29,7 @@ Key modules:
   - `skills_directory.rs` — Skills directory platform HTML parsing (10 platforms)
   - `local.rs` — Local filesystem source
 - `scanner/` — Security scanning with 5 risk levels (Pass/Info/Warn/Danger/Block)
-  - `markdown_analyzer.rs` — MD-001~006 (prompt injection, sensitive dirs, etc.) + MD-007 (license not declared, structural check)
+  - `markdown_analyzer.rs` — MD-001~006 (prompt injection, sensitive dirs, etc.) + MD-007 (license), MD-008 (name), MD-009 (description) structural checks
   - `script_analyzer.rs` — SC-001~011 (binary detection, eval, rm -rf, etc.)
   - `resource_analyzer.rs` — RS-001~003 (disguised files, large files, executable in refs)
   - `rules.rs` — All regex patterns (use `r#"..."#` format for Rust 2021 compat)
@@ -106,7 +106,7 @@ SkillValue supports string shorthand (`"source"`) and detailed object (`{ source
 
 ```bash
 cargo build --workspace          # Build all
-cargo test --workspace           # Run all tests (244+)
+cargo test --workspace           # Run all tests (277+)
 cargo build --release            # Release build
 cargo run -- run ./skill "msg"   # Run CLI
 cargo run -- run                 # Run from skillx.toml
@@ -144,10 +144,14 @@ cargo run -- cache ls            # List cache
 - Agent version detection: `detect_binary_version()` runs `<binary> --version` and parses semver; `extract_vscode_extension_version()` parses from dir name. Both gracefully degrade to `None` on failure.
 - SkillMetadata includes `license: Option<String>` field (parsed from frontmatter)
 - MD-007 scanner rule: INFO level, triggers when frontmatter exists but has no `license` field (structural check in markdown_analyzer, not regex)
+- MD-008/MD-009 scanner rules: INFO level, check for missing `name`/`description` fields in frontmatter (same structural pattern as MD-007)
 - `installed.json` uses `scan_level: String` (intentional deviation from design doc's `scan_result` object — session manifest already stores full ScanReport for audit)
+- Source fetchers distinguish HTTP 401/403/404 with platform-specific token guidance (GITLAB_TOKEN, BITBUCKET_TOKEN, etc.)
+- `gate.rs` detail view shows file metadata (size, SHA-256, type) for binary/resource findings without line numbers
 - Cleanup asks `[y/N]` before removing files modified during a session (SHA-256 mismatch detection)
 - CI: GitHub Actions with `ci.yml` (fmt + clippy + test multi-platform) and `release.yml` (tag → cross-compile → GitHub Release → crates.io)
 - cargo-binstall supported via `[package.metadata.binstall]` in Cargo.toml
+- `install.sh` — Shell one-liner installer (`curl -fsSL https://skillx.run/install.sh | sh`)
 - Web docs sidebar in `astro.config.mjs` lists all 10 commands
 
 ## Data Directories
