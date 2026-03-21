@@ -70,6 +70,142 @@ skillx run --agent codex --yolo --timeout 1h ./skill "prompt"
 skillx run --scope project --attach data.csv ./skill "analyze"
 ```
 
+## skillx install
+
+```bash
+skillx install [sources...] [options]
+```
+
+### Arguments
+
+| Argument | Position | Required | Description |
+|----------|----------|----------|-------------|
+| `sources` | 1+ | No | Skill source(s). If omitted, installs from skillx.toml |
+
+### Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--agent` | string | auto-detect | Target a specific agent (conflicts with `--all`) |
+| `--all` | bool | false | Install to all detected agents (conflicts with `--agent`) |
+| `--scope` | string | `global` | Injection scope: `global` or `project` |
+| `--no-cache` | bool | false | Force re-fetch, skip cache |
+| `--skip-scan` | bool | false | Skip security scan |
+| `--yes` | bool | false | Auto-confirm WARN level risks |
+| `--no-save` | bool | false | Don't save to skillx.toml |
+| `--dev` | bool | false | Install as dev dependency |
+| `--prod` | bool | false | Only install production dependencies, skip dev |
+| `--prune` | bool | false | Remove installed skills not in skillx.toml |
+
+### Examples
+
+```bash
+skillx install github:org/skills/pdf
+skillx install --all --dev github:org/skills/testing
+skillx install                  # from skillx.toml
+skillx install --prod --prune   # production only, prune extras
+```
+
+## skillx uninstall
+
+```bash
+skillx uninstall <name...> [options]
+```
+
+### Arguments
+
+| Argument | Position | Required | Description |
+|----------|----------|----------|-------------|
+| `names` | 1+ | Yes | Skill name(s) to uninstall |
+
+### Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--agent` | string | — | Only remove from a specific agent |
+| `--keep-in-toml` | bool | false | Keep the entry in skillx.toml |
+| `--purge` | bool | false | Also remove cached files |
+
+### Examples
+
+```bash
+skillx uninstall pdf-processing
+skillx uninstall formatter --agent cursor
+skillx uninstall old-skill --purge
+```
+
+## skillx list
+
+```bash
+skillx list [options]
+```
+
+### Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--agent` | string | — | Filter by agent |
+| `--scope` | string | `all` | Filter by scope: `project`, `global`, or `all` |
+| `--json` | bool | false | Output as JSON (to stdout) |
+| `--outdated` | bool | false | Check for available updates |
+
+### Examples
+
+```bash
+skillx list
+skillx list --agent claude-code
+skillx list --json | jq '.[].name'
+skillx list --outdated
+```
+
+## skillx update
+
+```bash
+skillx update [names...] [options]
+```
+
+### Arguments
+
+| Argument | Position | Required | Description |
+|----------|----------|----------|-------------|
+| `names` | 1+ | No | Skill name(s) to update. If omitted, checks all |
+
+### Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--agent` | string | — | Only update for a specific agent |
+| `--dry-run` | bool | false | Show what would be updated without applying |
+| `--skip-scan` | bool | false | Skip security scan |
+| `--yes` | bool | false | Auto-confirm (skip update prompt) |
+
+### Examples
+
+```bash
+skillx update
+skillx update --dry-run
+skillx update pdf-processing --yes
+```
+
+## skillx init
+
+```bash
+skillx init [options]
+```
+
+### Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--from-installed` | bool | false | Pre-populate with currently installed skills |
+
+### Examples
+
+```bash
+skillx init
+skillx init --from-installed
+```
+
 ## skillx scan
 
 ```bash
@@ -86,21 +222,21 @@ skillx scan <source> [options]
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
-| `--format` | string | `text` | Output format: `text` or `json` |
-| `--fail-on` | string | `danger` | Exit code threshold: `pass`, `info`, `warn`, `danger`, `block` |
+| `--format` | string | `text` | Output format: `text`, `json`, or `sarif` |
+| `--fail-on` | string | `danger` | Exit code threshold: `info`, `warn`, `danger`, `block` |
 
 ### Output Routing
 
 - `text` format: output to **stderr**
-- `json` format: output to **stdout** (pipeable)
+- `json` / `sarif` format: output to **stdout** (pipeable)
 
 ### Examples
 
 ```bash
 skillx scan ./my-skill
 skillx scan --format json github:org/repo/skill
+skillx scan --format sarif ./my-skill
 skillx scan --fail-on warn ./my-skill
-skillx scan --format json --fail-on warn ./skill | jq '.'
 ```
 
 ## skillx agents
