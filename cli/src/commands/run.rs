@@ -199,11 +199,12 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     let inject_path;
     let session;
 
-    if is_already_installed {
+    let installed_path = adapter.inject_path(&skill_name, &scope);
+    if is_already_installed && installed_path.exists() {
         ui::info(&format!(
             "{skill_name} is already installed — skipping inject, will launch agent directly"
         ));
-        inject_path = adapter.inject_path(&skill_name, &scope);
+        inject_path = installed_path;
         session = None;
     } else {
         ui::step("Injecting skill...");

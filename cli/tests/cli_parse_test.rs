@@ -55,9 +55,9 @@ fn test_run_basic() {
     #[derive(clap::Args, Debug)]
     struct InstallArgs {
         sources: Vec<String>,
-        #[arg(long)]
+        #[arg(long, conflicts_with = "all")]
         agent: Option<String>,
-        #[arg(long)]
+        #[arg(long, conflicts_with = "agent")]
         all: bool,
         #[arg(long, default_value = "global")]
         scope: String,
@@ -413,6 +413,13 @@ fn test_run_basic() {
         }
         _ => panic!("expected Run command"),
     }
+
+    // Test: install --agent and --all conflict
+    assert!(
+        Cli::try_parse_from(["skillx", "install", "./skill", "--agent", "claude-code", "--all"])
+            .is_err(),
+        "--agent and --all should conflict"
+    );
 
     // Test: unknown command should fail
     assert!(Cli::try_parse_from(["skillx", "unknown"]).is_err());

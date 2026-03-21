@@ -88,8 +88,10 @@ pub async fn execute(args: UninstallArgs) -> anyhow::Result<()> {
                 let hash = CacheManager::source_hash(&source);
                 let cache_dir = skillx::config::Config::cache_dir()?.join(&hash);
                 if cache_dir.exists() {
-                    std::fs::remove_dir_all(&cache_dir).ok();
-                    ui::info(&format!("Purged cache for {name}"));
+                    match std::fs::remove_dir_all(&cache_dir) {
+                        Ok(()) => ui::info(&format!("Purged cache for {name}")),
+                        Err(e) => ui::warn(&format!("Failed to purge cache for {name}: {e}")),
+                    }
                 }
             }
         }

@@ -21,7 +21,14 @@ pub async fn execute(args: InitArgs) -> anyhow::Result<()> {
     }
 
     if args.from_installed {
-        let installed = InstalledState::load().unwrap_or_default();
+        let installed = match InstalledState::load() {
+            Ok(state) => state,
+            Err(e) => {
+                ui::warn(&format!("Failed to load installed state: {e}"));
+                ui::warn("Creating empty skillx.toml instead.");
+                InstalledState::default()
+            }
+        };
         if installed.skills.is_empty() {
             ui::warn("No skills installed. Creating empty skillx.toml.");
             ProjectConfig::create_default(Path::new("."))?;

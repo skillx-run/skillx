@@ -116,10 +116,7 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
 
         for skill in &filtered {
             // Skip local sources
-            if skill.source.starts_with('/')
-                || skill.source.starts_with('.')
-                || skill.source.starts_with('~')
-            {
+            if skillx::source::is_local_source(&skill.source) {
                 continue;
             }
 

@@ -1,4 +1,4 @@
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 use std::path::Path;
 
 use console::style;
@@ -6,9 +6,19 @@ use console::style;
 use crate::scanner::{RiskLevel, ScanReport};
 use crate::ui;
 
+/// Number of source lines to show before the flagged line.
+const CONTEXT_LINES_BEFORE: usize = 3;
+/// Number of source lines to show after the flagged line.
+const CONTEXT_LINES_AFTER: usize = 2;
+/// Width of the separator line in detail view.
+const SEPARATOR_WIDTH: usize = 60;
+
 /// Gate scan results: auto-pass PASS/INFO, prompt for WARN, require "yes" for DANGER, block BLOCK.
 ///
 /// `skill_dir` is used to display source context for the `detail` command.
+///
+/// Note: `auto_yes` only applies to WARN level. DANGER always requires explicit "yes"
+/// confirmation to ensure users review dangerous findings before proceeding.
 pub fn gate_scan_result(
     scan_report: &Option<ScanReport>,
     skill_dir: &Path,
@@ -28,6 +38,7 @@ pub fn gate_scan_result(
                     "{} Continue? [Y/n] ",
                     style("⚠").yellow().bold()
                 );
+                std::io::stderr().flush().ok();
                 let mut input = String::new();
                 std::io::stdin().lock().read_line(&mut input)?;
                 let input = input.trim().to_lowercase();
@@ -52,6 +63,7 @@ pub fn gate_scan_result(
 
             loop {
                 eprint!("{} ", style(">").dim());
+                std::io::stderr().flush().ok();
                 let mut input = String::new();
                 std::io::stdin().lock().read_line(&mut input)?;
                 let input = input.trim();
@@ -69,7 +81,7 @@ pub fn gate_scan_result(
                     if let Ok(n) = num_str.parse::<usize>() {
                         if n > 0 && n <= sorted_findings.len() {
                             let finding = &sorted_findings[n - 1];
-                            eprintln!("\n{}", style("─".repeat(60)).dim());
+                            eprintln!("\n{}", style("─".repeat(SEPARATOR_WIDTH)).dim());
                             eprintln!(
                                 "  Rule:    {} ({})",
                                 finding.rule_id,
@@ -83,23 +95,28 @@ pub fn gate_scan_result(
 
                             if let Some(line) = finding.line {
                                 let file_path = skill_dir.join(&finding.file);
-                                if let Ok(content) = std::fs::read_to_string(&file_path) {
-                                    let lines: Vec<&str> = content.lines().collect();
-                                    let start = line.saturating_sub(3);
-                                    let end = (line + 2).min(lines.len());
-                                    eprintln!("\n  Source:");
-                                    for (i, l) in lines[start..end].iter().enumerate() {
-                                        let line_num = start + i + 1;
-                                        let marker = if line_num == line { ">" } else { " " };
-                                        eprintln!(
-                                            "  {marker} {}: {}",
-                                            style(line_num).dim(),
-                                            l
-                                        );
+                                match std::fs::read_to_string(&file_path) {
+                                    Ok(content) => {
+                                        let lines: Vec<&str> = content.lines().collect();
+                                        let start = line.saturating_sub(CONTEXT_LINES_BEFORE);
+                                        let end = (line + CONTEXT_LINES_AFTER).min(lines.len());
+                                        eprintln!("\n  Source:");
+                                        for (i, l) in lines[start..end].iter().enumerate() {
+                                            let line_num = start + i + 1;
+                                            let marker = if line_num == line { ">" } else { " " };
+                                            eprintln!(
+                                                "  {marker} {}: {}",
+                                                style(line_num).dim(),
+                                                l
+                                            );
+                                        }
+                                    }
+                                    Err(_) => {
+                                        eprintln!("\n  (source unavailable)");
                                     }
                                 }
                             }
-                            eprintln!("{}", style("─".repeat(60)).dim());
+                            eprintln!("{}", style("─".repeat(SEPARATOR_WIDTH)).dim());
                         } else {
                             eprintln!("  Invalid finding number. Valid range: 1-{}", sorted_findings.len());
                         }

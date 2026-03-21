@@ -33,6 +33,20 @@ pub fn urlencoding(s: &str) -> String {
     encoded
 }
 
+/// Check if a source string refers to a local path (not a remote URL or prefix).
+pub fn is_local_source(source: &str) -> bool {
+    source.starts_with('/')
+        || source.starts_with("./")
+        || source.starts_with("../")
+        || source.starts_with('~')
+        || source.starts_with('.')
+        // Windows absolute paths
+        || (source.len() >= 3
+            && source.as_bytes()[0].is_ascii_alphabetic()
+            && source.as_bytes()[1] == b':'
+            && (source.as_bytes()[2] == b'\\' || source.as_bytes()[2] == b'/'))
+}
+
 /// Percent-encode each segment of a URL path (split by `/`).
 pub fn urlencode_path(s: &str) -> String {
     s.split('/')

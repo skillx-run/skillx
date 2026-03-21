@@ -72,7 +72,7 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
     ui::step("Checking for updates...");
     for (name, source) in &skills_to_check {
         // Skip local sources
-        if source.starts_with('/') || source.starts_with('.') || source.starts_with('~') {
+        if skillx::source::is_local_source(source) {
             ui::info(&format!("{name}: local source, skipping"));
             continue;
         }
@@ -135,7 +135,8 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
         }
     }
 
-    // Apply updates
+    // Apply updates (save after each success to avoid losing progress on failure)
+    let mut updated_count = 0;
     for candidate in &candidates {
         ui::step(&format!("Updating {}...", candidate.name));
 
@@ -143,7 +144,13 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
         if !args.skip_scan {
             let report = ScanEngine::scan(&candidate.dir)?;
             eprint!("{}", TextFormatter::format(&report));
-            gate_scan_result(&Some(report.clone()), &candidate.dir, args.yes)?;
+            if let Err(e) = gate_scan_result(&Some(report.clone()), &candidate.dir, args.yes) {
+                // Save progress before propagating scan gate error
+                if updated_count > 0 {
+                    installed.save().ok();
+                }
+                return Err(e);
+            }
         }
 
         let skill = installed.find_skill_mut(&candidate.name).unwrap();
@@ -179,12 +186,13 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
 
         skill.updated_at = chrono::Utc::now();
         skill.source = candidate.source.clone();
+        updated_count += 1;
 
         ui::success(&format!("Updated {}", candidate.name));
     }
 
     installed.save()?;
-    ui::success(&format!("Updated {} skill(s)", candidates.len()));
+    ui::success(&format!("Updated {} skill(s)", updated_count));
     Ok(())
 }
 

@@ -19,11 +19,11 @@ pub struct InstallArgs {
     pub sources: Vec<String>,
 
     /// Target agent
-    #[arg(long)]
+    #[arg(long, conflicts_with = "all")]
     pub agent: Option<String>,
 
     /// Install to all detected agents
-    #[arg(long)]
+    #[arg(long, conflicts_with = "agent")]
     pub all: bool,
 
     /// Injection scope

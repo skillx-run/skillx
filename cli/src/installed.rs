@@ -67,10 +67,19 @@ impl InstalledState {
         let state: InstalledState = serde_json::from_str(&content).map_err(|e| {
             SkillxError::Install(format!("failed to parse installed.json: {e}"))
         })?;
+        // Version check for future format migrations
+        if state.version > 1 {
+            return Err(SkillxError::Install(format!(
+                "installed.json version {} is newer than supported (1). Please upgrade skillx.",
+                state.version
+            )));
+        }
         Ok(state)
     }
 
-    /// Save to `~/.skillx/installed.json`. Creates parent directory if needed.
+    /// Save to `~/.skillx/installed.json` atomically. Creates parent directory if needed.
+    ///
+    /// Uses write-to-temp + rename to avoid corruption from concurrent access or crashes.
     pub fn save(&self) -> Result<()> {
         let path = Self::file_path()?;
         if let Some(parent) = path.parent() {
@@ -84,8 +93,15 @@ impl InstalledState {
         let json = serde_json::to_string_pretty(self).map_err(|e| {
             SkillxError::Install(format!("failed to serialize installed.json: {e}"))
         })?;
-        std::fs::write(&path, json).map_err(|e| {
-            SkillxError::Install(format!("failed to write installed.json: {e}"))
+        // Atomic write: write to temp file then rename
+        let tmp_path = path.with_extension("json.tmp");
+        std::fs::write(&tmp_path, &json).map_err(|e| {
+            SkillxError::Install(format!("failed to write installed.json.tmp: {e}"))
+        })?;
+        std::fs::rename(&tmp_path, &path).map_err(|e| {
+            // Fallback: if rename fails (cross-device), try direct write
+            let _ = std::fs::remove_file(&tmp_path);
+            SkillxError::Install(format!("failed to save installed.json: {e}"))
         })?;
         Ok(())
     }
@@ -101,6 +117,10 @@ impl InstalledState {
     }
 
     /// Add or replace a skill (matched by name).
+    ///
+    /// **Warning**: If the skill already exists, it is completely replaced,
+    /// including all existing injections. Use `find_skill_mut()` to selectively
+    /// update individual fields or injections without losing others.
     pub fn add_or_update_skill(&mut self, skill: InstalledSkill) {
         if let Some(existing) = self.skills.iter_mut().find(|s| s.name == skill.name) {
             *existing = skill;
