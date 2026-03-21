@@ -146,8 +146,11 @@ fn archive_session(_session_dir: &Path, manifest: &Manifest) -> Result<()> {
     let archive_path = history_dir.join(format!("{}.json", manifest.session_id));
     manifest.save(&archive_path)?;
 
-    // Trim old history entries
-    trim_history(&history_dir, 50)?;
+    // Trim old history entries (read max from config, default 50)
+    let max = Config::load()
+        .map(|c| c.history.max_entries as usize)
+        .unwrap_or(50);
+    trim_history(&history_dir, max)?;
 
     Ok(())
 }
