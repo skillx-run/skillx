@@ -46,6 +46,14 @@ flate2 = "1"
 tar = "0.4"
 zip = "2"
 
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/skillx-{ target }.tar.gz"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-url = "{ repo }/releases/download/v{ version }/skillx-{ target }.zip"
+pkg-fmt = "zip"
+
 [dev-dependencies]
 tempfile = "3"
 wiremock = "0.6"
