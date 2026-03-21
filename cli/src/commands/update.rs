@@ -1,10 +1,12 @@
 use clap::Args;
 use std::collections::BTreeSet;
 use std::io::BufRead;
+use std::path::Path;
 
 use skillx::config::Config;
 use skillx::gate::gate_scan_result;
 use skillx::installed::{InjectedFileRecord, InstalledState};
+use skillx::project_config::ProjectConfig;
 use skillx::scanner::report::TextFormatter;
 use skillx::scanner::ScanEngine;
 use skillx::session::inject::inject_and_collect;
@@ -219,6 +221,21 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
     }
 
     installed.save()?;
+
+    // Sync skillx.toml: update source strings for skills whose source changed
+    if let Some(mut pc) = ProjectConfig::load(Path::new("."))? {
+        let mut toml_updated = false;
+        for candidate in &candidates {
+            if pc.update_skill_source(&candidate.name, &candidate.source) {
+                toml_updated = true;
+            }
+        }
+        if toml_updated {
+            pc.save(Path::new("."))?;
+            ui::info("Updated skillx.toml");
+        }
+    }
+
     ui::success(&format!("Updated {} skill(s)", updated_count));
     Ok(())
 }

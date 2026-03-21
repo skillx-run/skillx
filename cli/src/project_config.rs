@@ -204,6 +204,26 @@ impl ProjectConfig {
         result
     }
 
+    /// Update the source string of an existing skill entry.
+    /// For Detailed entries, only updates `source`, preserving scope and skip_scan.
+    /// Returns true if found and updated.
+    pub fn update_skill_source(&mut self, name: &str, new_source: &str) -> bool {
+        for map in [&mut self.skills.entries, &mut self.skills.dev] {
+            if let Some(value) = map.get_mut(name) {
+                match value {
+                    SkillValue::Simple(_) => {
+                        *value = SkillValue::Simple(new_source.to_string());
+                    }
+                    SkillValue::Detailed { source, .. } => {
+                        *source = new_source.to_string();
+                    }
+                }
+                return true;
+            }
+        }
+        false
+    }
+
     /// Check if any skills are defined.
     pub fn has_skills(&self) -> bool {
         !self.skills.entries.is_empty() || !self.skills.dev.is_empty()
@@ -524,6 +544,54 @@ bad = { source = "  " }
         assert_eq!(detailed.source(), "src");
         assert_eq!(detailed.scope(), Some("project"));
         assert_eq!(detailed.skip_scan(), Some(true));
+    }
+
+    #[test]
+    fn test_update_skill_source_simple() {
+        let mut config = ProjectConfig::default();
+        config.add_skill("pdf", "github:org/pdf@v1.0", false);
+
+        assert!(config.update_skill_source("pdf", "github:org/pdf@v1.1"));
+        assert_eq!(config.skills.entries["pdf"].source(), "github:org/pdf@v1.1");
+    }
+
+    #[test]
+    fn test_update_skill_source_detailed_preserves_scope() {
+        let mut config = ProjectConfig::default();
+        config.skills.entries.insert(
+            "review".to_string(),
+            SkillValue::Detailed {
+                source: "github:org/review@v1.0".to_string(),
+                scope: Some("project".to_string()),
+                skip_scan: Some(true),
+            },
+        );
+
+        assert!(config.update_skill_source("review", "github:org/review@v2.0"));
+        let val = &config.skills.entries["review"];
+        assert_eq!(val.source(), "github:org/review@v2.0");
+        assert_eq!(val.scope(), Some("project"));
+        assert_eq!(val.skip_scan(), Some(true));
+    }
+
+    #[test]
+    fn test_update_skill_source_not_found() {
+        let mut config = ProjectConfig::default();
+        config.add_skill("pdf", "github:org/pdf", false);
+
+        assert!(!config.update_skill_source("nonexistent", "github:org/new"));
+    }
+
+    #[test]
+    fn test_update_skill_source_in_dev() {
+        let mut config = ProjectConfig::default();
+        config.add_skill("testing", "github:org/testing@v1.0", true);
+
+        assert!(config.update_skill_source("testing", "github:org/testing@v2.0"));
+        assert_eq!(
+            config.skills.dev["testing"].source(),
+            "github:org/testing@v2.0"
+        );
     }
 
     #[test]
