@@ -23,7 +23,7 @@ fn test_run_basic() {
 
     #[derive(clap::Args, Debug)]
     struct RunArgs {
-        source: String,
+        source: Option<String>,
         prompt: Option<String>,
         #[arg(short = 'f', long = "file")]
         prompt_file: Option<String>,
@@ -83,7 +83,7 @@ fn test_run_basic() {
     let cli = Cli::try_parse_from(["skillx", "run", "./my-skill", "do something"]).unwrap();
     match cli.command {
         Commands::Run(args) => {
-            assert_eq!(args.source, "./my-skill");
+            assert_eq!(args.source.as_deref(), Some("./my-skill"));
             assert_eq!(args.prompt.as_deref(), Some("do something"));
             assert!(!args.yolo);
             assert!(!args.skip_scan);
@@ -109,7 +109,7 @@ fn test_run_basic() {
     .unwrap();
     match cli.command {
         Commands::Run(args) => {
-            assert_eq!(args.source, "github:org/repo/path");
+            assert_eq!(args.source.as_deref(), Some("github:org/repo/path"));
             assert_eq!(args.agent.as_deref(), Some("claude-code"));
             assert!(args.yolo);
             assert!(args.skip_scan);
@@ -185,8 +185,14 @@ fn test_run_basic() {
         _ => panic!("expected Run command"),
     }
 
-    // Test: missing source should fail
-    assert!(Cli::try_parse_from(["skillx", "run"]).is_err());
+    // Test: run without source succeeds (source is optional, skillx.toml may exist)
+    let cli = Cli::try_parse_from(["skillx", "run"]).unwrap();
+    match cli.command {
+        Commands::Run(args) => {
+            assert!(args.source.is_none());
+        }
+        _ => panic!("expected Run command"),
+    }
 
     // Test: unknown command should fail
     assert!(Cli::try_parse_from(["skillx", "unknown"]).is_err());

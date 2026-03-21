@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use skillx::agent::registry::AgentRegistry;
 use skillx::agent::{LaunchConfig, LifecycleMode};
 use skillx::config::{self, Config};
+use skillx::project_config::ProjectConfig;
 use skillx::scanner::report::TextFormatter;
 use skillx::scanner::{RiskLevel, ScanEngine};
 use skillx::session::cleanup::{cleanup_session, recover_orphaned_sessions};
@@ -18,8 +19,8 @@ use skillx::ui;
 
 #[derive(Args, Debug)]
 pub struct RunArgs {
-    /// Skill source (local path, github: prefix, or URL)
-    pub source: String,
+    /// Skill source (local path, github: prefix, or URL). Optional if skillx.toml exists.
+    pub source: Option<String>,
 
     /// Prompt to pass to the agent
     pub prompt: Option<String>,
@@ -79,25 +80,81 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
 
     // ── Phase 0: Load config ──
     let config = Config::load()?;
+    let project_config = ProjectConfig::load(Path::new("."))?;
 
-    // ── Phase 1: Resolve ──
-    ui::step("Resolving source...");
-    let fetched = resolver::resolve_and_fetch(&args.source, args.no_cache, &config).await?;
-    let skill_dir = fetched.dir;
-    let skill_name = fetched.name;
+    // ── Phase 1: Determine source(s) ──
+    // Priority: CLI source > skillx.toml skills > error
+    let multi_skill_mode = args.source.is_none()
+        && project_config
+            .as_ref()
+            .map(|pc| !pc.skills.is_empty())
+            .unwrap_or(false);
 
-    ui::success(&format!("Resolved: {skill_name}"));
+    if args.source.is_none() && !multi_skill_mode {
+        return Err(anyhow::anyhow!(
+            "no source specified and no skillx.toml found. \
+             Provide a source argument or create a skillx.toml with [[skills]] entries."
+        ));
+    }
 
-    // ── Phase 2: Scan ──
-    let scan_report = if !args.skip_scan {
-        ui::step("Scanning for security issues...");
-        let report = ScanEngine::scan(&skill_dir)?;
-        eprint!("{}", TextFormatter::format(&report));
-        Some(report)
+    // Collect (source_string, skip_scan, scope_override) tuples
+    let skill_entries: Vec<(String, bool, Option<String>)> = if let Some(ref source) = args.source {
+        vec![(source.clone(), args.skip_scan, None)]
     } else {
-        ui::warn("Security scan skipped (--skip-scan)");
-        None
+        let pc = project_config.as_ref().unwrap();
+        pc.skills
+            .iter()
+            .map(|entry| {
+                let skip = entry
+                    .skip_scan
+                    .or(pc.defaults.skip_scan)
+                    .unwrap_or(args.skip_scan);
+                let scope = entry
+                    .scope
+                    .clone()
+                    .or_else(|| pc.defaults.scope.clone());
+                (entry.source.clone(), skip, scope)
+            })
+            .collect()
     };
+
+    // Resolve, scan, and collect all skills
+    let mut resolved_skills: Vec<(PathBuf, String, Option<skillx::scanner::ScanReport>)> = Vec::new();
+
+    for (source_str, skip_scan, _scope_override) in &skill_entries {
+        ui::step(&format!("Resolving source: {source_str}"));
+        let fetched = resolver::resolve_and_fetch(source_str, args.no_cache, &config).await?;
+        let skill_dir = fetched.dir;
+        let skill_name = fetched.name;
+        ui::success(&format!("Resolved: {skill_name}"));
+
+        // Scan
+        let scan_report = if !skip_scan {
+            ui::step("Scanning for security issues...");
+            let report = ScanEngine::scan(&skill_dir)?;
+            eprint!("{}", TextFormatter::format(&report));
+            Some(report)
+        } else {
+            ui::warn("Security scan skipped (--skip-scan)");
+            None
+        };
+
+        resolved_skills.push((skill_dir, skill_name, scan_report));
+    }
+
+    // For backward compat: use first skill's data for single-skill flow
+    let (skill_dir, skill_name, scan_report) = if resolved_skills.len() == 1 {
+        resolved_skills.remove(0)
+    } else {
+        // Multi-skill mode: use first as primary for session naming
+        let first = resolved_skills.remove(0);
+        // remaining skills stored for multi-inject
+        // We'll inject them all below
+        first
+    };
+
+    // Remaining skills (for multi-skill mode)
+    let extra_skills = resolved_skills;
 
     // ── Phase 3: Gate ──
     if let Some(ref report) = scan_report {
@@ -211,7 +268,17 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     // ── Phase 4: Detect Agent ──
     ui::step("Detecting agents...");
     let registry = AgentRegistry::new(&config);
-    let adapter = registry.select(args.agent.as_deref()).await?;
+    // Agent priority: CLI --agent > skillx.toml defaults.agent > config.toml preferred > auto-detect
+    let agent_name = args
+        .agent
+        .as_deref()
+        .or_else(|| {
+            project_config
+                .as_ref()
+                .and_then(|pc| pc.defaults.agent.as_deref())
+        })
+        .or(config.agent.defaults.preferred.as_deref());
+    let adapter = registry.select(agent_name).await?;
     ui::success(&format!("Using agent: {}", adapter.display_name()));
 
     // ── Phase 5: Parse scope ──
@@ -226,10 +293,11 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     session.create_dirs()?;
 
     let inject_path = adapter.inject_path(&skill_name, &scope);
+    let source_display = args.source.as_deref().unwrap_or("skillx.toml");
     let mut manifest = Manifest::new(
         &session.id,
         &skill_name,
-        &args.source,
+        source_display,
         adapter.name(),
         &format!("{:?}", adapter.lifecycle_mode()),
         &scope.to_string(),
@@ -273,13 +341,29 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         }
     }
 
+    // Multi-skill mode: inject remaining skills
+    for (extra_dir, extra_name, _extra_scan) in &extra_skills {
+        let extra_inject_path = adapter.inject_path(extra_name, &scope);
+        inject_skill(extra_dir, &extra_inject_path, &mut manifest)?;
+        ui::success(&format!("Injected extra skill: {extra_name}"));
+    }
+
     // Save manifest
     manifest.save(&Manifest::manifest_path(&session.session_dir()?))?;
-    ui::success(&format!(
-        "Injected {} files to {}",
-        manifest.injected_files.len(),
-        inject_path.display()
-    ));
+    let total_skills = 1 + extra_skills.len();
+    if total_skills > 1 {
+        ui::success(&format!(
+            "Injected {} skills ({} files total) to agent",
+            total_skills,
+            manifest.injected_files.len()
+        ));
+    } else {
+        ui::success(&format!(
+            "Injected {} files to {}",
+            manifest.injected_files.len(),
+            inject_path.display()
+        ));
+    }
 
     // ── Phase 7: Resolve prompt ──
     let prompt = resolve_prompt(&args)?;
