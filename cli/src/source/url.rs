@@ -95,25 +95,36 @@ fn parse_gist_url(path: &str) -> Result<SkillSource> {
 }
 
 /// Parse a GitLab URL: /owner/repo/-/tree/ref/path
+///
+/// GitLab uses `/-/` as a separator between namespace and actions.
+/// Supports nested groups: `/group/subgroup/project/-/tree/main/path`
 fn parse_gitlab_url(host: &str, path: &str) -> Result<SkillSource> {
     let path = path.trim_start_matches('/').trim_end_matches('/');
-    let parts: Vec<&str> = path.splitn(3, '/').collect();
 
-    if parts.len() < 2 {
+    // Split on /-/ to separate namespace/repo from tree/blob actions
+    let (namespace_part, action_part) = if let Some(pos) = path.find("/-/") {
+        (&path[..pos], Some(&path[pos + 3..]))
+    } else {
+        (path, None)
+    };
+
+    // namespace_part is "owner/repo" or "group/subgroup/project"
+    // The last segment is the repo, everything before is the owner/group
+    let segments: Vec<&str> = namespace_part.split('/').collect();
+    if segments.len() < 2 {
         return Err(SkillxError::InvalidSource(format!(
             "invalid GitLab URL: cannot extract owner/repo from path '{path}'"
         )));
     }
 
-    let owner = parts[0].to_string();
-    let repo = parts[1].to_string();
+    let repo = segments.last().unwrap().to_string();
+    let owner = segments[..segments.len() - 1].join("/");
 
-    // Parse /-/tree/ref/path or /-/blob/ref/path
-    let (ref_, sub_path) = if parts.len() >= 3 {
-        let rest = parts[2];
-        if let Some(tree_rest) = rest
-            .strip_prefix("-/tree/")
-            .or_else(|| rest.strip_prefix("-/blob/"))
+    // Parse tree/ref/path or blob/ref/path from the action part
+    let (ref_, sub_path) = if let Some(action) = action_part {
+        if let Some(tree_rest) = action
+            .strip_prefix("tree/")
+            .or_else(|| action.strip_prefix("blob/"))
         {
             if let Some((r, p)) = tree_rest.split_once('/') {
                 (Some(r.to_string()), Some(p.to_string()))

@@ -75,12 +75,12 @@ impl AgentAdapter for RooAdapter {
         if let Some(ref prompt) = config.prompt {
             if let Ok(mut clipboard) = arboard::Clipboard::new() {
                 clipboard.set_text(prompt).ok();
-                eprintln!("Prompt copied to clipboard. Paste it into Roo Code chat.");
+                crate::ui::info("Prompt copied to clipboard. Paste it into Roo Code chat.");
             }
         }
 
-        eprintln!("Skill injected. Open VS Code with Roo Code and use the skill.");
-        eprintln!("Press Enter when done to clean up...");
+        crate::ui::info("Skill injected. Open VS Code with Roo Code and use the skill.");
+        crate::ui::info("Press Enter when done to clean up...");
 
         Ok(SessionHandle {
             child: None,

@@ -1,7 +1,7 @@
 use clap::Args;
 use console::style;
 use std::io::{self, BufRead, Read};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use skillx::agent::registry::AgentRegistry;
 use skillx::agent::{LaunchConfig, LifecycleMode};
@@ -422,7 +422,7 @@ fn resolve_prompt(args: &RunArgs) -> anyhow::Result<Option<String>> {
 }
 
 /// Recursively copy a directory to a destination.
-fn copy_dir_recursive(src: &PathBuf, dest: &PathBuf) -> anyhow::Result<()> {
+fn copy_dir_recursive(src: &Path, dest: &Path) -> anyhow::Result<()> {
     std::fs::create_dir_all(dest)?;
     for entry in std::fs::read_dir(src)? {
         let entry = entry?;

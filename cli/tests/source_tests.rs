@@ -61,6 +61,25 @@ fn test_resolve_gitlab_url() {
 }
 
 #[test]
+fn test_resolve_gitlab_nested_group_url() {
+    let result =
+        source::resolve("https://gitlab.com/group/subgroup/project/-/tree/main/skills/pdf")
+            .unwrap();
+    match result {
+        source::SkillSource::GitLab {
+            host, owner, repo, path, ref_,
+        } => {
+            assert_eq!(host, "gitlab.com");
+            assert_eq!(owner, "group/subgroup");
+            assert_eq!(repo, "project");
+            assert_eq!(path, Some("skills/pdf".into()));
+            assert_eq!(ref_, Some("main".into()));
+        }
+        _ => panic!("expected GitLab source"),
+    }
+}
+
+#[test]
 fn test_resolve_bitbucket_url() {
     let result =
         source::resolve("https://bitbucket.org/owner/repo/src/main/skills/pdf").unwrap();

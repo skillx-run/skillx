@@ -87,7 +87,7 @@ impl GitHubSource {
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
         let client = reqwest::Client::builder()
-            .user_agent("skillx/0.1")
+            .user_agent("skillx/0.2")
             .build()
             .map_err(|e| SkillxError::Network(format!("failed to create HTTP client: {e}")))?;
 

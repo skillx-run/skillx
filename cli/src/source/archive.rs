@@ -112,17 +112,12 @@ impl ArchiveSource {
 
             let out_path = dest.join(relative);
 
-            // Verify the output path is within dest
-            let canonical_dest = dest
-                .canonicalize()
-                .unwrap_or_else(|_| dest.to_path_buf());
-            if let Ok(canonical_out) = out_path.canonicalize() {
-                if !canonical_out.starts_with(&canonical_dest) {
-                    return Err(SkillxError::Archive(format!(
-                        "zip slip detected: {} escapes destination",
-                        name_str
-                    )));
-                }
+            // Verify the output path is within dest (normalize without requiring existence)
+            if !path_is_within(dest, &out_path) {
+                return Err(SkillxError::Archive(format!(
+                    "zip slip detected: {} escapes destination",
+                    name_str
+                )));
             }
 
             if entry.is_dir() {
@@ -221,7 +216,24 @@ impl ArchiveSource {
                 continue;
             }
 
+            // Reject symlinks and hardlinks — they can be used for path traversal
+            let entry_type = entry.header().entry_type();
+            if entry_type.is_symlink() || entry_type.is_hard_link() {
+                return Err(SkillxError::Archive(format!(
+                    "archive contains a symlink or hardlink: {path_str} — rejected for security"
+                )));
+            }
+
             let out_path = dest.join(relative);
+
+            // Verify the output path is within dest
+            if !path_is_within(dest, &out_path) {
+                return Err(SkillxError::Archive(format!(
+                    "path traversal detected: {} escapes destination",
+                    path_str
+                )));
+            }
+
             total_size += entry.size();
             if total_size > MAX_TOTAL_SIZE {
                 return Err(SkillxError::Archive(format!(
@@ -229,11 +241,11 @@ impl ArchiveSource {
                 )));
             }
 
-            if entry.header().entry_type().is_dir() {
+            if entry_type.is_dir() {
                 std::fs::create_dir_all(&out_path).map_err(|e| {
                     SkillxError::Source(format!("failed to create dir: {e}"))
                 })?;
-            } else if entry.header().entry_type().is_file() {
+            } else if entry_type.is_file() {
                 if let Some(parent) = out_path.parent() {
                     std::fs::create_dir_all(parent).map_err(|e| {
                         SkillxError::Source(format!("failed to create dir: {e}"))
@@ -251,6 +263,30 @@ impl ArchiveSource {
 
         Ok(files)
     }
+}
+
+/// Check if `child` is within `parent` by normalizing components (no I/O).
+///
+/// This avoids relying on `canonicalize()` which requires the path to exist
+/// and can miss symlink-based escapes when the file hasn't been written yet.
+fn path_is_within(parent: &Path, child: &Path) -> bool {
+    use std::path::Component;
+    let normalize = |p: &Path| -> PathBuf {
+        let mut parts = Vec::new();
+        for c in p.components() {
+            match c {
+                Component::ParentDir => {
+                    parts.pop();
+                }
+                Component::CurDir => {}
+                other => parts.push(other),
+            }
+        }
+        parts.iter().collect()
+    };
+    let norm_parent = normalize(parent);
+    let norm_child = normalize(child);
+    norm_child.starts_with(&norm_parent)
 }
 
 /// Detect if all entries in a zip share a single root directory.
