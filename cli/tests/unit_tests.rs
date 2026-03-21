@@ -1046,3 +1046,181 @@ fn test_cleanup_removes_ancestor_dirs() {
         "a/ should be removed"
     );
 }
+
+// ==================== inject_and_collect ====================
+
+#[test]
+fn test_inject_and_collect() {
+    use tempfile::TempDir;
+
+    let source = TempDir::new().unwrap();
+    std::fs::write(source.path().join("SKILL.md"), "# Test Skill").unwrap();
+    std::fs::create_dir_all(source.path().join("scripts")).unwrap();
+    std::fs::write(source.path().join("scripts/run.sh"), "echo test").unwrap();
+
+    let target = TempDir::new().unwrap();
+    let records =
+        skillx::session::inject::inject_and_collect(source.path(), target.path()).unwrap();
+
+    assert_eq!(records.len(), 2);
+    // Records should have relative paths and SHA256 hashes
+    let paths: Vec<&str> = records.iter().map(|(p, _)| p.as_str()).collect();
+    assert!(paths.contains(&"SKILL.md"));
+    assert!(paths.contains(&"scripts/run.sh"));
+    for (_, sha) in &records {
+        assert!(!sha.is_empty());
+        assert_eq!(sha.len(), 64); // SHA256 hex
+    }
+
+    // Files should exist in target
+    assert!(target.path().join("SKILL.md").exists());
+    assert!(target.path().join("scripts/run.sh").exists());
+}
+
+// ==================== ProjectConfig new format ====================
+
+#[test]
+fn test_project_config_full_roundtrip() {
+    use tempfile::TempDir;
+
+    let dir = TempDir::new().unwrap();
+    let mut config = skillx::project_config::ProjectConfig::default();
+    config.project.name = Some("test-project".to_string());
+    config.project.description = Some("A test".to_string());
+    config.agent.preferred = Some("claude-code".to_string());
+    config.agent.scope = Some("project".to_string());
+    config.agent.targets = vec!["claude-code".to_string(), "cursor".to_string()];
+    config.add_skill("pdf", "github:org/pdf", false);
+    config.add_skill("review", "github:org/review", false);
+    config.add_skill("testing", "github:org/testing", true);
+
+    config.save(dir.path()).unwrap();
+    let loaded = skillx::project_config::ProjectConfig::load(dir.path())
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(loaded.project.name.as_deref(), Some("test-project"));
+    assert_eq!(loaded.project.description.as_deref(), Some("A test"));
+    assert_eq!(loaded.agent.preferred.as_deref(), Some("claude-code"));
+    assert_eq!(loaded.agent.scope.as_deref(), Some("project"));
+    assert_eq!(loaded.agent.targets, vec!["claude-code", "cursor"]);
+    assert_eq!(loaded.skills.entries.len(), 2);
+    assert_eq!(loaded.skills.dev.len(), 1);
+    assert!(loaded.has_skills());
+
+    let all = loaded.all_skills();
+    assert_eq!(all.len(), 3);
+}
+
+#[test]
+fn test_project_config_create_from_installed() {
+    use tempfile::TempDir;
+
+    let dir = TempDir::new().unwrap();
+    let skills = vec![
+        ("pdf".to_string(), "github:org/pdf".to_string()),
+        ("review".to_string(), "github:org/review".to_string()),
+    ];
+    skillx::project_config::ProjectConfig::create_from_installed(dir.path(), &skills).unwrap();
+
+    let loaded = skillx::project_config::ProjectConfig::load(dir.path())
+        .unwrap()
+        .unwrap();
+    assert_eq!(loaded.skills.entries.len(), 2);
+    assert_eq!(
+        loaded.skills.entries["pdf"].source(),
+        "github:org/pdf"
+    );
+}
+
+// ==================== InstalledState serialization ====================
+
+#[test]
+fn test_installed_state_json_format() {
+    use skillx::installed::*;
+
+    let mut state = InstalledState::default();
+    state.add_or_update_skill(InstalledSkill {
+        name: "test-skill".to_string(),
+        source: "github:org/test".to_string(),
+        resolved_ref: Some("main".to_string()),
+        installed_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now(),
+        scan_level: "pass".to_string(),
+        injections: vec![Injection {
+            agent: "claude-code".to_string(),
+            scope: "global".to_string(),
+            path: "/home/user/.claude/skills/test-skill".to_string(),
+            files: vec![
+                InjectedFileRecord {
+                    relative: "SKILL.md".to_string(),
+                    sha256: "abc123".to_string(),
+                },
+                InjectedFileRecord {
+                    relative: "scripts/run.sh".to_string(),
+                    sha256: "def456".to_string(),
+                },
+            ],
+        }],
+    });
+
+    let json = serde_json::to_string_pretty(&state).unwrap();
+    assert!(json.contains("\"version\": 1"));
+    assert!(json.contains("\"test-skill\""));
+    assert!(json.contains("\"claude-code\""));
+    assert!(json.contains("\"abc123\""));
+
+    // Verify deserialization
+    let loaded: InstalledState = serde_json::from_str(&json).unwrap();
+    assert_eq!(loaded.skills.len(), 1);
+    assert_eq!(loaded.skills[0].injections[0].files.len(), 2);
+}
+
+// ==================== Gate scan result ====================
+
+#[test]
+fn test_gate_pass_and_info_auto_pass() {
+    use skillx::scanner::{Finding, RiskLevel, ScanReport};
+    use std::path::Path;
+
+    // No report
+    assert!(skillx::gate::gate_scan_result(&None, Path::new("."), false).is_ok());
+
+    // Pass
+    let pass = ScanReport {
+        findings: vec![],
+    };
+    assert!(skillx::gate::gate_scan_result(&Some(pass), Path::new("."), false).is_ok());
+
+    // Info
+    let info = ScanReport {
+        findings: vec![Finding {
+            rule_id: "MD-001".to_string(),
+            level: RiskLevel::Info,
+            message: "info".to_string(),
+            file: "SKILL.md".to_string(),
+            line: None,
+            context: None,
+        }],
+    };
+    assert!(skillx::gate::gate_scan_result(&Some(info), Path::new("."), false).is_ok());
+}
+
+#[test]
+fn test_gate_block_always_refuses() {
+    use skillx::scanner::{Finding, RiskLevel, ScanReport};
+    use std::path::Path;
+
+    let blocked = ScanReport {
+        findings: vec![Finding {
+            rule_id: "SC-011".to_string(),
+            level: RiskLevel::Block,
+            message: "blocked".to_string(),
+            file: "bad.sh".to_string(),
+            line: Some(1),
+            context: None,
+        }],
+    };
+    let result = skillx::gate::gate_scan_result(&Some(blocked), Path::new("."), true);
+    assert!(result.is_err());
+}
