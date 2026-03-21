@@ -21,7 +21,11 @@ use crate::error::Result;
 use crate::types::Scope;
 
 /// Pre-compiled regex for extracting semver-like version strings.
-/// Matches `X.Y.Z` or `X.Y` preceded by a word boundary or `v`/`V` prefix.
+/// Matches `X.Y.Z` or `X.Y` preceded by a non-word/non-dot char or `v` prefix.
+///
+/// Known limitation: can match date-like (`2025.03.21`) or IP-like (`192.168.1`)
+/// strings. This is acceptable because callers only feed it `--version` command
+/// output or VS Code extension dir suffixes, where such inputs don't occur.
 static VERSION_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
     regex::Regex::new(r"(?:^|[^.\w])v?(\d+\.\d+(?:\.\d+)?)\b")
         .expect("BUG: invalid version regex")
@@ -50,6 +54,7 @@ pub async fn detect_binary_version(binary: &str) -> Option<String> {
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
+        .kill_on_drop(true)
         .spawn()
         .ok()?;
 
@@ -192,14 +197,28 @@ mod version_tests {
 
     #[test]
     fn test_parse_version_word_boundary() {
-        // Date-like strings: \b prevents matching partial tokens
-        // "2025.03.21" still matches as digits.digits.digits on word boundaries,
-        // but in practice version output is short and unambiguous.
-        // The key protection is against embedded-in-word matches.
         assert_eq!(
             parse_version_output("version 1.2.3 released"),
             Some("1.2.3".into())
         );
+    }
+
+    #[test]
+    fn test_parse_version_rejects_dot_prefix() {
+        // Version preceded by period: [^.\w] excludes `.`
+        assert_eq!(parse_version_output("lib.1.2.3"), None);
+    }
+
+    #[test]
+    fn test_parse_version_rejects_underscore_prefix() {
+        // Version preceded by underscore: [^.\w] excludes `_` (word char)
+        assert_eq!(parse_version_output("lib_1.2.3"), None);
+    }
+
+    #[test]
+    fn test_parse_version_rejects_letter_prefix() {
+        // Version preceded by letter: [^.\w] excludes letters
+        assert_eq!(parse_version_output("x1.2.3"), None);
     }
 
     #[test]

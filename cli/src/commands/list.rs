@@ -145,7 +145,11 @@ pub async fn execute(args: ListArgs) -> anyhow::Result<()> {
         }
 
         if outdated_entries.is_empty() {
-            ui::success("All skills are up to date.");
+            if checked_ok == 0 {
+                ui::warn("No skills could be checked for updates.");
+            } else {
+                ui::success("All skills are up to date.");
+            }
         } else {
             eprintln!();
             eprintln!(
