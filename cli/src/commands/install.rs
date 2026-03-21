@@ -229,6 +229,37 @@ async fn install_from_toml(
         return Ok(());
     }
 
+    // Pre-scan: classify skills into new/update/unchanged
+    let mut new_count = 0;
+    let mut update_count = 0;
+    let mut unchanged_count = 0;
+
+    for (name, value, _is_dev) in &skills_to_install {
+        let source = value.source();
+        if let Some(existing) = installed.find_skill(name) {
+            if existing.source == source {
+                unchanged_count += 1;
+            } else {
+                update_count += 1;
+            }
+        } else {
+            new_count += 1;
+        }
+    }
+
+    ui::header(&format!(
+        "Found {} skills ({} new, {} to update, {} already installed)",
+        skills_to_install.len(),
+        new_count,
+        update_count,
+        unchanged_count
+    ));
+
+    if new_count == 0 && update_count == 0 && !args.prune {
+        ui::success("All skills are already installed.");
+        return Ok(());
+    }
+
     let registry = AgentRegistry::new(config);
     let target_agents = select_agents(args, config, &registry, &Some(pc.clone())).await?;
 
@@ -244,7 +275,6 @@ async fn install_from_toml(
         // Skip if already installed with same source
         if let Some(existing) = installed.find_skill(name) {
             if existing.source == source {
-                ui::info(&format!("{name} already installed, skipping"));
                 continue;
             }
             ui::info(&format!("{name} source changed, updating"));
@@ -338,7 +368,10 @@ async fn install_from_toml(
     }
 
     installed.save()?;
-    ui::success(&format!("Installed {count} skill(s)"));
+    ui::success(&format!(
+        "{} skills installed/updated, {} unchanged",
+        count, unchanged_count
+    ));
     Ok(())
 }
 
