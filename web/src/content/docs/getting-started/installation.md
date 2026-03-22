@@ -1,12 +1,22 @@
 ---
 title: Installation
-description: How to install skillx via Homebrew, Cargo, cargo-binstall, or from source.
+description: How to install skillx via shell script, Homebrew, Cargo, cargo-binstall, or from source.
 ---
 
 ## Requirements
 
 - **Operating System**: macOS, Linux, or Windows
-- **Agent**: At least one supported agent installed (Claude Code, Codex, Copilot, Cursor, or any agent that reads `.agents/skills/`)
+- **Agent**: At least one supported agent installed (see `skillx agents --all` for the full list of 32+ supported agents)
+
+## Install via Shell Script (Recommended)
+
+The fastest way to install skillx on macOS or Linux:
+
+```bash
+curl -fsSL https://skillx.run/install.sh | sh
+```
+
+The installer automatically detects your OS and architecture, downloads a pre-compiled binary, verifies SHA256 checksums, and installs to `~/.local/bin/`.
 
 ## Install via Homebrew (macOS / Linux)
 
@@ -92,7 +102,7 @@ skillx --version
 You should see output like:
 
 ```
-skillx 0.3.0
+skillx 0.3.2
 ```
 
 Check that an agent is detected:
