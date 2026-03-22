@@ -35,23 +35,23 @@ main() {
     URL="https://github.com/${REPO}/releases/latest/download/${ARCHIVE}"
 
     echo "Downloading skillx for ${TARGET}..."
-    TMPDIR="$(mktemp -d)"
-    trap 'rm -rf "$TMPDIR"' EXIT
+    _SKILLX_TMP="$(mktemp -d)"
+    trap 'rm -rf "$_SKILLX_TMP"' EXIT
 
     if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$URL" -o "${TMPDIR}/${ARCHIVE}"
+        curl -fsSL "$URL" -o "${_SKILLX_TMP}/${ARCHIVE}"
     elif command -v wget >/dev/null 2>&1; then
-        wget -qO "${TMPDIR}/${ARCHIVE}" "$URL"
+        wget -qO "${_SKILLX_TMP}/${ARCHIVE}" "$URL"
     else
         echo "Error: curl or wget is required" >&2
         exit 1
     fi
 
     echo "Extracting..."
-    tar -xzf "${TMPDIR}/${ARCHIVE}" -C "$TMPDIR"
+    tar -xzf "${_SKILLX_TMP}/${ARCHIVE}" -C "$_SKILLX_TMP"
 
     # Find the binary (handles both flat and directory-wrapped archives)
-    BINARY="$(find "$TMPDIR" -name skillx -type f ! -name '*.gz' | head -1)"
+    BINARY="$(find "$_SKILLX_TMP" -name skillx -type f ! -name '*.gz' | head -1)"
     if [ -z "$BINARY" ]; then
         echo "Error: could not find skillx binary in archive" >&2
         exit 1

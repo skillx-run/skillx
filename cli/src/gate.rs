@@ -94,7 +94,7 @@ pub fn gate_scan_result(
                                 match std::fs::read_to_string(&file_path) {
                                     Ok(content) => {
                                         let lines: Vec<&str> = content.lines().collect();
-                                        let start = line.saturating_sub(CONTEXT_LINES_BEFORE);
+                                        let start = (line - 1).saturating_sub(CONTEXT_LINES_BEFORE);
                                         let end = (line + CONTEXT_LINES_AFTER).min(lines.len());
                                         eprintln!("\n  Source:");
                                         for (i, l) in lines[start..end].iter().enumerate() {
