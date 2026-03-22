@@ -52,6 +52,16 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo test --workspace
 
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-deny --locked
+      - run: cargo deny check
+
   # Cross-compile check — only on push to main (not PRs)
   build:
     name: Build (${{ matrix.target }})
