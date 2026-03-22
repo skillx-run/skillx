@@ -49,7 +49,6 @@ jobs:
 | `source` | Yes | — | Skill source to scan (local path or URL) |
 | `fail-on` | No | `danger` | Risk level threshold (info, warn, danger, block) |
 | `format` | No | `sarif` | Output format (text, json, sarif) |
-| `version` | No | `latest` | skillx version to install |
 | `upload-sarif` | No | `true` | Upload SARIF to GitHub Code Scanning |
 
 #### Outputs
@@ -131,10 +130,12 @@ If you prefer to install skillx manually instead of using the official action:
 
 ```yaml
 skill-scan:
-  image: rust:latest
+  image: ubuntu:latest
   stage: test
   before_script:
-    - cargo install skillx
+    - apt-get update && apt-get install -y curl
+    - curl -fsSL https://skillx.run/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
   script:
     - skillx scan --format json --fail-on warn ./my-skill > scan-report.json
   artifacts:
