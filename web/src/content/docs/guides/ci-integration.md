@@ -14,7 +14,9 @@ description: Using skillx scan in CI pipelines to enforce security standards for
 
 ## GitHub Actions
 
-### Basic Scan
+### Official Action (Recommended)
+
+The simplest way to integrate skillx into GitHub Actions. Automatically installs skillx, runs the scan, and uploads SARIF results to the GitHub Security tab.
 
 ```yaml
 name: Skill Security Scan
@@ -23,56 +25,50 @@ on:
     paths:
       - 'skills/**'
 
-jobs:
-  scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install skillx
-        run: cargo install skillx
-
-      - name: Scan all skills
-        run: |
-          for dir in skills/*/; do
-            echo "Scanning $dir..."
-            skillx scan --fail-on warn "$dir"
-          done
-```
-
-### With JSON Report
-
-```yaml
-name: Skill Security Scan
-on: [pull_request]
+permissions:
+  contents: read
+  security-events: write
 
 jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install skillx
-        run: cargo install skillx
 
       - name: Scan skill
-        run: |
-          skillx scan --format json --fail-on warn ./my-skill > scan-report.json
-          cat scan-report.json
-
-      - name: Upload scan report
-        if: always()
-        uses: actions/upload-artifact@v4
+        uses: skillx-run/skillx/.github/actions/scan@main
         with:
-          name: scan-report
-          path: scan-report.json
+          source: ./my-skill
+          fail-on: warn
 ```
 
-### Matrix Strategy for Multiple Skills
+#### Inputs
+
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `source` | Yes | — | Skill source to scan (local path or URL) |
+| `fail-on` | No | `danger` | Risk level threshold (info, warn, danger, block) |
+| `format` | No | `sarif` | Output format (text, json, sarif) |
+| `version` | No | `latest` | skillx version to install |
+| `upload-sarif` | No | `true` | Upload SARIF to GitHub Code Scanning |
+
+#### Outputs
+
+| Output | Description |
+|--------|-------------|
+| `sarif-file` | Path to the SARIF output file |
+| `level` | Highest risk level found |
+| `findings-count` | Number of findings |
+
+### Multiple Skills with Matrix
 
 ```yaml
 name: Skill Security Scan
 on: [pull_request]
+
+permissions:
+  contents: read
+  security-events: write
 
 jobs:
   scan:
@@ -86,32 +82,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install skillx
-        run: cargo install skillx
-
       - name: Scan ${{ matrix.skill }}
-        run: skillx scan --fail-on warn ${{ matrix.skill }}
+        uses: skillx-run/skillx/.github/actions/scan@main
+        with:
+          source: ${{ matrix.skill }}
+          fail-on: warn
 ```
 
-### Cache Cargo Build
+### Manual Installation
 
-Speed up CI by caching the Cargo build:
+If you prefer to install skillx manually instead of using the official action:
 
 ```yaml
-      - name: Cache cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/
-            ~/.cargo/git/
-          key: ${{ runner.os }}-cargo-skillx
-
       - name: Install skillx
+        run: curl -fsSL https://skillx.run/install.sh | sh
+
+      - name: Scan skill
+        run: skillx scan --format sarif --fail-on warn ./my-skill > results.sarif
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+          category: skillx-scan
+```
+
+### With JSON Report
+
+```yaml
+      - name: Install skillx
+        run: curl -fsSL https://skillx.run/install.sh | sh
+
+      - name: Scan skill
         run: |
-          if ! command -v skillx &> /dev/null; then
-            cargo install skillx
-          fi
+          skillx scan --format json --fail-on warn ./my-skill > scan-report.json
+          cat scan-report.json
+
+      - name: Upload scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-report
+          path: scan-report.json
 ```
 
 ## GitLab CI

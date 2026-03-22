@@ -156,12 +156,15 @@ cargo run -- cache ls            # List cache
 - Homebrew formula template in `Formula/skillx.rb` (SHA256 placeholders replaced by release CI)
 - cargo-binstall supported via `[package.metadata.binstall]` in Cargo.toml
 - `install.sh` — Shell one-liner installer (`curl -fsSL https://skillx.run/install.sh | sh`)
-- Web docs sidebar in `astro.config.mjs` lists all 10 commands
+- Web docs sidebar in `astro.config.mjs` lists all 10 commands (CLI Reference section lists `cache` not `config`; config.toml docs are in Reference section)
+- `SKILLX_HOME` env var overrides the default `~/.skillx/` base directory (used by integration tests for isolation)
+- GitHub Action at `.github/actions/scan/action.yml` — composite action for CI security scanning with SARIF upload
+- `install` and `update` commands fetch skills concurrently (scan/gate remain sequential for interactive confirmation)
 
 ## Data Directories
 
 ```
-~/.skillx/
+~/.skillx/       (or $SKILLX_HOME if set)
 ├── config.toml      # Global config (url_patterns, custom_agents, cache, scan, agent, history)
 ├── installed.json   # Persistent install state (skills, injections, SHA256)
 ├── cache/           # Cached skills (TTL-based)

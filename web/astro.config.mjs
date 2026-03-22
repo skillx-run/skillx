@@ -31,7 +31,7 @@ export default defineConfig({
             { label: 'scan', slug: 'cli/scan' },
             { label: 'agents', slug: 'cli/agents' },
             { label: 'info', slug: 'cli/info' },
-            { label: 'config', slug: 'cli/config' },
+            { label: 'cache', slug: 'cli/cache' },
           ],
         },
         {

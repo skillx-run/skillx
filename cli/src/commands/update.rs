@@ -75,20 +75,49 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
 
     let mut candidates: Vec<UpdateCandidate> = Vec::new();
 
-    ui::step("Checking for updates...");
-    for (name, source) in &skills_to_check {
-        // Skip local sources
-        if skillx::source::is_local_source(source) {
-            ui::info(&format!("{name}: local source, skipping"));
-            continue;
-        }
+    // Separate local from remote sources
+    let remote_skills: Vec<_> = skills_to_check
+        .iter()
+        .filter(|(name, source)| {
+            if skillx::source::is_local_source(source) {
+                ui::info(&format!("{name}: local source, skipping"));
+                false
+            } else {
+                true
+            }
+        })
+        .collect();
 
-        match resolver::resolve_and_fetch(source, true, &config).await {
+    // Concurrent fetch for remote sources
+    ui::step(&format!(
+        "Checking {} skill(s) for updates...",
+        remote_skills.len()
+    ));
+    let fetch_futures = remote_skills.iter().map(|(name, source)| {
+        let name = name.clone();
+        let source = source.clone();
+        let cfg = config.clone();
+        async move {
+            let result = resolver::resolve_and_fetch(&source, true, &cfg).await;
+            (name, source, result)
+        }
+    });
+    let fetch_results = futures::future::join_all(fetch_futures).await;
+
+    // Compare results with installed state
+    for (name, source, result) in fetch_results {
+        match result {
             Ok(fetched) => {
                 // Compare (path, hash) pairs for precise change detection
-                let new_hashes = skillx::installed::collect_file_hashes(&fetched.dir)?;
+                let new_hashes = match skillx::installed::collect_file_hashes(&fetched.dir) {
+                    Ok(h) => h,
+                    Err(e) => {
+                        ui::warn(&format!("{name}: hash check failed ({e})"));
+                        continue;
+                    }
+                };
 
-                let skill = installed.find_skill(name).ok_or_else(|| {
+                let skill = installed.find_skill(&name).ok_or_else(|| {
                     anyhow::anyhow!(
                         "internal: skill '{}' disappeared from installed state",
                         name

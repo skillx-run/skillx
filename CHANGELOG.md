@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-03-22
+
+### Added
+
+- `SKILLX_HOME` environment variable to override the default `~/.skillx/` data directory (useful for testing and isolated environments)
+- GitHub Action for CI security scanning (`.github/actions/scan/action.yml`) with SARIF upload to GitHub Code Scanning
+- Example scan workflow (`.github/workflows/scan-example.yml`)
+- `cache` command documentation page (`web/src/content/docs/cli/cache.md`)
+- Command integration tests for install, uninstall, list, and update (15 new tests using `SKILLX_HOME` isolation)
+
+### Changed
+
+- `install` and `update` commands now fetch multiple skills concurrently, then scan/gate sequentially (improves performance for multi-skill operations)
+- `install` reports partial failures when some sources fail to fetch instead of aborting entirely
+- CI integration guide updated with official GitHub Action usage and SARIF upload examples
+- Web docs sidebar: replaced `config` with `cache` in CLI Reference section (config.toml docs remain in Reference section)
+
 ## [0.3.1] - 2026-03-22
 
 ### Added
@@ -90,6 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SARIF 2.1.0 output format for scanner results
 - Text and JSON output formatters
 
+[0.3.2]: https://github.com/skillx-run/skillx/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/skillx-run/skillx/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/skillx-run/skillx/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/skillx-run/skillx/compare/v0.1.0...v0.2.0

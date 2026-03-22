@@ -147,8 +147,11 @@ impl Config {
         Ok(())
     }
 
-    /// Base directory: `~/.skillx/`
+    /// Base directory: `$SKILLX_HOME` if set, otherwise `~/.skillx/`.
     pub fn base_dir() -> Result<PathBuf> {
+        if let Ok(home) = std::env::var("SKILLX_HOME") {
+            return Ok(PathBuf::from(home));
+        }
         Ok(dirs::home_dir()
             .ok_or_else(|| SkillxError::Config("could not determine home directory".into()))?
             .join(".skillx"))

@@ -1,0 +1,117 @@
+name: 'skillx scan'
+description: 'Scan Agent Skills for security risks using skillx'
+author: 'skillx-run'
+
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  source:
+    description: 'Skill source to scan (local path, github: prefix, or URL)'
+    required: true
+  fail-on:
+    description: 'Risk level threshold that causes failure (info, warn, danger, block)'
+    required: false
+    default: 'danger'
+  format:
+    description: 'Output format (text, json, sarif)'
+    required: false
+    default: 'sarif'
+  upload-sarif:
+    description: 'Upload SARIF results to GitHub Code Scanning'
+    required: false
+    default: 'true'
+
+outputs:
+  sarif-file:
+    description: 'Path to the SARIF output file'
+    value: ${{ steps.scan.outputs.sarif-file }}
+  level:
+    description: 'Highest risk level found (pass, info, warn, danger, block)'
+    value: ${{ steps.scan.outputs.level }}
+  findings-count:
+    description: 'Number of findings'
+    value: ${{ steps.scan.outputs.findings-count }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install skillx
+      shell: bash
+      run: |
+        curl -fsSL https://skillx.run/install.sh | sh
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+    - name: Run scan
+      id: scan
+      shell: bash
+      run: |
+        SARIF_FILE="${{ runner.temp }}/skillx-scan-results.sarif"
+
+        # Run scan and capture output
+        FINDINGS=0
+        LEVEL="pass"
+
+        set +e
+        if [ "${{ inputs.format }}" = "sarif" ] || [ "${{ inputs.upload-sarif }}" = "true" ]; then
+          # SARIF to file (stdout only — stderr has progress messages)
+          skillx scan "${{ inputs.source }}" \
+            --format sarif \
+            --fail-on "${{ inputs.fail-on }}" \
+            > "$SARIF_FILE"
+          SCAN_EXIT=$?
+        else
+          skillx scan "${{ inputs.source }}" \
+            --format "${{ inputs.format }}" \
+            --fail-on "${{ inputs.fail-on }}"
+          SCAN_EXIT=$?
+        fi
+        set -e
+
+        # Set outputs
+        echo "sarif-file=$SARIF_FILE" >> "$GITHUB_OUTPUT"
+
+        # Extract findings count and level from SARIF
+        if [ -f "$SARIF_FILE" ]; then
+          FINDINGS=$(jq '[.runs[0].results // [] | length] | add // 0' "$SARIF_FILE" 2>/dev/null || echo "0")
+          echo "findings-count=$FINDINGS" >> "$GITHUB_OUTPUT"
+
+          # Determine highest level from SARIF
+          LEVEL=$(jq -r '
+            [.runs[0].results[]?.level // empty] |
+            if any(. == "error") then "danger"
+            elif any(. == "warning") then "warn"
+            elif any(. == "note") then "info"
+            else "pass"
+            end
+          ' "$SARIF_FILE" 2>/dev/null || echo "pass")
+          echo "level=$LEVEL" >> "$GITHUB_OUTPUT"
+        else
+          echo "findings-count=0" >> "$GITHUB_OUTPUT"
+          echo "level=pass" >> "$GITHUB_OUTPUT"
+        fi
+
+        # Write job summary
+        {
+          echo "## skillx Scan Results"
+          echo ""
+          echo "- **Source:** \`${{ inputs.source }}\`"
+          echo "- **Risk Level:** $LEVEL"
+          echo "- **Findings:** $FINDINGS"
+          echo "- **Threshold:** ${{ inputs.fail-on }}"
+          if [ "$SCAN_EXIT" -eq 0 ]; then
+            echo "- **Status:** Passed :white_check_mark:"
+          else
+            echo "- **Status:** Failed :x:"
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+
+        exit $SCAN_EXIT
+
+    - name: Upload SARIF to GitHub Security
+      if: always() && inputs.upload-sarif == 'true' && inputs.format == 'sarif'
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif-file }}
+        category: skillx-scan

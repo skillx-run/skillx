@@ -1,0 +1,38 @@
+name: 'Skill Scan Example'
+
+# This is an example workflow demonstrating skillx scan integration.
+# Trigger manually from the Actions tab.
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Skill source to scan'
+        required: true
+        default: './cli/tests/fixtures/valid-skill'
+      fail-on:
+        description: 'Failure threshold'
+        required: false
+        default: 'danger'
+        type: choice
+        options:
+          - info
+          - warn
+          - danger
+          - block
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  scan:
+    name: Scan skill
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run skillx scan
+        uses: ./.github/actions/scan
+        with:
+          source: ${{ github.event.inputs.source }}
+          fail-on: ${{ github.event.inputs.fail-on }}

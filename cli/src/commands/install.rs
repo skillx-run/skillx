@@ -79,15 +79,54 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
         scan_level: String,
         resolved_ref: Option<String>,
     }
+
+    // Phase 1: Concurrent fetch
+    ui::step(&format!("Fetching {} skill(s)...", args.sources.len()));
+    let fetch_futures = args.sources.iter().map(|source_str| {
+        let source = source_str.clone();
+        let no_cache = args.no_cache;
+        let cfg = config.clone();
+        async move {
+            let result = resolver::resolve_and_fetch(&source, no_cache, &cfg).await;
+            (source, result)
+        }
+    });
+    let fetch_results = futures::future::join_all(fetch_futures).await;
+
+    // Collect results, report any failures
+    let mut fetched_skills = Vec::new();
+    let mut fetch_errors = Vec::new();
+    for (source, result) in fetch_results {
+        match result {
+            Ok(fetched) => {
+                ui::success(&format!("Fetched {} from {}", fetched.name, source));
+                fetched_skills.push((source, fetched));
+            }
+            Err(e) => {
+                ui::error(&format!("Failed to fetch {source}: {e}"));
+                fetch_errors.push((source, e));
+            }
+        }
+    }
+    if fetched_skills.is_empty() {
+        return Err(anyhow::anyhow!(
+            "all {} source(s) failed to fetch",
+            fetch_errors.len()
+        ));
+    }
+    if !fetch_errors.is_empty() {
+        ui::warn(&format!(
+            "{} of {} source(s) failed to fetch",
+            fetch_errors.len(),
+            fetch_errors.len() + fetched_skills.len()
+        ));
+    }
+
+    // Phase 2: Sequential scan and gate (interactive)
     let mut resolved: Vec<Resolved> = Vec::new();
-
-    for source_str in &args.sources {
-        ui::step(&format!("Resolving: {source_str}"));
-        let fetched = resolver::resolve_and_fetch(source_str, args.no_cache, &config).await?;
-        ui::success(&format!("Fetched {} from {}", fetched.name, source_str));
-
+    for (source_str, fetched) in fetched_skills {
         let scan_level = if !args.skip_scan {
-            ui::step("Scanning...");
+            ui::step(&format!("Scanning {}...", fetched.name));
             let report = ScanEngine::scan(&fetched.dir)?;
             eprint!("{}", TextFormatter::format(&report));
             gate_scan_result(&Some(report.clone()), &fetched.dir, args.yes)?;
@@ -110,7 +149,7 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
         resolved.push(Resolved {
             dir: fetched.dir,
             name: fetched.name,
-            source: source_str.clone(),
+            source: source_str,
             scan_level,
             resolved_ref: fetched.resolved_ref,
         });
@@ -258,6 +297,60 @@ async fn install_from_toml(
     let registry = AgentRegistry::new(config);
     let target_agents = select_agents(args, config, &registry, &Some(pc.clone())).await?;
 
+    // Phase 1: Concurrent fetch for new/changed skills
+    let skills_to_fetch: Vec<_> = skills_to_install
+        .iter()
+        .filter(|(name, value, _)| {
+            let source = value.source();
+            if let Some(existing) = installed.find_skill(name) {
+                existing.source != source
+            } else {
+                true
+            }
+        })
+        .collect();
+
+    let fetch_futures = skills_to_fetch.iter().map(|(name, value, _)| {
+        let source = value.source().to_string();
+        let no_cache = args.no_cache;
+        let cfg = config.clone();
+        let skill_name = name.clone();
+        async move {
+            let result = resolver::resolve_and_fetch(&source, no_cache, &cfg).await;
+            (skill_name, source, result)
+        }
+    });
+    let fetch_results = futures::future::join_all(fetch_futures).await;
+
+    let mut fetched_map: std::collections::HashMap<String, _> = std::collections::HashMap::new();
+    let mut toml_fetch_errors = 0usize;
+    for (name, source, result) in fetch_results {
+        match result {
+            Ok(fetched) => {
+                ui::success(&format!("Fetched {} from {}", fetched.name, source));
+                fetched_map.insert(name, (source, fetched));
+            }
+            Err(e) => {
+                ui::error(&format!("Failed to fetch {name} ({source}): {e}"));
+                toml_fetch_errors += 1;
+            }
+        }
+    }
+    if fetched_map.is_empty() && toml_fetch_errors > 0 {
+        return Err(anyhow::anyhow!(
+            "all {} source(s) failed to fetch",
+            toml_fetch_errors
+        ));
+    }
+    if toml_fetch_errors > 0 {
+        ui::warn(&format!(
+            "{} of {} source(s) failed to fetch",
+            toml_fetch_errors,
+            toml_fetch_errors + fetched_map.len()
+        ));
+    }
+
+    // Phase 2: Sequential scan/gate/inject
     let mut count = 0;
     for (name, value, _is_dev) in &skills_to_install {
         let source = value.source();
@@ -275,8 +368,10 @@ async fn install_from_toml(
             ui::info(&format!("{name} source changed, updating"));
         }
 
-        ui::step(&format!("Resolving: {source}"));
-        let fetched = resolver::resolve_and_fetch(source, args.no_cache, config).await?;
+        let (_source_str, fetched) = match fetched_map.remove(name) {
+            Some(f) => f,
+            None => continue, // fetch failed, already reported
+        };
 
         let skip_scan = value.skip_scan().unwrap_or(args.skip_scan);
         let scan_level = if !skip_scan {

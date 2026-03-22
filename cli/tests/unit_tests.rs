@@ -839,8 +839,16 @@ fn test_config_base_dir_returns_ok() {
     // On any machine with a home directory, this should succeed
     let result = skillx::config::Config::base_dir();
     assert!(result.is_ok());
-    let path = result.unwrap();
-    assert!(path.to_string_lossy().contains(".skillx"));
+}
+
+#[test]
+fn test_config_base_dir_respects_skillx_home() {
+    let custom = "/tmp/test-skillx-home-12345";
+    std::env::set_var("SKILLX_HOME", custom);
+    let result = skillx::config::Config::base_dir();
+    std::env::remove_var("SKILLX_HOME");
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap().to_string_lossy(), custom);
 }
 
 // ==================== Pre-compiled rules match raw rules ====================
