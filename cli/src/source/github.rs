@@ -112,33 +112,43 @@ impl GitHubSource {
             .await
             .map_err(|e| SkillxError::Network(format!("GitHub API request failed: {e}")))?;
 
-        if resp.status() == 403 {
-            // Distinguish rate limit from permission denied
-            let is_rate_limit = resp
-                .headers()
-                .get("x-ratelimit-remaining")
-                .and_then(|v| v.to_str().ok())
-                .map(|v| v == "0")
-                .unwrap_or(false);
-
-            if is_rate_limit {
-                return Err(SkillxError::RateLimited(
-                    "GitHub API rate limit exceeded. Set GITHUB_TOKEN to increase your limit."
-                        .into(),
-                ));
-            } else {
+        match resp.status().as_u16() {
+            401 => {
                 return Err(SkillxError::GitHubApi(
-                    "GitHub API returned 403 Forbidden. The repository may be private — set GITHUB_TOKEN for access."
-                        .into(),
+                    "authentication required. Set GITHUB_TOKEN environment variable.".into(),
                 ));
             }
-        }
+            403 => {
+                // Distinguish rate limit from permission denied
+                let is_rate_limit = resp
+                    .headers()
+                    .get("x-ratelimit-remaining")
+                    .and_then(|v| v.to_str().ok())
+                    .map(|v| v == "0")
+                    .unwrap_or(false);
 
-        if !resp.status().is_success() {
-            return Err(SkillxError::GitHubApi(format!(
-                "GitHub API returned {}",
-                resp.status()
-            )));
+                if is_rate_limit {
+                    return Err(SkillxError::RateLimited(
+                        "GitHub API rate limit exceeded. Set GITHUB_TOKEN to increase your limit."
+                            .into(),
+                    ));
+                } else {
+                    return Err(SkillxError::GitHubApi(
+                        "access denied. Repository may be private — set GITHUB_TOKEN.".into(),
+                    ));
+                }
+            }
+            404 => {
+                return Err(SkillxError::GitHubApi(
+                    "not found. Check the owner, repository, and path.".into(),
+                ));
+            }
+            s if !(200..300).contains(&s) => {
+                return Err(SkillxError::GitHubApi(format!(
+                    "GitHub API returned HTTP {s}"
+                )));
+            }
+            _ => {}
         }
 
         let body: serde_json::Value = resp.json().await.map_err(|e| {

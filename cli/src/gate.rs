@@ -222,4 +222,16 @@ mod tests {
         let err = result.unwrap_err();
         assert!(err.downcast_ref::<crate::error::SkillxError>().is_some());
     }
+
+    #[test]
+    fn test_format_size() {
+        assert_eq!(format_size(0), "0 B");
+        assert_eq!(format_size(512), "512 B");
+        assert_eq!(format_size(1023), "1023 B");
+        assert_eq!(format_size(1024), "1.0 KB");
+        assert_eq!(format_size(1536), "1.5 KB");
+        assert_eq!(format_size(1024 * 1024), "1.0 MB");
+        assert_eq!(format_size(1024 * 1024 * 1024), "1.0 GB");
+        assert_eq!(format_size(50 * 1024 * 1024), "50.0 MB");
+    }
 }

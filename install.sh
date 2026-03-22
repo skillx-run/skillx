@@ -50,16 +50,23 @@ main() {
     echo "Extracting..."
     tar -xzf "${TMPDIR}/${ARCHIVE}" -C "$TMPDIR"
 
+    # Find the binary (handles both flat and directory-wrapped archives)
+    BINARY="$(find "$TMPDIR" -name skillx -type f ! -name '*.gz' | head -1)"
+    if [ -z "$BINARY" ]; then
+        echo "Error: could not find skillx binary in archive" >&2
+        exit 1
+    fi
+
     # Install binary
     mkdir -p "$INSTALL_DIR"
-    mv "${TMPDIR}/skillx" "${INSTALL_DIR}/skillx"
+    mv "$BINARY" "${INSTALL_DIR}/skillx"
     chmod +x "${INSTALL_DIR}/skillx"
 
     echo "Installed skillx to ${INSTALL_DIR}/skillx"
 
     # Verify
     if "${INSTALL_DIR}/skillx" --version >/dev/null 2>&1; then
-        echo "✓ $("${INSTALL_DIR}/skillx" --version)"
+        echo "[ok] $("${INSTALL_DIR}/skillx" --version)"
     fi
 
     # Check PATH

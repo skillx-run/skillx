@@ -289,16 +289,30 @@ mod tests {
         for i in 0..10 {
             let path = dir.path().join(format!("session-{i:02}.json"));
             std::fs::write(&path, format!(r#"{{"id": "{i}"}}"#)).unwrap();
-            // Small sleep to ensure distinct modification times
-            std::thread::sleep(std::time::Duration::from_millis(10));
+            // Sleep 50ms to ensure distinct modification times across filesystems
+            // (HFS+ has 1s granularity but APFS/ext4 have sub-ms; 50ms is safe for APFS)
+            std::thread::sleep(std::time::Duration::from_millis(50));
         }
         trim_history(dir.path(), 5).unwrap();
-        let remaining: Vec<_> = std::fs::read_dir(dir.path())
+        let mut remaining: Vec<String> = std::fs::read_dir(dir.path())
             .unwrap()
             .filter_map(|e| e.ok())
             .filter(|e| e.path().extension().is_some_and(|ext| ext == "json"))
+            .map(|e| e.file_name().to_string_lossy().to_string())
             .collect();
+        remaining.sort();
         assert_eq!(remaining.len(), 5);
+        // Oldest files (session-00..04) removed, newest (session-05..09) kept
+        assert_eq!(
+            remaining,
+            vec![
+                "session-05.json",
+                "session-06.json",
+                "session-07.json",
+                "session-08.json",
+                "session-09.json",
+            ]
+        );
     }
 
     #[test]

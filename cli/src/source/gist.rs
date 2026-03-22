@@ -101,6 +101,12 @@ impl GistSource {
                 let resp = req.send().await.map_err(|e| {
                     SkillxError::Network(format!("download failed for {filename}: {e}"))
                 })?;
+                if !resp.status().is_success() {
+                    return Err(SkillxError::GistApi(format!(
+                        "download failed for {filename}: HTTP {}",
+                        resp.status()
+                    )));
+                }
                 let bytes = resp
                     .bytes()
                     .await
