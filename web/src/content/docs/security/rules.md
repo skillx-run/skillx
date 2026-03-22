@@ -5,7 +5,7 @@ description: Complete reference for all scanner rules — MD-001 through MD-009,
 
 ## Overview
 
-The skillx scanner has 22 rules organized into three categories:
+The skillx scanner has 23 rules organized into three categories:
 
 - **MD** (Markdown) — rules applied to `SKILL.md`
 - **SC** (Script) — rules applied to files in `scripts/` and script-like files at root
@@ -118,7 +118,7 @@ Detects SKILL.md files with YAML frontmatter that do not declare a `description`
 
 Applied to files in `scripts/` and script-like files (`.py`, `.sh`, `.js`, `.ts`, `.rb`, `.pl`, `.ps1`) at the root level.
 
-### SC-001: Embedded Binary (BLOCK)
+### SC-001: Embedded Binary (DANGER)
 
 Detects binary content by checking for ELF, Mach-O, PE, and other magic bytes.
 
@@ -237,7 +237,7 @@ Applied to files in the `references/` directory.
 
 Detects files with double extensions or misleading names (e.g., `report.pdf.exe`).
 
-### RS-002: Oversized File (WARN)
+### RS-002: Oversized File (INFO)
 
 Detects files larger than 50 MB.
 
@@ -262,7 +262,7 @@ Detects executable files in the `references/` directory, which should only conta
 | MD-007 | INFO | Markdown | Missing license declaration |
 | MD-008 | INFO | Markdown | Missing name declaration |
 | MD-009 | INFO | Markdown | Missing description declaration |
-| SC-001 | BLOCK | Script | Embedded binary |
+| SC-001 | DANGER | Script | Embedded binary |
 | SC-002 | DANGER | Script | Dynamic execution |
 | SC-003 | DANGER | Script | Recursive delete |
 | SC-004 | DANGER | Script | Sensitive directory access |
@@ -274,5 +274,5 @@ Detects executable files in the `references/` directory, which should only conta
 | SC-010 | BLOCK | Script | Self-replication |
 | SC-011 | BLOCK | Script | Modify skillx paths |
 | RS-001 | WARN | Resource | Disguised file extension |
-| RS-002 | WARN | Resource | Oversized file (> 50 MB) |
+| RS-002 | INFO | Resource | Oversized file (> 50 MB) |
 | RS-003 | DANGER | Resource | Executable in references |
