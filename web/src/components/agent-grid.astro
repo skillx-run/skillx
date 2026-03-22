@@ -46,7 +46,7 @@ const agents = [
       <div class="tier">
         <h3>
           <span class="tier-badge t1">Tier 1</span>
-          Full support in v0.1
+          Full support
         </h3>
         <div class="agent-cards">
           {agents.filter(a => a.tier === 1).map(agent => (
@@ -64,11 +64,11 @@ const agents = [
       <div class="tier">
         <h3>
           <span class="tier-badge t2">Tier 2</span>
-          Supported in v0.2+
+          Full support
         </h3>
         <div class="agent-cards">
           {agents.filter(a => a.tier === 2).map(agent => (
-            <div class="agent-card muted">
+            <div class="agent-card">
               <div class="agent-name">{agent.name}</div>
               <div class="agent-meta">
                 <span class={`type-badge ${agent.type.toLowerCase()}`}>{agent.type}</span>
@@ -81,18 +81,18 @@ const agents = [
       <div class="tier">
         <h3>
           <span class="tier-badge t3">Tier 3</span>
-          Supported in v0.3+
+          Full support
         </h3>
         <div class="agent-cards">
           {agents.filter(a => a.tier === 3).map(agent => (
-            <div class="agent-card muted">
+            <div class="agent-card">
               <div class="agent-name">{agent.name}</div>
               <div class="agent-meta">
                 <span class={`type-badge ${agent.type.toLowerCase()}`}>{agent.type}</span>
               </div>
             </div>
           ))}
-          <div class="agent-card muted more">
+          <div class="agent-card more">
             <div class="agent-name">+ custom agents</div>
           </div>
         </div>
