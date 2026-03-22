@@ -6,6 +6,14 @@ use super::binary_analyzer::BinaryAnalyzer;
 use super::compiled_rules::SC_RULES;
 use super::{Finding, RiskLevel, ScanReport};
 
+/// Check if a line is a single-line comment (shell/python #, JS/TS //, SQL/Lua --).
+fn is_comment_line(line: &str) -> bool {
+    let trimmed = line.trim_start();
+    trimmed.starts_with('#')
+        || trimmed.starts_with("//")
+        || trimmed.starts_with("--")
+}
+
 pub struct ScriptAnalyzer;
 
 impl ScriptAnalyzer {
@@ -48,6 +56,11 @@ impl ScriptAnalyzer {
             for re in &rule.patterns {
                 for (line_num, line) in content.lines().enumerate() {
                     if re.is_match(line) {
+                        // Skip WARN-level matches on comment lines to reduce false positives.
+                        // DANGER/BLOCK level rules still fire on comments (worth reviewing).
+                        if rule.level == RiskLevel::Warn && is_comment_line(line) {
+                            continue;
+                        }
                         report.add(Finding {
                             rule_id: rule.id.to_string(),
                             level: rule.level,
@@ -63,5 +76,35 @@ impl ScriptAnalyzer {
         }
 
         Ok(report)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_comment_line_shell() {
+        assert!(is_comment_line("# this is a comment"));
+        assert!(is_comment_line("  # indented comment"));
+    }
+
+    #[test]
+    fn test_is_comment_line_js() {
+        assert!(is_comment_line("// JS comment"));
+        assert!(is_comment_line("  // indented"));
+    }
+
+    #[test]
+    fn test_is_comment_line_sql() {
+        assert!(is_comment_line("-- SQL comment"));
+        assert!(is_comment_line("  -- indented"));
+    }
+
+    #[test]
+    fn test_is_comment_line_not_comment() {
+        assert!(!is_comment_line("curl https://example.com"));
+        assert!(!is_comment_line("echo hello"));
+        assert!(!is_comment_line(""));
     }
 }

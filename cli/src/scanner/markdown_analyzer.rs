@@ -8,10 +8,32 @@ impl MarkdownAnalyzer {
     pub fn analyze(content: &str, filename: &str) -> ScanReport {
         let mut report = ScanReport::new();
 
+        // Pre-compute which lines are inside fenced code blocks (``` ... ```)
+        let mut in_code_block = false;
+        let code_block_lines: Vec<bool> = content
+            .lines()
+            .map(|line| {
+                if line.trim_start().starts_with("```") {
+                    in_code_block = !in_code_block;
+                    // The fence line itself is considered part of the code block
+                    true
+                } else {
+                    in_code_block
+                }
+            })
+            .collect();
+
         for rule in MD_RULES.iter() {
             for re in &rule.patterns {
                 for (line_num, line) in content.lines().enumerate() {
                     if re.is_match(line) {
+                        // Skip WARN-level matches inside code blocks to reduce false positives.
+                        // DANGER/BLOCK level rules still fire inside code blocks (worth reviewing).
+                        if rule.level == RiskLevel::Warn
+                            && code_block_lines.get(line_num).copied().unwrap_or(false)
+                        {
+                            continue;
+                        }
                         report.add(Finding {
                             rule_id: rule.id.to_string(),
                             level: rule.level,

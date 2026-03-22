@@ -38,7 +38,6 @@ pub const MD_003_PATTERNS: &[&str] = &[
     r#"(?i)upload\s+(to|data|files?)"#,
     r#"(?i)post\s+(to|data)"#,
     r#"(?i)exfiltrate"#,
-    r#"https?://\S+"#,
 ];
 
 /// MD-004: Delete files or directories (WARN)
