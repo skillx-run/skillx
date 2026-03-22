@@ -180,7 +180,7 @@ For CLI agents that support it, skip permission prompts:
 skillx run --yolo github:org/skills/formatter "Format all files"
 ```
 
-This passes `--dangerously-skip-permissions` to Claude Code or `--full-auto` to Codex.
+This passes `--dangerously-skip-permissions` to Claude Code, `--full-auto` to Codex, or `--sandbox=none` to Gemini CLI.
 
 :::caution
 YOLO mode gives the agent unrestricted access. Only use it with skills you trust completely.

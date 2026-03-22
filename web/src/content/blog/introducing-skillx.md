@@ -5,6 +5,10 @@ date: 2026-03-20
 author: "skillx team"
 ---
 
+:::note[Historical Post]
+This post describes skillx v0.1. For the latest features (32 agents, 10 source types, 23 scanner rules), see the [documentation](/docs).
+:::
+
 # Introducing skillx v0.1
 
 We're excited to announce **skillx** — a cross-platform CLI tool that brings the `npx` experience to Agent Skills.
