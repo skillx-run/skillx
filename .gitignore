@@ -30,3 +30,6 @@ Thumbs.db
 
 # skillx data
 .skillx/
+
+# skillx runtime injected skills
+.agents/
