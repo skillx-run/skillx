@@ -159,7 +159,7 @@ pub const SC_008_PATTERNS: &[&str] = &[
 /// SC-009: setuid/setgid (DANGER)
 pub const SC_009_PATTERNS: &[&str] = &[
     r#"chmod\s+[ugo]*\+s"#,
-    r#"chmod\s+[0-7]*[4-7][0-7]{2}\b"#,
+    r#"chmod\s+[4-7][0-7]{3}\b"#,
     r#"setuid"#,
     r#"setgid"#,
 ];

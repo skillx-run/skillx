@@ -107,4 +107,47 @@ mod tests {
         assert!(!is_comment_line("echo hello"));
         assert!(!is_comment_line(""));
     }
+
+    /// Helper: write a temp script file, analyze it, return the report.
+    fn analyze_script_content(content: &str) -> ScanReport {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("test.sh");
+        std::fs::write(&path, content).unwrap();
+        ScriptAnalyzer::analyze(&path, "test.sh").unwrap()
+    }
+
+    #[test]
+    fn test_sc006_comment_line_skipped() {
+        let report = analyze_script_content("# curl https://example.com\n");
+        let sc006: Vec<_> = report.findings.iter().filter(|f| f.rule_id == "SC-006").collect();
+        assert!(sc006.is_empty(), "SC-006 should not fire on comment lines");
+    }
+
+    #[test]
+    fn test_sc006_code_line_triggers() {
+        let report = analyze_script_content("curl https://example.com\n");
+        let sc006: Vec<_> = report.findings.iter().filter(|f| f.rule_id == "SC-006").collect();
+        assert!(!sc006.is_empty(), "SC-006 should fire on actual code");
+    }
+
+    #[test]
+    fn test_sc007_comment_line_skipped() {
+        let report = analyze_script_content("# > /tmp/out\n");
+        let sc007: Vec<_> = report.findings.iter().filter(|f| f.rule_id == "SC-007").collect();
+        assert!(sc007.is_empty(), "SC-007 should not fire on comment lines");
+    }
+
+    #[test]
+    fn test_sc008_comment_line_skipped() {
+        let report = analyze_script_content("# sudo apt install foo\n");
+        let sc008: Vec<_> = report.findings.iter().filter(|f| f.rule_id == "SC-008").collect();
+        assert!(sc008.is_empty(), "SC-008 should not fire on comment lines");
+    }
+
+    #[test]
+    fn test_sc002_danger_still_fires_on_comment() {
+        let report = analyze_script_content("# eval(\n");
+        let sc002: Vec<_> = report.findings.iter().filter(|f| f.rule_id == "SC-002").collect();
+        assert!(!sc002.is_empty(), "DANGER rules should still fire on comment lines");
+    }
 }

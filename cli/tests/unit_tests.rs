@@ -1418,3 +1418,152 @@ fn test_gate_warn_auto_yes_passes() {
     let result = skillx::gate::gate_scan_result(&Some(report), Path::new("."), true);
     assert!(result.is_ok(), "auto_yes should auto-pass WARN level");
 }
+
+// ==================== Scanner edge case tests ====================
+
+#[test]
+fn test_scan_empty_skill_md() {
+    use skillx::scanner::markdown_analyzer::MarkdownAnalyzer;
+
+    let report = MarkdownAnalyzer::analyze("", "SKILL.md");
+    // Should be PASS with no findings (no frontmatter = no structural warnings)
+    assert!(
+        report.findings.is_empty(),
+        "empty SKILL.md should produce no findings"
+    );
+}
+
+#[test]
+fn test_scan_very_long_line() {
+    use skillx::scanner::markdown_analyzer::MarkdownAnalyzer;
+
+    // 10000+ character line should not panic
+    let long_line = "a".repeat(12000);
+    let content = format!("---\nname: test\n---\n# Skill\n\n{long_line}\n");
+    let report = MarkdownAnalyzer::analyze(&content, "SKILL.md");
+    // Should not panic — findings are irrelevant, just testing robustness
+    assert!(report.findings.len() < 100);
+}
+
+#[test]
+fn test_sc002_eval_paren_triggers() {
+    use skillx::scanner::ScanEngine;
+
+    let dir = tempfile::tempdir().unwrap();
+    let scripts = dir.path().join("scripts");
+    std::fs::create_dir_all(&scripts).unwrap();
+    std::fs::write(scripts.join("bad.sh"), "eval(\n").unwrap();
+    std::fs::write(dir.path().join("SKILL.md"), "---\nname: test\n---\n# Skill").unwrap();
+
+    let report = ScanEngine::scan(dir.path()).unwrap();
+    let sc002: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "SC-002")
+        .collect();
+    assert!(!sc002.is_empty(), "eval( should trigger SC-002");
+}
+
+#[test]
+fn test_sc002_evaluation_does_not_trigger() {
+    use skillx::scanner::ScanEngine;
+
+    let dir = tempfile::tempdir().unwrap();
+    let scripts = dir.path().join("scripts");
+    std::fs::create_dir_all(&scripts).unwrap();
+    std::fs::write(scripts.join("safe.py"), "# This is an evaluation report\n").unwrap();
+    std::fs::write(dir.path().join("SKILL.md"), "---\nname: test\n---\n# Skill").unwrap();
+
+    let report = ScanEngine::scan(dir.path()).unwrap();
+    let sc002: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "SC-002")
+        .collect();
+    assert!(
+        sc002.is_empty(),
+        "'evaluation' (no paren) should not trigger SC-002"
+    );
+}
+
+#[test]
+fn test_sc003_rm_rf_slash_triggers() {
+    use skillx::scanner::ScanEngine;
+
+    let dir = tempfile::tempdir().unwrap();
+    let scripts = dir.path().join("scripts");
+    std::fs::create_dir_all(&scripts).unwrap();
+    std::fs::write(scripts.join("bad.sh"), "rm -rf /\n").unwrap();
+    std::fs::write(dir.path().join("SKILL.md"), "---\nname: test\n---\n# Skill").unwrap();
+
+    let report = ScanEngine::scan(dir.path()).unwrap();
+    let sc003: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "SC-003")
+        .collect();
+    assert!(!sc003.is_empty(), "rm -rf / should trigger SC-003");
+}
+
+#[test]
+fn test_sc003_rm_f_single_file_does_not_trigger() {
+    use skillx::scanner::ScanEngine;
+
+    let dir = tempfile::tempdir().unwrap();
+    let scripts = dir.path().join("scripts");
+    std::fs::create_dir_all(&scripts).unwrap();
+    std::fs::write(scripts.join("safe.sh"), "rm -f file.txt\n").unwrap();
+    std::fs::write(dir.path().join("SKILL.md"), "---\nname: test\n---\n# Skill").unwrap();
+
+    let report = ScanEngine::scan(dir.path()).unwrap();
+    let sc003: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "SC-003")
+        .collect();
+    assert!(
+        sc003.is_empty(),
+        "rm -f file.txt (no -r) should not trigger SC-003"
+    );
+}
+
+#[test]
+fn test_sc009_setuid_triggers() {
+    use skillx::scanner::ScanEngine;
+
+    let dir = tempfile::tempdir().unwrap();
+    let scripts = dir.path().join("scripts");
+    std::fs::create_dir_all(&scripts).unwrap();
+    std::fs::write(scripts.join("bad.sh"), "chmod 4755 /usr/bin/foo\n").unwrap();
+    std::fs::write(dir.path().join("SKILL.md"), "---\nname: test\n---\n# Skill").unwrap();
+
+    let report = ScanEngine::scan(dir.path()).unwrap();
+    let sc009: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "SC-009")
+        .collect();
+    assert!(!sc009.is_empty(), "chmod 4755 should trigger SC-009");
+}
+
+#[test]
+fn test_sc009_chmod_644_does_not_trigger() {
+    use skillx::scanner::ScanEngine;
+
+    let dir = tempfile::tempdir().unwrap();
+    let scripts = dir.path().join("scripts");
+    std::fs::create_dir_all(&scripts).unwrap();
+    std::fs::write(scripts.join("safe.sh"), "chmod 644 file.txt\n").unwrap();
+    std::fs::write(dir.path().join("SKILL.md"), "---\nname: test\n---\n# Skill").unwrap();
+
+    let report = ScanEngine::scan(dir.path()).unwrap();
+    let sc009: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "SC-009")
+        .collect();
+    assert!(
+        sc009.is_empty(),
+        "chmod 644 should not trigger SC-009"
+    );
+}
