@@ -1155,9 +1155,13 @@ fn test_inject_and_collect() {
 
     assert_eq!(records.len(), 2);
     // Records should have relative paths and SHA256 hashes
-    let paths: Vec<&str> = records.iter().map(|(p, _)| p.as_str()).collect();
-    assert!(paths.contains(&"SKILL.md"));
-    assert!(paths.contains(&"scripts/run.sh"));
+    // Normalize separators for cross-platform comparison
+    let paths: Vec<String> = records
+        .iter()
+        .map(|(p, _)| p.replace('\\', "/"))
+        .collect();
+    assert!(paths.contains(&"SKILL.md".to_string()));
+    assert!(paths.contains(&"scripts/run.sh".to_string()));
     for (_, sha) in &records {
         assert!(!sha.is_empty());
         assert_eq!(sha.len(), 64); // SHA256 hex
@@ -1327,9 +1331,10 @@ fn test_collect_file_hashes() {
     assert_eq!(hashes.len(), 2);
 
     // Should contain (relative_path, sha256) pairs
-    let paths: Vec<&str> = hashes.iter().map(|(p, _)| p.as_str()).collect();
-    assert!(paths.contains(&"SKILL.md"));
-    assert!(paths.contains(&"sub/script.sh"));
+    // Normalize separators for cross-platform comparison
+    let paths: Vec<String> = hashes.iter().map(|(p, _)| p.replace('\\', "/")).collect();
+    assert!(paths.contains(&"SKILL.md".to_string()));
+    assert!(paths.contains(&"sub/script.sh".to_string()));
 
     // All hashes should be 64-char hex SHA256
     for (_, sha) in &hashes {
