@@ -5,7 +5,7 @@ description: Curated skill registries and marketplaces that can be used with ski
 
 ## Overview
 
-Skill directories are curated registries and marketplaces where skill authors publish their Agent Skills. skillx v0.2 supports fetching skills from directory platforms by extracting the underlying GitHub source URL from the platform's page.
+Skill directories are curated registries and marketplaces where skill authors publish their Agent Skills. skillx supports fetching skills from directory platforms by extracting the underlying GitHub source URL from the platform's page.
 
 ## Supported Platforms (10)
 

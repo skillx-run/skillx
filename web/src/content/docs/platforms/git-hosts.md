@@ -5,7 +5,7 @@ description: Supported and planned Git hosting platforms for fetching skills.
 
 ## GitHub (Supported)
 
-GitHub is the primary remote platform in skillx v0.1. Skills can be referenced in two ways.
+GitHub is the primary remote platform. Skills can be referenced in two ways.
 
 ### `github:` Prefix
 
@@ -135,20 +135,29 @@ Security protections:
 - Maximum 500 MB total uncompressed size
 - Single root directory auto-flattening
 
-## Planned Platforms
+## SourceHut (Supported)
 
-### SourceHut
+SourceHut repositories are supported via URL. skillx downloads the repository tarball and extracts the specified sub-path.
 
 ```bash
-# Planned syntax
 skillx run https://git.sr.ht/~user/repo/tree/main/item/path "prompt"
 ```
 
-### HuggingFace
+Authentication is not currently required (public repositories only).
+
+## HuggingFace (Supported)
+
+HuggingFace repositories (models, datasets, and spaces) are supported via URL. skillx uses the HuggingFace REST API and auto-detects the repository type.
 
 ```bash
-# Planned syntax
-skillx run https://huggingface.co/user/repo/tree/main/path "prompt"
+# Model repository
+skillx run https://huggingface.co/user/model/tree/main/path "prompt"
+
+# Dataset repository
+skillx run https://huggingface.co/datasets/user/dataset/tree/main/path "prompt"
+
+# Space repository
+skillx run https://huggingface.co/spaces/user/space/tree/main/path "prompt"
 ```
 
 ## Authentication

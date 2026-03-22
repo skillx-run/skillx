@@ -34,34 +34,75 @@ skillx run github:anthropics/skills/pdf-processing "prompt"
 skillx run github:anthropics/skills/pdf-processing@v1.0 "prompt"
 ```
 
-### 3. GitHub URL
+### 3. `gist:` Prefix
 
-Full GitHub URLs are parsed to extract owner, repo, path, and ref:
+The shorthand `gist:` prefix resolves to a GitHub Gist:
 
 ```bash
-skillx run https://github.com/anthropics/skills/tree/main/pdf-processing "prompt"
+skillx run gist:abc123 "prompt"
+skillx run gist:abc123@revision "prompt"
 ```
 
-### 4. Error
+### 4. Platform URL
 
-If the source doesn't match any of the above, skillx exits with an error:
+Full URLs from any supported Git hosting platform are parsed automatically:
 
+```bash
+# GitHub
+skillx run https://github.com/org/repo/tree/main/path "prompt"
+
+# GitLab
+skillx run https://gitlab.com/org/repo/-/tree/main/path "prompt"
+
+# Bitbucket
+skillx run https://bitbucket.org/org/repo/src/main/path "prompt"
+
+# Gitea / Codeberg
+skillx run https://codeberg.org/user/repo/src/branch/main/path "prompt"
+
+# SourceHut
+skillx run https://git.sr.ht/~user/repo/tree/main/item/path "prompt"
+
+# HuggingFace
+skillx run https://huggingface.co/user/repo/tree/main/path "prompt"
 ```
-cannot resolve source: 'foobar'. Use a local path (./skill), github: prefix, or GitHub URL
+
+### 5. Archive URL
+
+Direct download links to ZIP or tar.gz archives:
+
+```bash
+skillx run https://example.com/skill.zip "prompt"
+skillx run https://example.com/skill.tar.gz "prompt"
 ```
 
-## Supported Platforms (v0.1)
+### 6. Skill Directory URL
+
+URLs from 10 supported skill directory platforms:
+
+```bash
+skillx run https://skills.sh/pdf-processing "prompt"
+skillx run https://skillsmp.com/skills/code-review "prompt"
+```
+
+### 7. Error
+
+If the source doesn't match any of the above, skillx exits with an error.
+
+## Supported Platforms
 
 | Platform | Status | Source Format |
 |----------|--------|---------------|
 | Local filesystem | Supported | `./path`, `/path`, `~/path` |
-| GitHub | Supported | `github:owner/repo/path` or full URL |
-| GitLab | Planned | — |
-| Bitbucket | Planned | — |
-| Codeberg | Planned | — |
-| SourceHut | Planned | — |
-| Gitea | Planned | — |
-| HuggingFace | Planned | — |
+| GitHub | Supported | `github:owner/repo/path` or URL |
+| GitLab | Supported | URL (gitlab.com + self-hosted) |
+| Bitbucket | Supported | URL |
+| Gitea / Codeberg | Supported | URL (auto-detected + self-hosted) |
+| GitHub Gist | Supported | `gist:id` or URL |
+| SourceHut | Supported | URL (tarball extraction) |
+| HuggingFace | Supported | URL (models/datasets/spaces) |
+| Archive | Supported | `.zip` / `.tar.gz` URL |
+| Skill Directories | Supported | URL (10 platforms) |
 
 ## Caching Behavior
 
@@ -108,10 +149,6 @@ my-skill/
 
 See [Writing Skills](/guides/writing-skills/) for details on the SKILL.md format.
 
-## Future Platforms
-
-Additional Git hosting platforms and skill directories are planned for future releases. The source resolution system is extensible — new resolvers can be added without changing the core lifecycle.
-
 See:
-- [Git Hosts](/platforms/git-hosts/) — details on GitHub and planned Git platforms
+- [Git Hosts](/platforms/git-hosts/) — details on all supported Git platforms
 - [Skill Directories](/platforms/skill-directories/) — curated registries and marketplaces
