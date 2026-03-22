@@ -9,7 +9,10 @@
 ## Quick Start
 
 ```bash
-# Install
+# Install via Homebrew (macOS / Linux)
+brew install skillx-run/tap/skillx
+
+# Or install via Cargo
 cargo install skillx
 
 # Run a skill temporarily

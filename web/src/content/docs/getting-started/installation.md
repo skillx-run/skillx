@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: How to install skillx via Cargo, cargo-binstall, or from source.
+description: How to install skillx via Homebrew, Cargo, cargo-binstall, or from source.
 ---
 
 ## Requirements
@@ -8,7 +8,19 @@ description: How to install skillx via Cargo, cargo-binstall, or from source.
 - **Operating System**: macOS, Linux, or Windows
 - **Agent**: At least one supported agent installed (Claude Code, Codex, Copilot, Cursor, or any agent that reads `.agents/skills/`)
 
-## Install via Cargo (recommended)
+## Install via Homebrew (macOS / Linux)
+
+```bash
+brew install skillx-run/tap/skillx
+```
+
+To update:
+
+```bash
+brew upgrade skillx
+```
+
+## Install via Cargo
 
 If you have the Rust toolchain installed:
 
