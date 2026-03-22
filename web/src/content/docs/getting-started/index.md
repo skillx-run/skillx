@@ -65,11 +65,11 @@ A skill is a directory containing at minimum a `SKILL.md` file — a markdown do
 
 ### Agents
 
-skillx detects which AI agents are installed on your system and adapts its behavior accordingly. It currently supports Claude Code, OpenAI Codex, GitHub Copilot, Cursor, and a universal fallback.
+skillx detects which AI agents are installed on your system and adapts its behavior accordingly. It supports 32 built-in agents including Claude Code, Codex, Copilot, Cursor, Gemini CLI, and more, plus custom agents via config.
 
 ### Security Scanner
 
-Every skill is scanned before injection. The scanner uses 20 rules across three categories (Markdown, Script, Resource) to detect prompt injection, credential access, destructive operations, and more.
+Every skill is scanned before injection. The scanner uses 23 rules across three categories (Markdown, Script, Resource) to detect prompt injection, credential access, destructive operations, and more.
 
 ### Sessions
 

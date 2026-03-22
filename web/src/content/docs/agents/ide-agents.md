@@ -103,7 +103,7 @@ Not supported. Cursor does not have a CLI flag for autonomous mode.
 
 ## Clipboard Integration
 
-Both IDE agents use the system clipboard to transfer the prompt:
+All IDE agents use the system clipboard to transfer the prompt:
 
 - **macOS**: Uses the native `NSPasteboard` API via the `arboard` crate
 - **Linux**: Uses `xclip` or `wl-clipboard` (X11/Wayland)

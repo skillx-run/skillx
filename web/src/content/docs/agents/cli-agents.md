@@ -122,9 +122,30 @@ skillx run --yolo --agent codex ./my-skill "Fix all TODOs"
 skillx run --yes --timeout 1h --agent codex ./my-skill "Complete refactor"
 ```
 
+## Tier 3 CLI Agents
+
+The following CLI agents are implemented via the data-driven `GenericAdapter`. They all use the **ManagedProcess** lifecycle with binary detection:
+
+| Agent | Binary |
+|-------|--------|
+| Goose | `goose` |
+| Kiro | `kiro` |
+| Aider | `aider` |
+| OpenClaw | `openclaw` |
+| Qwen Code | `qwen-code` |
+| Droid | `droid` |
+| Warp | `warp` |
+| OpenHands | `openhands` |
+| Command Code | `command-code` |
+| Mistral Vibe | `mistral-vibe` |
+| Qoder | `qoder` |
+| Kode | `kode` |
+
+Each follows the same injection pattern: `~/.<name>/skills/<skill-name>/` (global) and `.<name>/skills/<skill-name>/` (project). None support YOLO mode.
+
 ## Process Management
 
-For both CLI agents, skillx handles the process lifecycle:
+For all CLI agents, skillx handles the process lifecycle:
 
 ### Normal Exit
 

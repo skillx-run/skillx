@@ -5,33 +5,76 @@ description: How skillx detects, selects, and adapts to different AI coding agen
 
 ## What Are Agents?
 
-In skillx, an "agent" is an AI coding assistant that can read instructions from files and act on them. skillx supports 11 agents across two categories: CLI processes (Claude Code, Codex, Gemini CLI, OpenCode, Amp) and IDE integrations (Copilot, Cursor, Windsurf, Cline, Roo Code), plus a Universal fallback.
+In skillx, an "agent" is an AI coding assistant that can read instructions from files and act on them. skillx supports **32 built-in agents** across three tiers, plus custom agents via `config.toml`. Each agent has different conventions for where skill files should be placed, how to launch, and what flags are available. skillx abstracts these differences behind a unified interface.
 
-Each agent has different conventions for where skill files should be placed, how to launch, and what flags are available. skillx abstracts these differences behind a unified interface.
+## Agent Tiers
+
+### Tier 1 — Dedicated Adapters (CLI)
+
+| Agent | Type | Detection | YOLO |
+|-------|------|-----------|------|
+| Claude Code | CLI | `claude` binary or `~/.claude/` | `--dangerously-skip-permissions` |
+| OpenAI Codex | CLI | `codex` binary or `~/.codex/` | `--full-auto` |
+
+### Tier 1 — Dedicated Adapters (IDE)
+
+| Agent | Type | Detection | YOLO |
+|-------|------|-----------|------|
+| GitHub Copilot | IDE | VS Code extension `github.copilot-*` | — |
+| Cursor | IDE | `cursor` binary or process | — |
+
+### Tier 2 — Dedicated Adapters
+
+| Agent | Type | Detection | YOLO |
+|-------|------|-----------|------|
+| Gemini CLI | CLI | `gemini` binary or `~/.gemini/` | `--sandbox=none` |
+| OpenCode | CLI | `opencode` binary or `~/.config/opencode/` | — |
+| Amp | CLI | `amp` binary or `~/.amp/` | — |
+| Windsurf | IDE | `windsurf` binary or process | — |
+| Cline | IDE | VS Code extension `saoudrizwan.claude-dev-*` | — |
+| Roo Code | IDE | VS Code extension `rooveterinaryinc.roo-cline-*` | — |
+
+### Tier 3 — Generic Adapters (21 agents)
+
+These agents are implemented via the data-driven `GenericAdapter` and require no custom code:
+
+**CLI agents** (ManagedProcess, binary detection):
+Goose, Kiro, Aider, OpenClaw, Qwen Code, Droid, Warp, OpenHands, Command Code, Mistral Vibe, Qoder, Kode
+
+**IDE agents** (FileInjectAndWait):
+- VS Code extension detection: Kilo Code, Augment, Continue, CodeBuddy, Antigravity, Zencoder, Junie
+- Process detection: Trae
+- Config directory: Replit Agent
+
+### Custom Agents
+
+Define your own agents in `~/.skillx/config.toml`:
+
+```toml
+[[custom_agents]]
+name = "my-agent"
+display_name = "My Agent"
+binary = "my-agent"
+config_dir = ".my-agent"
+lifecycle = "managed_process"   # or "file_inject_and_wait"
+supports_prompt = true
+supports_yolo = false
+```
+
+Custom agents use the same `GenericAdapter` as Tier 3 agents.
+
+### Universal Fallback
+
+The `universal` adapter is always available as a last resort. It injects files into `~/.agents/skills/` (global) or `.agents/skills/` (project).
 
 ## Agent Detection
 
 When you run `skillx run` without specifying `--agent`, skillx auto-detects which agents are available:
 
 ```bash
-skillx agents
+skillx agents          # Show detected agents
+skillx agents --all    # Show all 32 known agents
 ```
-
-Detection methods vary by agent:
-
-| Agent | How Detected |
-|-------|-------------|
-| Claude Code | `claude` binary in PATH or `~/.claude/` directory |
-| OpenAI Codex | `codex` binary in PATH or `~/.codex/` directory |
-| Gemini CLI | `gemini` binary in PATH or `~/.gemini/` directory |
-| OpenCode | `opencode` binary in PATH or `~/.config/opencode/` directory |
-| Amp | `amp` binary in PATH or `~/.amp/` directory |
-| GitHub Copilot | Copilot extension in `~/.vscode/extensions/` |
-| Cursor | `cursor` binary in PATH or Cursor process running |
-| Windsurf | `windsurf` binary in PATH or Windsurf process running |
-| Cline | VS Code extension `saoudrizwan.claude-dev` |
-| Roo Code | VS Code extension `rooveterinaryinc.roo-cline` |
-| Universal | Always available (fallback) |
 
 ## Selection Logic
 
@@ -42,14 +85,18 @@ The selection process follows this flow:
    YES → use that agent (error if not found in registry)
    NO  → continue to detection
 
-2. How many agents detected?
-   0 → use Universal fallback
-   1 → use that agent automatically
-   2+ → show interactive selector
+2. skillx.toml has [agent].preferred?
+   YES → use preferred if it's among detected agents
+   NO  → continue
 
 3. config.toml has preferred agent?
    YES → use preferred if it's among detected agents
-   NO  → show interactive selector
+   NO  → continue
+
+4. How many agents detected?
+   0 → use Universal fallback
+   1 → use that agent automatically
+   2+ → show interactive selector
 ```
 
 ### Explicit Selection
@@ -70,6 +117,13 @@ Set a default in `~/.skillx/config.toml`:
 preferred = "claude-code"
 ```
 
+Or per-project in `skillx.toml`:
+
+```toml
+[agent]
+preferred = "claude-code"
+```
+
 ## Lifecycle Modes
 
 Agents operate in one of two lifecycle modes:
@@ -82,7 +136,7 @@ skillx spawns the agent as a child process, passes the prompt, and waits for it 
 skillx → spawn agent process → wait → cleanup
 ```
 
-**Agents**: Claude Code, OpenAI Codex, Gemini CLI, OpenCode, Amp
+**Agents**: Claude Code, Codex, Gemini CLI, OpenCode, Amp, and 12 Tier 3 CLI agents
 
 Features:
 - Prompt passed as CLI argument
@@ -99,7 +153,7 @@ skillx injects files into the agent's directory, optionally copies the prompt to
 skillx → inject files → (clipboard) → wait for Enter → cleanup
 ```
 
-**Agents**: GitHub Copilot, Cursor, Windsurf, Cline, Roo Code, Universal
+**Agents**: Copilot, Cursor, Windsurf, Cline, Roo Code, Universal, and 9 Tier 3 IDE agents
 
 Features:
 - Prompt copied to system clipboard
@@ -125,6 +179,8 @@ Each agent has specific directories where it looks for skill files:
 | Roo Code | `~/.roo/skills/<name>/` | `.roo/skills/<name>/` |
 | Universal | `~/.agents/skills/<name>/` | `.agents/skills/<name>/` |
 
+Tier 3 and custom agents follow the pattern `~/.<config_dir>/skills/<name>/` (global) and `.<config_dir>/skills/<name>/` (project).
+
 The scope is controlled by `--scope`:
 
 ```bash
@@ -141,14 +197,7 @@ CLI agents can skip their built-in permission prompts:
 | Claude Code | `--dangerously-skip-permissions` |
 | OpenAI Codex | `--full-auto` |
 | Gemini CLI | `--sandbox=none` |
-| OpenCode | Not supported |
-| Amp | Not supported |
-| Copilot | Not supported |
-| Cursor | Not supported |
-| Windsurf | Not supported |
-| Cline | Not supported |
-| Roo Code | Not supported |
-| Universal | Not supported |
+| All others | Not supported |
 
 ```bash
 skillx run --yolo ./my-skill "prompt"
@@ -160,7 +209,7 @@ YOLO mode gives the agent unrestricted access to your system. Only use with trus
 
 ## Next Steps
 
-- [CLI Agents](/agents/cli-agents/) — Claude Code and Codex details
-- [IDE Agents](/agents/ide-agents/) — Copilot and Cursor details
+- [CLI Agents](/agents/cli-agents/) — CLI agent details
+- [IDE Agents](/agents/ide-agents/) — IDE agent details
 - [Universal](/agents/universal/) — the fallback adapter
 - [Agent Adapters Guide](/guides/agent-adapters/) — write your own adapter
