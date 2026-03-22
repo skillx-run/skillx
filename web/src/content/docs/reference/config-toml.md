@@ -27,6 +27,19 @@ scope = "global"
 
 [history]
 max_entries = 50
+
+# Custom URL-to-source mappings (optional)
+# [[url_patterns]]
+# domain = "git.example.com"
+# source_type = "gitea"
+
+# Custom agent definitions (optional)
+# [[custom_agents]]
+# name = "my-agent"
+# display_name = "My Agent"
+# binary = "my-agent"
+# config_dir = ".my-agent"
+# lifecycle = "managed_process"
 ```
 
 ## Sections
@@ -113,7 +126,7 @@ scope = "global"
 
 When multiple agents are detected and `--agent` is not specified, skillx normally shows an interactive selector. If `preferred` is set and that agent is among the detected agents, it is selected automatically.
 
-Valid values: `claude-code`, `codex`, `copilot`, `cursor`, `universal`.
+Valid values: any agent name from `skillx agents --all` (e.g., `claude-code`, `codex`, `copilot`, `cursor`, `gemini-cli`, `opencode`, `amp`, `windsurf`, `cline`, `roo`, `universal`, or any Tier 3/custom agent name).
 
 #### scope
 
@@ -146,6 +159,58 @@ max_entries = 50
 | `max_entries` | integer | `50` | Maximum number of archived session manifests to keep |
 
 Archived sessions are stored in `~/.skillx/history/`. When the count exceeds `max_entries`, the oldest entries are removed.
+
+### [[url_patterns]]
+
+Map custom domains to source types. Useful for self-hosted Git instances.
+
+```toml
+[[url_patterns]]
+domain = "git.example.com"
+source_type = "gitea"
+
+[[url_patterns]]
+domain = "gitlab.corp.internal"
+source_type = "gitlab"
+```
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `domain` | string | The hostname to match |
+| `source_type` | string | Source type: `gitea`, `gitlab`, `sourcehut`, or `huggingface` |
+
+When skillx encounters a URL with a matching domain, it uses the specified source fetcher instead of the default URL recognition logic.
+
+### [[custom_agents]]
+
+Define custom agent adapters without writing Rust code.
+
+```toml
+[[custom_agents]]
+name = "my-cli-agent"
+display_name = "My CLI Agent"
+binary = "mycli"
+config_dir = ".mycli"
+lifecycle = "managed_process"
+supports_prompt = true
+supports_yolo = true
+yolo_args = ["--yes"]
+prompt_flag = "--message"
+```
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `name` | string | required | Internal identifier (used with `--agent`) |
+| `display_name` | string | required | UI display name |
+| `binary` | string | — | Binary name for detection and launch |
+| `config_dir` | string | required | Config directory name (e.g., `.mycli`) |
+| `lifecycle` | string | required | `managed_process` or `file_inject_and_wait` |
+| `supports_prompt` | bool | `false` | Whether the agent accepts a prompt argument |
+| `supports_yolo` | bool | `false` | Whether the agent supports YOLO mode |
+| `yolo_args` | list | `[]` | Arguments to pass in YOLO mode |
+| `prompt_flag` | string | — | Flag for passing prompt (e.g., `--message`) |
+
+Custom agents use the same `GenericAdapter` as Tier 3 built-in agents.
 
 ## Data Directory Layout
 
