@@ -4,7 +4,7 @@ version = "0.3.0"
 edition = "2021"
 description = "npx for Agent Skills — fetch, scan, inject, run, clean in one command"
 license = "Apache-2.0"
-repository = "https://github.com/anthropics/skillx"
+repository = "https://github.com/skillx-run/skillx"
 keywords = ["agent", "skills", "cli", "npx"]
 categories = ["command-line-utilities", "development-tools"]
 

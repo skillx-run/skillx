@@ -76,4 +76,4 @@ cargo install skillx
 skillx run ./my-skill "Do the thing"
 ```
 
-Read the [documentation](/docs) or check out the [GitHub repository](https://github.com/anthropics/skillx).
+Read the [documentation](/docs) or check out the [GitHub repository](https://github.com/skillx-run/skillx).

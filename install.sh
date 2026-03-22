@@ -4,7 +4,7 @@
 
 set -e
 
-REPO="anthropics/skillx"
+REPO="skillx-run/skillx"
 INSTALL_DIR="${HOME}/.local/bin"
 
 main() {

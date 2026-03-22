@@ -76,6 +76,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SARIF 2.1.0 output format for scanner results
 - Text and JSON output formatters
 
-[0.3.0]: https://github.com/anthropics/skillx/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/anthropics/skillx/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/anthropics/skillx/releases/tag/v0.1.0
+[0.3.0]: https://github.com/skillx-run/skillx/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/skillx-run/skillx/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/skillx-run/skillx/releases/tag/v0.1.0

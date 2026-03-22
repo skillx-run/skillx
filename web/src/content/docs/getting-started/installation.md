@@ -47,7 +47,7 @@ cargo binstall skillx
 Clone the repository and build:
 
 ```bash
-git clone https://github.com/anthropics/skillx.git
+git clone https://github.com/skillx-run/skillx.git
 cd skillx
 cargo build --release
 ```

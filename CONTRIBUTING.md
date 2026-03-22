@@ -15,11 +15,11 @@ Thank you for your interest in contributing to skillx! This guide will help you 
 
 ## Code of Conduct
 
-This project follows the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). By participating, you are expected to uphold this code. Please report unacceptable behavior via [GitHub Issues](https://github.com/anthropics/skillx/issues).
+This project follows the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). By participating, you are expected to uphold this code. Please report unacceptable behavior via [GitHub Issues](https://github.com/skillx-run/skillx/issues).
 
 ## Reporting Bugs
 
-Open a [GitHub Issue](https://github.com/anthropics/skillx/issues/new) with:
+Open a [GitHub Issue](https://github.com/skillx-run/skillx/issues/new) with:
 
 - A clear, descriptive title
 - Steps to reproduce the problem
@@ -31,7 +31,7 @@ Open a [GitHub Issue](https://github.com/anthropics/skillx/issues/new) with:
 
 ## Suggesting Features
 
-Open a [GitHub Issue](https://github.com/anthropics/skillx/issues/new) labeled `enhancement` with:
+Open a [GitHub Issue](https://github.com/skillx-run/skillx/issues/new) labeled `enhancement` with:
 
 - A description of the problem the feature would solve
 - Your proposed solution or approach
@@ -48,7 +48,7 @@ Open a [GitHub Issue](https://github.com/anthropics/skillx/issues/new) labeled `
 
 ```bash
 # Clone the repository
-git clone https://github.com/anthropics/skillx.git
+git clone https://github.com/skillx-run/skillx.git
 cd skillx
 
 # Build all workspace members

@@ -17,7 +17,7 @@ Only the latest release receives security updates. We recommend always running t
 
 Instead, please report via GitHub Security Advisories:
 
-- **GitHub Security Advisories**: [Report a vulnerability](https://github.com/anthropics/skillx/security/advisories/new)
+- **GitHub Security Advisories**: [Report a vulnerability](https://github.com/skillx-run/skillx/security/advisories/new)
 
 ### What to Include
 
@@ -75,6 +75,6 @@ If you prefer to remain anonymous, we will respect that preference.
 
 ## Contact
 
-For security matters: [GitHub Security Advisories](https://github.com/anthropics/skillx/security/advisories/new)
+For security matters: [GitHub Security Advisories](https://github.com/skillx-run/skillx/security/advisories/new)
 
-For general questions and bug reports: [GitHub Issues](https://github.com/anthropics/skillx/issues)
+For general questions and bug reports: [GitHub Issues](https://github.com/skillx-run/skillx/issues)

@@ -8,7 +8,7 @@ export default defineConfig({
       title: 'skillx',
       description: 'npx for Agent Skills — fetch, scan, inject, run, clean in one command',
       social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/anthropics/skillx' },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/skillx-run/skillx' },
       ],
       sidebar: [
         {
