@@ -1156,10 +1156,7 @@ fn test_inject_and_collect() {
     assert_eq!(records.len(), 2);
     // Records should have relative paths and SHA256 hashes
     // Normalize separators for cross-platform comparison
-    let paths: Vec<String> = records
-        .iter()
-        .map(|(p, _)| p.replace('\\', "/"))
-        .collect();
+    let paths: Vec<String> = records.iter().map(|(p, _)| p.replace('\\', "/")).collect();
     assert!(paths.contains(&"SKILL.md".to_string()));
     assert!(paths.contains(&"scripts/run.sh".to_string()));
     for (_, sha) in &records {
