@@ -5,7 +5,7 @@ date: 2026-03-20
 author: "skillx team"
 ---
 
-> **Note:** This post describes skillx v0.1. For the latest features (32 agents, 10 source types, 23 scanner rules), see the [documentation](/docs).
+> **Note:** This post describes skillx v0.1. For the latest features (32 agents, 10 source types, 23 scanner rules), see the [documentation](/getting-started/).
 
 # Introducing skillx v0.1
 
@@ -78,4 +78,4 @@ cargo install skillx
 skillx run ./my-skill "Do the thing"
 ```
 
-Read the [documentation](/docs) or check out the [GitHub repository](https://github.com/skillx-run/skillx).
+Read the [documentation](/getting-started/) or check out the [GitHub repository](https://github.com/skillx-run/skillx).

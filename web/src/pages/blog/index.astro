@@ -16,7 +16,7 @@ const posts = (await getCollection('blog')).sort(
       <div class="posts">
         {posts.map((post) => (
           <article class="post-card">
-            <a href={`/blog/${post.slug}`}>
+            <a href={`/blog/${post.id}`}>
               <h2>{post.data.title}</h2>
               <p class="description">{post.data.description}</p>
               <time datetime={post.data.date.toISOString()}>
