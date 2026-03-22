@@ -121,11 +121,14 @@
   .line {
     white-space: nowrap;
     overflow: hidden;
+    display: flex;
+    align-items: baseline;
   }
 
   .prompt {
     color: #6366f1;
     margin-right: 0.5rem;
+    flex-shrink: 0;
   }
 
   .cmd {
@@ -163,7 +166,8 @@
       typing 1.5s steps(80) forwards,
       blink 0.8s step-end 3;
     width: 0;
-    display: inline-block;
+    flex: 0 0 auto;
+    max-width: 100%;
   }
 
   @keyframes typing {
