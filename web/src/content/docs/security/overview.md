@@ -19,9 +19,9 @@ skillx's security model is **scan before inject**. Every skill is analyzed befor
 
 ### 1. Automated Scanning
 
-The built-in scanner runs 20 rules across three categories:
+The built-in scanner runs 23 rules across three categories:
 
-- **Markdown Analyzer** (MD-001 ~ MD-006) — checks SKILL.md for prompt injection, sensitive directory references, external URLs, destructive operations, system modification, and security bypass
+- **Markdown Analyzer** (MD-001 ~ MD-009) — checks SKILL.md for prompt injection, sensitive directory references, external URLs, destructive operations, system modification, security bypass, and missing metadata (license, name, description)
 - **Script Analyzer** (SC-001 ~ SC-011) — checks scripts for binaries, dynamic execution, recursive delete, credential access, shell config modification, network requests, writes outside skill directory, privilege escalation, setuid/setgid, self-replication, and skillx path modification
 - **Resource Analyzer** (RS-001 ~ RS-003) — checks reference files for disguised extensions, oversized files, and executables
 
