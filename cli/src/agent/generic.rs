@@ -176,9 +176,9 @@ impl AgentAdapter for GenericAdapter {
                     .map(|h| h.join(&def.config_dir).exists())
                     .unwrap_or(false);
                 if has_binary {
-                    // Safety: has_binary is true only when binary_name is Some
-                    let bin = def.binary_name.as_deref().unwrap();
-                    version = super::detect_binary_version(bin).await;
+                    if let Some(bin) = def.binary_name.as_deref() {
+                        version = super::detect_binary_version(bin).await;
+                    }
                 }
                 has_binary || has_dir
             }

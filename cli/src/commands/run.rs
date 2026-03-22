@@ -99,7 +99,9 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     let skill_entries: Vec<(String, bool, Option<String>)> = if let Some(ref source) = args.source {
         vec![(source.clone(), args.skip_scan, None)]
     } else {
-        let pc = project_config.as_ref().unwrap();
+        let pc = project_config.as_ref().ok_or_else(|| {
+            anyhow::anyhow!("internal: project_config missing in multi-skill mode")
+        })?;
         pc.all_skills()
             .iter()
             .map(|(_name, value, _is_dev)| {

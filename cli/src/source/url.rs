@@ -125,7 +125,14 @@ fn parse_gitlab_url(host: &str, path: &str) -> Result<SkillSource> {
         )));
     }
 
-    let repo = segments.last().unwrap().to_string();
+    let repo = segments
+        .last()
+        .ok_or_else(|| {
+            SkillxError::InvalidSource(format!(
+                "invalid GitLab URL: empty namespace in path '{path}'"
+            ))
+        })?
+        .to_string();
     let owner = segments[..segments.len() - 1].join("/");
 
     // Parse tree/ref/path or blob/ref/path from the action part

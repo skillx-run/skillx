@@ -101,10 +101,13 @@ impl AgentRegistry {
                     .iter()
                     .enumerate()
                     .map(|(i, d)| {
-                        let adapter = self.get(&d.name).unwrap();
-                        let mode = match adapter.lifecycle_mode() {
-                            super::LifecycleMode::ManagedProcess => "CLI, managed-process",
-                            super::LifecycleMode::FileInjectAndWait => "IDE, file-inject",
+                        let mode = if let Some(adapter) = self.get(&d.name) {
+                            match adapter.lifecycle_mode() {
+                                super::LifecycleMode::ManagedProcess => "CLI, managed-process",
+                                super::LifecycleMode::FileInjectAndWait => "IDE, file-inject",
+                            }
+                        } else {
+                            "unknown"
                         };
                         let recommended = if i == 0 { "  \u{2190} recommended" } else { "" };
                         format!("{}  ({mode}){recommended}", d.name)
