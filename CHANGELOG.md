@@ -7,19 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-03-22
+
 ### Added
 
 - MD-008 scanner rule: INFO level when frontmatter exists but has no `name` field
 - MD-009 scanner rule: INFO level when frontmatter exists but has no `description` field
 - Binary finding detail view shows file metadata (size, SHA-256, detected type)
-- Shell one-liner install script (`install.sh`) for Linux and macOS
+- Shell one-liner install script (`install.sh`) for Linux and macOS with SHA256 checksum verification
 - E2E integration tests for scan, agents, info, init, cache, and CLI basics
+- `cargo-deny` CI job for security and license auditing (`deny.toml`)
+- Homebrew formula (`brew install skillx-run/tap/skillx`) with auto-update on release
+- Scanner edge case tests (empty files, long lines, comment/code-block awareness)
 
 ### Fixed
 
+- Replace 6 `unwrap()` calls in production code with proper error propagation
+- Scanner MD-003 no longer fires on plain URLs (removed overly broad `https?://\S+` pattern)
+- Scanner WARN rules (SC-006/007/008) no longer fire on comment lines (`#`, `//`, `--`)
+- Scanner WARN rules (MD-003/004) no longer fire inside fenced code blocks
+- SC-009 regex now correctly requires 4-digit octal permissions (was matching 3-digit modes like `644`)
 - `history.max_entries` config setting now respected (was hardcoded to 50)
 - `NoAgentDetected` error now includes actionable guidance (install agent or use --agent)
 - HTTP 401/403/404 responses from GitLab, Bitbucket, Gitea, Gist, SourceHut, and HuggingFace now show specific error messages with token environment variable guidance
+
+### Changed
+
+- Unified GitHub organization from `anthropics/skillx` to `skillx-run/skillx` across all project references
 
 ## [0.3.0] - 2026-03-21
 
@@ -76,6 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SARIF 2.1.0 output format for scanner results
 - Text and JSON output formatters
 
+[0.3.1]: https://github.com/skillx-run/skillx/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/skillx-run/skillx/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/skillx-run/skillx/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/skillx-run/skillx/releases/tag/v0.1.0

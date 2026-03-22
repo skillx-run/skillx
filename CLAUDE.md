@@ -106,7 +106,7 @@ SkillValue supports string shorthand (`"source"`) and detailed object (`{ source
 
 ```bash
 cargo build --workspace          # Build all
-cargo test --workspace           # Run all tests (277+)
+cargo test --workspace           # Run all tests (300+)
 cargo build --release            # Release build
 cargo run -- run ./skill "msg"   # Run CLI
 cargo run -- run                 # Run from skillx.toml
@@ -149,7 +149,11 @@ cargo run -- cache ls            # List cache
 - Source fetchers distinguish HTTP 401/403/404 with platform-specific token guidance (GITLAB_TOKEN, BITBUCKET_TOKEN, etc.)
 - `gate.rs` detail view shows file metadata (size, SHA-256, type) for binary/resource findings without line numbers
 - Cleanup asks `[y/N]` before removing files modified during a session (SHA-256 mismatch detection)
-- CI: GitHub Actions with `ci.yml` (fmt + clippy + test multi-platform) and `release.yml` (tag → cross-compile → GitHub Release → crates.io)
+- CI: GitHub Actions with `ci.yml` (fmt + clippy + test multi-platform + cargo-deny audit) and `release.yml` (tag → cross-compile → GitHub Release → crates.io → Homebrew tap)
+- `deny.toml` configures cargo-deny for license allow-list and advisory checks
+- Scanner WARN rules skip comment lines (script) and code blocks (markdown) to reduce false positives
+- `install.sh` verifies SHA256 checksums before extraction (graceful degradation if unavailable)
+- Homebrew formula template in `Formula/skillx.rb` (SHA256 placeholders replaced by release CI)
 - cargo-binstall supported via `[package.metadata.binstall]` in Cargo.toml
 - `install.sh` — Shell one-liner installer (`curl -fsSL https://skillx.run/install.sh | sh`)
 - Web docs sidebar in `astro.config.mjs` lists all 10 commands

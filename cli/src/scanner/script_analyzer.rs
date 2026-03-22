@@ -9,9 +9,7 @@ use super::{Finding, RiskLevel, ScanReport};
 /// Check if a line is a single-line comment (shell/python #, JS/TS //, SQL/Lua --).
 fn is_comment_line(line: &str) -> bool {
     let trimmed = line.trim_start();
-    trimmed.starts_with('#')
-        || trimmed.starts_with("//")
-        || trimmed.starts_with("--")
+    trimmed.starts_with('#') || trimmed.starts_with("//") || trimmed.starts_with("--")
 }
 
 pub struct ScriptAnalyzer;
@@ -119,35 +117,58 @@ mod tests {
     #[test]
     fn test_sc006_comment_line_skipped() {
         let report = analyze_script_content("# curl https://example.com\n");
-        let sc006: Vec<_> = report.findings.iter().filter(|f| f.rule_id == "SC-006").collect();
+        let sc006: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-006")
+            .collect();
         assert!(sc006.is_empty(), "SC-006 should not fire on comment lines");
     }
 
     #[test]
     fn test_sc006_code_line_triggers() {
         let report = analyze_script_content("curl https://example.com\n");
-        let sc006: Vec<_> = report.findings.iter().filter(|f| f.rule_id == "SC-006").collect();
+        let sc006: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-006")
+            .collect();
         assert!(!sc006.is_empty(), "SC-006 should fire on actual code");
     }
 
     #[test]
     fn test_sc007_comment_line_skipped() {
         let report = analyze_script_content("# > /tmp/out\n");
-        let sc007: Vec<_> = report.findings.iter().filter(|f| f.rule_id == "SC-007").collect();
+        let sc007: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-007")
+            .collect();
         assert!(sc007.is_empty(), "SC-007 should not fire on comment lines");
     }
 
     #[test]
     fn test_sc008_comment_line_skipped() {
         let report = analyze_script_content("# sudo apt install foo\n");
-        let sc008: Vec<_> = report.findings.iter().filter(|f| f.rule_id == "SC-008").collect();
+        let sc008: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-008")
+            .collect();
         assert!(sc008.is_empty(), "SC-008 should not fire on comment lines");
     }
 
     #[test]
     fn test_sc002_danger_still_fires_on_comment() {
         let report = analyze_script_content("# eval(\n");
-        let sc002: Vec<_> = report.findings.iter().filter(|f| f.rule_id == "SC-002").collect();
-        assert!(!sc002.is_empty(), "DANGER rules should still fire on comment lines");
+        let sc002: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-002")
+            .collect();
+        assert!(
+            !sc002.is_empty(),
+            "DANGER rules should still fire on comment lines"
+        );
     }
 }

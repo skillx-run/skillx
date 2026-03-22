@@ -89,7 +89,10 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
                 let new_hashes = skillx::installed::collect_file_hashes(&fetched.dir)?;
 
                 let skill = installed.find_skill(name).ok_or_else(|| {
-                    anyhow::anyhow!("internal: skill '{}' disappeared from installed state", name)
+                    anyhow::anyhow!(
+                        "internal: skill '{}' disappeared from installed state",
+                        name
+                    )
                 })?;
                 let installed_hashes: BTreeSet<(String, String)> = skill
                     .injections
@@ -194,14 +197,12 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
             "skipped".to_string()
         };
 
-        let skill = installed
-            .find_skill_mut(&candidate.name)
-            .ok_or_else(|| {
-                anyhow::anyhow!(
-                    "internal: skill '{}' disappeared from installed state",
-                    candidate.name
-                )
-            })?;
+        let skill = installed.find_skill_mut(&candidate.name).ok_or_else(|| {
+            anyhow::anyhow!(
+                "internal: skill '{}' disappeared from installed state",
+                candidate.name
+            )
+        })?;
 
         // Update each injection
         for injection in &mut skill.injections {

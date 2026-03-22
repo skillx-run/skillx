@@ -1562,8 +1562,5 @@ fn test_sc009_chmod_644_does_not_trigger() {
         .iter()
         .filter(|f| f.rule_id == "SC-009")
         .collect();
-    assert!(
-        sc009.is_empty(),
-        "chmod 644 should not trigger SC-009"
-    );
+    assert!(sc009.is_empty(), "chmod 644 should not trigger SC-009");
 }
