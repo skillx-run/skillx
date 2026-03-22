@@ -79,7 +79,7 @@ Each run creates a session with a unique ID. The session tracks injected files, 
 
 ```bash
 # Install skillx
-cargo install skillx
+curl -fsSL https://skillx.run/install.sh | sh
 
 # Run a skill from GitHub
 skillx run github:anthropics/skills/code-review "Review my auth module"

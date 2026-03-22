@@ -177,7 +177,7 @@ source_type = "gitlab"
 | Key | Type | Description |
 |-----|------|-------------|
 | `domain` | string | The hostname to match |
-| `source_type` | string | Source type: `gitea`, `gitlab`, `sourcehut`, or `huggingface` |
+| `source_type` | string | Source type: `github`, `gitlab`, `bitbucket`, `gitea`, `sourcehut`, or `huggingface` |
 
 When skillx encounters a URL with a matching domain, it uses the specified source fetcher instead of the default URL recognition logic.
 
@@ -201,11 +201,11 @@ prompt_flag = "--message"
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `name` | string | required | Internal identifier (used with `--agent`) |
-| `display_name` | string | required | UI display name |
+| `display_name` | string | auto-capitalized from name | UI display name |
 | `binary` | string | — | Binary name for detection and launch |
 | `config_dir` | string | required | Config directory name (e.g., `.mycli`) |
 | `lifecycle` | string | required | `managed_process` or `file_inject_and_wait` |
-| `supports_prompt` | bool | `false` | Whether the agent accepts a prompt argument |
+| `supports_prompt` | bool | `true` | Whether the agent accepts a prompt argument |
 | `supports_yolo` | bool | `false` | Whether the agent supports YOLO mode |
 | `yolo_args` | list | `[]` | Arguments to pass in YOLO mode |
 | `prompt_flag` | string | — | Flag for passing prompt (e.g., `--message`) |

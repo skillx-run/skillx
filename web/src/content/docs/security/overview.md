@@ -54,7 +54,7 @@ Injected files are removed after the agent completes. If a run is interrupted (C
 - **It does not sandbox execution.** If a skill tells the agent to run `rm -rf /`, the scanner will flag it, but the agent can still execute it if you approve.
 - **It does not analyze AI behavior.** The scanner checks the skill's static files, not what the agent might do with them.
 - **It does not replace trust.** A PASS scan result means no known patterns were detected — it doesn't guarantee the skill is safe.
-- **It uses regex, not AST analysis.** The v0.1 scanner uses regular expressions, which can have false positives and false negatives.
+- **It uses regex, not AST analysis.** The scanner uses regular expressions, which can have false positives and false negatives.
 
 ## Best Practices
 

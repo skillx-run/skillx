@@ -1,6 +1,6 @@
 ---
 title: Git Hosts
-description: Supported and planned Git hosting platforms for fetching skills.
+description: Supported Git hosting platforms for fetching skills.
 ---
 
 ## GitHub (Supported)

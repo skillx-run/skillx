@@ -6,7 +6,7 @@ const agents = [
   { name: 'GitHub Copilot', type: 'IDE', tier: 1, yolo: null },
   { name: 'Cursor', type: 'IDE', tier: 1, yolo: null },
   // Tier 2
-  { name: 'Gemini CLI', type: 'CLI', tier: 2, yolo: null },
+  { name: 'Gemini CLI', type: 'CLI', tier: 2, yolo: '--sandbox=none' },
   { name: 'OpenCode', type: 'CLI', tier: 2, yolo: null },
   { name: 'Amp', type: 'CLI', tier: 2, yolo: null },
   { name: 'Windsurf', type: 'IDE', tier: 2, yolo: null },
@@ -72,6 +72,7 @@ const agents = [
               <div class="agent-name">{agent.name}</div>
               <div class="agent-meta">
                 <span class={`type-badge ${agent.type.toLowerCase()}`}>{agent.type}</span>
+                {agent.yolo && <span class="yolo-badge">YOLO</span>}
               </div>
             </div>
           ))}
@@ -168,10 +169,6 @@ const agents = [
 
   .agent-card:hover {
     border-color: #334155;
-  }
-
-  .agent-card.muted {
-    opacity: 0.6;
   }
 
   .agent-card.more {
