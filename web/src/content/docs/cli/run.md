@@ -15,7 +15,7 @@ Fetch a skill, scan it for security issues, inject it into the active agent's co
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `source` | Yes | Skill source: local path, `github:` prefix, or GitHub URL |
+| `source` | No | Skill source: local path, `github:`/`gist:` prefix, or platform URL. Required if no `skillx.toml` exists. |
 | `prompt` | No | Prompt text to pass to the agent |
 
 ## Options
@@ -40,8 +40,13 @@ Fetch a skill, scan it for security issues, inject it into the active agent's co
 The source string is resolved in this priority order:
 
 1. **Local path** — starts with `./`, `/`, `~/`, or exists on disk
-2. **`github:` prefix** — e.g., `github:owner/repo/path`
-3. **GitHub URL** — e.g., `https://github.com/owner/repo/tree/main/path`
+2. **`github:` prefix** — e.g., `github:owner/repo/path[@ref]`
+3. **`gist:` prefix** — e.g., `gist:abc123[@revision]`
+4. **Platform URL** — GitHub, GitLab, Bitbucket, Gitea/Codeberg, SourceHut, HuggingFace URLs
+5. **Archive URL** — direct `.zip` or `.tar.gz` download links
+6. **Skill Directory URL** — skills.sh, skillsmp.com, and 8 other directory platforms
+
+If no `source` is provided and a `skillx.toml` exists with `[skills]` entries, all listed skills are run sequentially.
 
 Remote skills are cached after download. Use `--no-cache` to force a fresh fetch.
 
@@ -64,7 +69,7 @@ The overall risk level determines how the run proceeds:
 
 If `--agent` is not specified, skillx auto-detects installed agents. If multiple are found, an interactive selector is shown.
 
-Available agent names: `claude-code`, `codex`, `copilot`, `cursor`, `universal`.
+Available agents: `claude-code`, `codex`, `copilot`, `cursor`, `gemini-cli`, `opencode`, `amp`, `windsurf`, `cline`, `roo`, and 21 more generic agents. Run `skillx agents --all` for the full list.
 
 ### Phase 5: Inject
 
@@ -74,16 +79,22 @@ Skill files are copied to the agent's expected directory:
 |-------|-------------|---------------|
 | Claude Code | `~/.claude/skills/<name>/` | `.claude/skills/<name>/` |
 | Codex | `~/.codex/skills/<name>/` | `.agents/skills/<name>/` |
+| Gemini CLI | `~/.gemini/skills/<name>/` | `.gemini/skills/<name>/` |
+| OpenCode | `~/.opencode/skills/<name>/` | `.opencode/skills/<name>/` |
+| Amp | `~/.amp/skills/<name>/` | `.amp/skills/<name>/` |
 | Copilot | `~/.github/skills/<name>/` | `.github/skills/<name>/` |
 | Cursor | `~/.cursor/skills/<name>/` | `.cursor/skills/<name>/` |
+| Windsurf | `~/.windsurf/skills/<name>/` | `.windsurf/skills/<name>/` |
+| Cline | `~/.cline/skills/<name>/` | `.cline/skills/<name>/` |
+| Roo Code | `~/.roo/skills/<name>/` | `.roo/skills/<name>/` |
 | Universal | `~/.agents/skills/<name>/` | `.agents/skills/<name>/` |
 
 Each file is hashed with SHA-256 and recorded in the session manifest.
 
 ### Phase 6: Launch
 
-- **CLI agents** (Claude Code, Codex): spawned as child processes with the prompt as an argument
-- **IDE agents** (Copilot, Cursor, Universal): prompt copied to clipboard; skillx waits for Enter
+- **CLI agents** (Claude Code, Codex, Gemini CLI, OpenCode, Amp, and Tier 3 CLI agents): spawned as child processes with the prompt as an argument
+- **IDE agents** (Copilot, Cursor, Windsurf, Cline, Roo Code, Universal, and Tier 3 IDE agents): prompt copied to clipboard; skillx waits for Enter
 
 ### Phase 7: Wait
 
