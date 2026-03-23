@@ -1,13 +1,13 @@
 ---
-const agents = [
-  'Claude Code', 'Codex', 'Copilot', 'Cursor',
+const tierOneAgents = ['Claude Code', 'Codex', 'Copilot', 'Cursor'];
+const tierTwoAgents = [
   'Gemini CLI', 'Windsurf', 'Cline', 'Roo Code',
   'Amp', 'OpenCode', 'Goose', 'Aider',
 ];
 const agentsMore = 20;
 
-const sources = [
-  'GitHub', 'GitLab', 'Bitbucket', 'Codeberg',
+const primarySources = ['GitHub', 'GitLab', 'Bitbucket', 'Codeberg'];
+const otherSources = [
   'SourceHut', 'Gitea / Forgejo', 'Hugging Face', 'Gist',
   'skills.sh', 'ClawHub', 'LobehHub', 'SkillHub Club',
 ];
@@ -19,10 +19,26 @@ const sourcesMore = 6;
     <h2>The Agent Skill Ecosystem</h2>
     <p class="subtitle">Works with every agent. Pulls from every source.</p>
     <div class="columns">
-      <div class="column">
-        <h3>Agents <span class="count">32+</span></h3>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"/>
+              <path d="M8 14s-1.5 2-1.5 4a5.5 5.5 0 0 0 11 0c0-2-1.5-4-1.5-4"/>
+              <path d="M12 18v4"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Agents <span class="count">32+</span></h3>
+            <p class="card-desc">AI coding assistants, IDEs, and CLI tools</p>
+          </div>
+        </div>
         <div class="tags">
-          {agents.map(name => (
+          {tierOneAgents.map(name => (
+            <span class="tag tier-one">{name}</span>
+          ))}
+          {tierTwoAgents.map(name => (
             <span class="tag">{name}</span>
           ))}
           <span class="tag more">+ {agentsMore} more</span>
@@ -30,16 +46,37 @@ const sourcesMore = 6;
         </div>
         <a href="/agents/overview/" class="see-all">See all agents &rarr;</a>
       </div>
-      <div class="column">
-        <h3>Sources <span class="count">18+</span></h3>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Sources <span class="count">18+</span></h3>
+            <p class="card-desc">Git hosts, registries, and skill directories</p>
+          </div>
+        </div>
         <div class="tags">
-          {sources.map(name => (
+          {primarySources.map(name => (
+            <span class="tag primary">{name}</span>
+          ))}
+          {otherSources.map(name => (
             <span class="tag">{name}</span>
           ))}
           <span class="tag more">+ {sourcesMore} more</span>
         </div>
         <a href="/platforms/overview/" class="see-all">See all sources &rarr;</a>
       </div>
+
+    </div>
+
+    <div class="cta-line">
+      <span>One CLI. Every agent. Every source.</span>
     </div>
   </div>
 </section>
@@ -73,16 +110,56 @@ const sourcesMore = 6;
   .columns {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    gap: 1.5rem;
   }
 
-  .column h3 {
+  /* Card wrapper */
+  .card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 1.75rem;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+
+  .card:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 0 24px rgba(99, 102, 241, 0.08);
+  }
+
+  /* Card header with icon */
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(99, 102, 241, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #a5b4fc;
+  }
+
+  .card-header h3 {
     font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 1.25rem;
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .card-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0.2rem 0 0 0;
   }
 
   .count {
@@ -106,17 +183,42 @@ const sourcesMore = 6;
     display: inline-flex;
     align-items: center;
     padding: 0.35rem 0.75rem;
-    background: #0f172a;
+    background: rgba(15, 23, 42, 0.6);
     border: 1px solid #1e293b;
     border-radius: 9999px;
     font-size: 0.85rem;
     color: #cbd5e1;
     white-space: nowrap;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, transform 0.15s;
   }
 
   .tag:hover {
     border-color: #334155;
+    transform: translateY(-1px);
+  }
+
+  /* Tier 1 agents — indigo accent */
+  .tag.tier-one {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.35);
+    color: #c7d2fe;
+  }
+
+  .tag.tier-one:hover {
+    border-color: rgba(99, 102, 241, 0.6);
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.15);
+  }
+
+  /* Primary sources — indigo accent */
+  .tag.primary {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.35);
+    color: #c7d2fe;
+  }
+
+  .tag.primary:hover {
+    border-color: rgba(99, 102, 241, 0.6);
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.15);
   }
 
   .tag.more {
@@ -141,10 +243,40 @@ const sourcesMore = 6;
     color: #a5b4fc;
   }
 
+  /* Bottom CTA */
+  .cta-line {
+    text-align: center;
+    margin-top: 2.5rem;
+    font-size: 1rem;
+    color: #64748b;
+    position: relative;
+  }
+
+  .cta-line span {
+    position: relative;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    background: linear-gradient(90deg, #a5b4fc, #22d3ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .cta-line span::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+    height: 2px;
+    border-radius: 1px;
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.5), rgba(34, 211, 238, 0.5));
+  }
+
   @media (max-width: 768px) {
     .columns {
       grid-template-columns: 1fr;
-      gap: 2.5rem;
+      gap: 1.25rem;
     }
   }
 </style>
