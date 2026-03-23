@@ -69,7 +69,13 @@ impl AgentAdapter for OpenCodeAdapter {
         let mut cmd = tokio::process::Command::new("opencode");
 
         if let Some(ref prompt) = config.prompt {
-            cmd.arg(prompt);
+            if config.print_mode {
+                // Non-interactive: opencode run "prompt" (auto-approves all permissions)
+                cmd.arg("run").arg(prompt);
+            } else {
+                // Interactive: opencode "prompt"
+                cmd.arg(prompt);
+            }
         }
 
         for arg in &config.extra_args {

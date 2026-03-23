@@ -56,7 +56,7 @@ impl AgentAdapter for GeminiCliAdapter {
     }
 
     fn yolo_args(&self) -> Vec<&str> {
-        vec!["--sandbox=none"]
+        vec!["--yolo"]
     }
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
@@ -73,7 +73,13 @@ impl AgentAdapter for GeminiCliAdapter {
         let mut cmd = tokio::process::Command::new("gemini");
 
         if let Some(ref prompt) = config.prompt {
-            cmd.arg("--prompt").arg(prompt);
+            if config.print_mode {
+                // Non-interactive (headless): gemini -p "prompt"
+                cmd.arg("-p").arg(prompt);
+            } else {
+                // Interactive with initial prompt: gemini -i "prompt"
+                cmd.arg("-i").arg(prompt);
+            }
         }
 
         if config.yolo {

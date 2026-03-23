@@ -52,7 +52,11 @@ impl AgentAdapter for AmpAdapter {
     }
 
     fn supports_yolo(&self) -> bool {
-        false
+        true
+    }
+
+    fn yolo_args(&self) -> Vec<&str> {
+        vec!["--dangerously-allow-all"]
     }
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
@@ -68,8 +72,16 @@ impl AgentAdapter for AmpAdapter {
     async fn launch(&self, config: LaunchConfig) -> Result<SessionHandle> {
         let mut cmd = tokio::process::Command::new("amp");
 
+        // Amp always uses -x (--execute) for prompt delivery since it has
+        // no reliable interactive prompt flag
         if let Some(ref prompt) = config.prompt {
-            cmd.arg("--prompt").arg(prompt);
+            cmd.arg("-x").arg(prompt);
+        }
+
+        if config.yolo {
+            for arg in self.yolo_args() {
+                cmd.arg(arg);
+            }
         }
 
         for arg in &config.extra_args {

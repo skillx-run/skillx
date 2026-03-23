@@ -672,7 +672,7 @@ fn test_agent_yolo_args() {
 
     let codex = skillx::agent::codex::CodexAdapter;
     assert!(codex.supports_yolo());
-    assert_eq!(codex.yolo_args(), vec!["--full-auto"]);
+    assert_eq!(codex.yolo_args(), vec!["--yolo"]);
 
     let copilot = skillx::agent::copilot::CopilotAdapter;
     assert!(!copilot.supports_yolo());

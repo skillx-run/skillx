@@ -56,7 +56,7 @@ impl AgentAdapter for CodexAdapter {
     }
 
     fn yolo_args(&self) -> Vec<&str> {
-        vec!["--full-auto"]
+        vec!["--yolo"]
     }
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
@@ -73,7 +73,13 @@ impl AgentAdapter for CodexAdapter {
         let mut cmd = tokio::process::Command::new("codex");
 
         if let Some(ref prompt) = config.prompt {
-            cmd.arg(prompt);
+            if config.print_mode {
+                // Non-interactive: codex exec "prompt"
+                cmd.arg("exec").arg(prompt);
+            } else {
+                // Interactive: codex "prompt"
+                cmd.arg(prompt);
+            }
         }
 
         if config.yolo {

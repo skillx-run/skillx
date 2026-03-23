@@ -108,6 +108,7 @@ pub struct LaunchConfig {
     pub skill_dir: PathBuf,
     pub prompt: Option<String>,
     pub yolo: bool,
+    pub print_mode: bool,
     pub extra_args: Vec<String>,
 }
 

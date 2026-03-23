@@ -19,6 +19,26 @@ pub enum DetectionMethod {
     ConfigDirOnly,
 }
 
+/// How prompt is passed in interactive mode.
+#[derive(Debug, Clone)]
+pub enum PromptStyle {
+    /// Pass prompt via a flag: `--flag "msg"` (e.g., `gemini -i "msg"`)
+    Flag(String),
+    /// Pass prompt as a positional argument: `binary "msg"` (e.g., `claude "msg"`)
+    Positional,
+    /// Agent does not accept an initial prompt in interactive mode (e.g., aider TUI)
+    None,
+}
+
+/// How prompt is passed in non-interactive (print) mode.
+#[derive(Debug, Clone)]
+pub enum PrintStyle {
+    /// Pass prompt via a flag: `binary -p "msg"` (e.g., `claude -p "msg"`)
+    Flag(String),
+    /// Use a subcommand + prompt style: `binary sub ...` (e.g., `codex exec "msg"`)
+    Subcommand(String, Box<PromptStyle>),
+}
+
 /// Definition for a generic agent (covers Tier 3 built-in + user custom agents).
 #[derive(Debug)]
 pub struct AgentDef {
@@ -32,6 +52,11 @@ pub struct AgentDef {
     pub yolo_args: Vec<String>,
     pub detection: DetectionMethod,
     pub prompt_flag: Option<String>,
+    pub prompt_style: PromptStyle,
+    pub print_style: Option<PrintStyle>,
+    pub extra_launch_args: Vec<String>,
+    pub print_extra_args: Vec<String>,
+    pub aggregate_file: Option<String>,
 }
 
 impl AgentDef {
@@ -48,6 +73,11 @@ impl AgentDef {
             yolo_args: Vec::new(),
             detection: DetectionMethod::Binary,
             prompt_flag: None,
+            prompt_style: PromptStyle::Flag("--prompt".to_string()),
+            print_style: None,
+            extra_launch_args: Vec::new(),
+            print_extra_args: Vec::new(),
+            aggregate_file: None,
         }
     }
 
@@ -64,6 +94,11 @@ impl AgentDef {
             yolo_args: Vec::new(),
             detection: DetectionMethod::VscodeExtension(ext_prefix.to_string()),
             prompt_flag: None,
+            prompt_style: PromptStyle::None,
+            print_style: None,
+            extra_launch_args: Vec::new(),
+            print_extra_args: Vec::new(),
+            aggregate_file: None,
         }
     }
 
@@ -80,6 +115,11 @@ impl AgentDef {
             yolo_args: Vec::new(),
             detection: DetectionMethod::Process(proc_name.to_string()),
             prompt_flag: None,
+            prompt_style: PromptStyle::None,
+            print_style: None,
+            extra_launch_args: Vec::new(),
+            print_extra_args: Vec::new(),
+            aggregate_file: None,
         }
     }
 
@@ -96,7 +136,51 @@ impl AgentDef {
             yolo_args: Vec::new(),
             detection: DetectionMethod::ConfigDirOnly,
             prompt_flag: None,
+            prompt_style: PromptStyle::None,
+            print_style: None,
+            extra_launch_args: Vec::new(),
+            print_extra_args: Vec::new(),
+            aggregate_file: None,
         }
+    }
+
+    // ── Chain-style setters ──
+
+    /// Set interactive prompt style.
+    pub fn with_prompt_style(mut self, style: PromptStyle) -> Self {
+        self.prompt_style = style;
+        self
+    }
+
+    /// Set non-interactive (print) prompt style.
+    pub fn with_print_style(mut self, style: PrintStyle) -> Self {
+        self.print_style = Some(style);
+        self
+    }
+
+    /// Enable YOLO mode with the given flags.
+    pub fn with_yolo(mut self, args: Vec<&str>) -> Self {
+        self.supports_yolo = true;
+        self.yolo_args = args.into_iter().map(String::from).collect();
+        self
+    }
+
+    /// Set extra arguments always appended to the launch command.
+    pub fn with_extra_args(mut self, args: Vec<&str>) -> Self {
+        self.extra_launch_args = args.into_iter().map(String::from).collect();
+        self
+    }
+
+    /// Set extra arguments appended only in print (non-interactive) mode.
+    pub fn with_print_extra_args(mut self, args: Vec<&str>) -> Self {
+        self.print_extra_args = args.into_iter().map(String::from).collect();
+        self
+    }
+
+    /// Set an aggregate file to append skill content to (e.g., ".goosehints").
+    pub fn with_aggregate_file(mut self, path: &str) -> Self {
+        self.aggregate_file = Some(path.to_string());
+        self
     }
 
     /// Create from a user-defined config.toml `[[custom_agents]]` entry.
@@ -130,6 +214,11 @@ impl AgentDef {
             }
         });
 
+        let prompt_style = match &cfg.prompt_flag {
+            Some(flag) => PromptStyle::Flag(flag.clone()),
+            None => PromptStyle::Flag("--prompt".to_string()),
+        };
+
         Ok(AgentDef {
             name: cfg.name.clone(),
             display_name,
@@ -141,6 +230,11 @@ impl AgentDef {
             yolo_args: cfg.yolo_args.clone(),
             detection,
             prompt_flag: cfg.prompt_flag.clone(),
+            prompt_style,
+            print_style: None,
+            extra_launch_args: Vec::new(),
+            print_extra_args: Vec::new(),
+            aggregate_file: None,
         })
     }
 }
@@ -269,8 +363,35 @@ impl AgentAdapter for GenericAdapter {
                 let mut cmd = tokio::process::Command::new(binary);
 
                 if let Some(ref prompt) = config.prompt {
-                    let flag = def.prompt_flag.as_deref().unwrap_or("--prompt");
-                    cmd.arg(flag).arg(prompt);
+                    if config.print_mode {
+                        // Non-interactive (print) mode
+                        if let Some(ref ps) = def.print_style {
+                            apply_print_style(&mut cmd, ps, prompt);
+                        } else {
+                            // Fallback: use interactive style when print not supported
+                            apply_prompt_style(&mut cmd, &def.prompt_style, prompt);
+                        }
+                        // Extra args for print mode only
+                        for arg in &def.print_extra_args {
+                            cmd.arg(arg);
+                        }
+                    } else {
+                        // Interactive mode
+                        apply_prompt_style(&mut cmd, &def.prompt_style, prompt);
+                    }
+                }
+
+                // Aider: auto-add --read for injected SKILL.md
+                if def.name == "aider" {
+                    let skill_md = config.skill_dir.join("SKILL.md");
+                    if skill_md.exists() {
+                        cmd.arg("--read").arg(&skill_md);
+                    }
+                }
+
+                // Extra args always appended
+                for arg in &def.extra_launch_args {
+                    cmd.arg(arg);
                 }
 
                 if config.yolo && def.supports_yolo {
@@ -318,19 +439,64 @@ impl AgentAdapter for GenericAdapter {
     }
 }
 
+/// Apply interactive prompt style to a command.
+fn apply_prompt_style(cmd: &mut tokio::process::Command, style: &PromptStyle, prompt: &str) {
+    match style {
+        PromptStyle::Flag(flag) => {
+            cmd.arg(flag).arg(prompt);
+        }
+        PromptStyle::Positional => {
+            cmd.arg(prompt);
+        }
+        PromptStyle::None => {
+            // Agent doesn't accept initial prompt in interactive mode
+        }
+    }
+}
+
+/// Apply non-interactive (print) style to a command.
+fn apply_print_style(cmd: &mut tokio::process::Command, style: &PrintStyle, prompt: &str) {
+    match style {
+        PrintStyle::Flag(flag) => {
+            cmd.arg(flag).arg(prompt);
+        }
+        PrintStyle::Subcommand(sub, ps) => {
+            cmd.arg(sub);
+            apply_prompt_style(cmd, ps, prompt);
+        }
+    }
+}
+
 /// Create all 21 Tier 3 built-in agent adapters.
 pub fn tier3_adapters() -> Vec<Box<dyn AgentAdapter>> {
     vec![
         // CLI agents (ManagedProcess, Binary detection)
-        Box::new(GenericAdapter(AgentDef::cli(
-            "goose", "Goose", "goose", ".goose",
-        ))),
-        Box::new(GenericAdapter(AgentDef::cli(
-            "kiro", "Kiro", "kiro", ".kiro",
-        ))),
-        Box::new(GenericAdapter(AgentDef::cli(
-            "aider", "Aider", "aider", ".aider",
-        ))),
+        Box::new(GenericAdapter(
+            AgentDef::cli("goose", "Goose", "goose", ".goose")
+                .with_prompt_style(PromptStyle::None)
+                .with_print_style(PrintStyle::Subcommand(
+                    "run".into(),
+                    Box::new(PromptStyle::Flag("-t".into())),
+                ))
+                .with_aggregate_file(".goosehints"),
+        )),
+        Box::new(GenericAdapter(
+            AgentDef::cli("kiro", "Kiro", "kiro-cli", ".kiro")
+                // kiro-cli chat "msg" (interactive) / kiro-cli chat "msg" --no-interactive (print)
+                .with_prompt_style(PromptStyle::Flag("chat".into()))
+                .with_print_style(PrintStyle::Subcommand(
+                    "chat".into(),
+                    Box::new(PromptStyle::Positional),
+                ))
+                .with_print_extra_args(vec!["--no-interactive"])
+                .with_yolo(vec!["--trust-all-tools"]),
+        )),
+        Box::new(GenericAdapter(
+            AgentDef::cli("aider", "Aider", "aider", ".aider")
+                .with_prompt_style(PromptStyle::None)
+                .with_print_style(PrintStyle::Flag("-m".into()))
+                .with_yolo(vec!["--yes-always"]),
+        )),
         Box::new(GenericAdapter(AgentDef::cli(
             "openclaw",
             "OpenClaw",

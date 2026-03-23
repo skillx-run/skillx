@@ -62,6 +62,10 @@ pub struct RunArgs {
     #[arg(long)]
     pub yolo: bool,
 
+    /// Non-interactive mode: agent processes prompt and exits
+    #[arg(short = 'p', long = "print")]
+    pub print: bool,
+
     /// Maximum run duration (e.g., "30m", "2h")
     #[arg(long)]
     pub timeout: Option<String>,
@@ -307,11 +311,19 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         }
     }
 
+    // Validate: --print requires a prompt
+    if args.print && prompt.is_none() {
+        return Err(anyhow::anyhow!(
+            "--print mode requires a prompt (positional argument, -f, or --stdin)"
+        ));
+    }
+
     let launch_config = LaunchConfig {
         skill_name: skill_name.clone(),
         skill_dir: inject_path.clone(),
         prompt,
         yolo: args.yolo,
+        print_mode: args.print,
         extra_args: vec![],
     };
 

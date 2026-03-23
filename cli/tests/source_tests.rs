@@ -296,7 +296,7 @@ fn test_gemini_cli_adapter_properties() {
         skillx::agent::LifecycleMode::ManagedProcess
     );
     assert!(adapter.supports_yolo());
-    assert_eq!(adapter.yolo_args(), vec!["--sandbox=none"]);
+    assert_eq!(adapter.yolo_args(), vec!["--yolo"]);
 }
 
 #[test]
@@ -322,7 +322,8 @@ fn test_amp_adapter_properties() {
         adapter.lifecycle_mode(),
         skillx::agent::LifecycleMode::ManagedProcess
     );
-    assert!(!adapter.supports_yolo());
+    assert!(adapter.supports_yolo());
+    assert_eq!(adapter.yolo_args(), vec!["--dangerously-allow-all"]);
 }
 
 #[test]
