@@ -76,7 +76,10 @@ jobs:
         with:
           script: |
             const deployUrl = '${{ steps.deploy.outputs.deployment-url }}';
-            if (!deployUrl) return;
+            if (!deployUrl) {
+              core.warning('No deployment URL returned from Cloudflare Pages deploy step');
+              return;
+            }
             const body = `### Preview Deployment\n\nThis PR has been deployed to Cloudflare Pages:\n\n${deployUrl}`;
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,

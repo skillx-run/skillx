@@ -57,6 +57,7 @@ skillx install github:anthropics/skills/code-review
 - **Tier 2**: Gemini CLI, OpenCode, Amp, Windsurf, Cline, Roo
 - **Tier 3**: 21 additional agents via generic adapter
 - **Custom agents** via `config.toml`
+- **Universal fallback** for unrecognized environments
 
 ## Supported Sources
 
@@ -68,12 +69,14 @@ skillx install github:anthropics/skills/code-review
 | GitHub | `github:org/repo/path@ref` |
 | GitLab | `https://gitlab.com/org/repo/-/blob/main/skill.md` |
 | Bitbucket | `https://bitbucket.org/org/repo/src/main/skill.md` |
-| Gitea / Codeberg | `https://codeberg.org/org/repo/src/branch/main/skill.md` |
+| Gitea / Forgejo / Codeberg | `https://codeberg.org/org/repo/src/branch/main/skill.md` |
 | Gist | `gist:username/id` |
 | SourceHut | `https://git.sr.ht/~user/repo/tree/main/item/skill.md` |
 | HuggingFace | `https://huggingface.co/org/model/blob/main/skill.md` |
 | Archive | `https://example.com/skill.tar.gz` |
 | Skill Directories | 10 supported platforms |
+
+Custom URL patterns can be added via `config.toml` `[[url_patterns]]`.
 
 ## Security
 
@@ -102,6 +105,11 @@ preferred = "claude-code"
 [skills]
 pdf-processing = "github:anthropics/skills/pdf@v1.2"
 code-review = { source = "github:org/skills/cr@v2.1", scope = "project" }
+```
+
+```bash
+skillx init                  # Create skillx.toml
+skillx init --from-installed # Create from currently installed skills
 ```
 
 ## Documentation
