@@ -2,7 +2,11 @@
 
 > Run any agent skill. Safely. Without installing it.
 
-<!-- CI badge, crates.io version, license badge will go here -->
+[![CI](https://github.com/skillx-run/skillx/actions/workflows/ci.yml/badge.svg)](https://github.com/skillx-run/skillx/actions/workflows/ci.yml)
+[![Crates.io](https://img.shields.io/crates/v/skillx.svg)](https://crates.io/crates/skillx)
+[![Downloads](https://img.shields.io/crates/d/skillx.svg)](https://crates.io/crates/skillx)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-skillx.run-brightgreen.svg)](https://skillx.run)
 
 **skillx** is a CLI tool that runs Agent Skills without permanently installing them. One command fetches a skill from any Git host, scans it with 23 security rules, injects it into your agent, and cleans everything up when the session ends. No files are left behind.
 
