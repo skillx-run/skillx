@@ -60,10 +60,13 @@ impl AgentAdapter for AmpAdapter {
     }
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
+        // Amp reads from .agents/skills/ (workspace) and ~/.config/agents/skills/ (global),
+        // not from .amp/skills/
         match scope {
-            Scope::Project => PathBuf::from(".amp").join("skills").join(skill_name),
+            Scope::Project => PathBuf::from(".agents").join("skills").join(skill_name),
             Scope::Global => super::home_dir_or_fallback()
-                .join(".amp")
+                .join(".config")
+                .join("agents")
                 .join("skills")
                 .join(skill_name),
         }

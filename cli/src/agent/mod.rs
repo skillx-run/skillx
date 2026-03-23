@@ -17,7 +17,10 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::LazyLock;
 
+use std::path::Path;
+
 use crate::error::Result;
+use crate::session::inject::InjectedRecord;
 use crate::types::Scope;
 
 /// Pre-compiled regex for extracting semver-like version strings.
@@ -150,6 +153,23 @@ pub trait AgentAdapter: Send + Sync {
 
     /// Launch the agent with the given configuration.
     async fn launch(&self, config: LaunchConfig) -> Result<SessionHandle>;
+
+    /// Prepare skill for injection. Default: raw file copy (works for most agents).
+    /// Override for agents that need aggregate file append (e.g., Goose → .goosehints).
+    fn prepare_injection(
+        &self,
+        _skill_name: &str,
+        source_dir: &Path,
+        target_dir: &Path,
+    ) -> Result<Vec<InjectedRecord>> {
+        crate::session::inject::inject_and_collect(source_dir, target_dir)
+            .map(|records| {
+                records
+                    .into_iter()
+                    .map(|(path, sha256)| InjectedRecord::copied_file(path, sha256))
+                    .collect()
+            })
+    }
 
     /// Optional cleanup when session ends.
     fn on_cleanup(&self) -> Result<()> {

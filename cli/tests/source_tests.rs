@@ -388,7 +388,7 @@ fn test_amp_inject_path_project() {
     let adapter = skillx::agent::amp::AmpAdapter;
     use skillx::agent::AgentAdapter;
     let path = adapter.inject_path("my-skill", &skillx::types::Scope::Project);
-    assert_eq!(path, std::path::PathBuf::from(".amp/skills/my-skill"));
+    assert_eq!(path, std::path::PathBuf::from(".agents/skills/my-skill"));
 }
 
 #[test]

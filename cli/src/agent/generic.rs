@@ -1,9 +1,10 @@
 use async_trait::async_trait;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use super::{AgentAdapter, DetectResult, LaunchConfig, LifecycleMode, SessionHandle};
 use crate::config::CustomAgentConfig;
 use crate::error::{Result, SkillxError};
+use crate::session::inject::InjectedRecord;
 use crate::types::Scope;
 
 /// How a generic agent is detected on the system.
@@ -346,6 +347,31 @@ impl AgentAdapter for GenericAdapter {
                 .join("skills")
                 .join(skill_name),
         }
+    }
+
+    fn prepare_injection(
+        &self,
+        skill_name: &str,
+        source_dir: &Path,
+        target_dir: &Path,
+    ) -> Result<Vec<InjectedRecord>> {
+        use crate::session::inject;
+
+        // Default: copy files
+        let mut records: Vec<InjectedRecord> = inject::inject_and_collect(source_dir, target_dir)?
+            .into_iter()
+            .map(|(p, h)| InjectedRecord::copied_file(p, h))
+            .collect();
+
+        // If agent has an aggregate file, also append skill content there
+        if let Some(ref agg_file) = self.0.aggregate_file {
+            let body = inject::extract_skill_body(source_dir)?;
+            let record =
+                inject::append_to_aggregate_file(std::path::Path::new(agg_file), skill_name, &body)?;
+            records.push(record);
+        }
+
+        Ok(records)
     }
 
     async fn launch(&self, config: LaunchConfig) -> Result<SessionHandle> {
