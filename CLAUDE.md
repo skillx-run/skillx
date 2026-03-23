@@ -50,7 +50,7 @@ Key modules:
   - User custom agents from config.toml `[[custom_agents]]` (also via GenericAdapter)
   - universal (fallback, always last in registry)
 - `session/` — Session lifecycle, manifest, inject, cleanup
-  - `inject.rs` — `inject_and_collect()` (core) + `inject_skill()` (manifest wrapper)
+  - `inject.rs` — `inject_and_collect()` (core) + `inject_skill()` (manifest wrapper) + `InjectedRecord`/`InjectionType` + aggregate file ops
   - Signal handling via `tokio::signal::ctrl_c()` + `tokio::select!`
   - Interactive orphaned session recovery with metadata display
 - `gate.rs` — Scan result gating (PASS/INFO auto-pass, WARN prompt, DANGER interactive, BLOCK refuse)
@@ -169,6 +169,20 @@ cargo run -- cache ls            # List cache
 - `SKILLX_HOME` env var overrides the default `~/.skillx/` base directory (used by integration tests for isolation)
 - GitHub Action at `.github/actions/scan/action.yml` — composite action for CI security scanning with SARIF upload
 - `install` and `update` commands fetch skills concurrently (scan/gate remain sequential for interactive confirmation)
+- `--print` / `-p` flag on `skillx run` enables non-interactive mode (agent processes prompt and exits)
+- `LaunchConfig.print_mode` controls interactive vs non-interactive agent launch
+- Agent prompt passing: Claude (`claude "msg"` / `claude -p "msg"`), Codex (`codex "msg"` / `codex exec "msg"`), Gemini (`gemini -i "msg"` / `gemini -p "msg"`), Amp (`amp -x "msg"`), OpenCode (`opencode "msg"` / `opencode run "msg"`)
+- Agent YOLO flags: Claude (`--dangerously-skip-permissions`), Codex (`--yolo`), Gemini (`--yolo`), Amp (`--dangerously-allow-all`)
+- `AgentDef` has `PromptStyle` (Flag/Positional/None), `PrintStyle` (Flag/Subcommand), `extra_launch_args`, `print_extra_args`, `aggregate_file`
+- `PromptStyle`/`PrintStyle` chain setters: `.with_prompt_style()`, `.with_print_style()`, `.with_yolo()`, `.with_extra_args()`, `.with_aggregate_file()`
+- `prepare_injection()` trait method on `AgentAdapter`: default raw-copy, GenericAdapter overrides for `aggregate_file` (Goose → `.goosehints`)
+- `InjectedRecord` has `InjectionType` (CopiedFile/AggregateSection) for cleanup dispatch
+- Aggregate file injection uses `<!-- skillx:begin:name -->` / `<!-- skillx:end:name -->` marker comments
+- Amp injects to `.agents/skills/` (not `.amp/skills/`) — Amp reads `.agents/skills/` and `.claude/skills/`
+- Aider: GenericAdapter auto-adds `--read SKILL.md` in launch when skill_dir has SKILL.md
+- Most agents now natively support SKILL.md in `.<agent>/skills/` directories (Agent Skills standard)
+- Example skills in `examples/skills/` (hello-world, code-review, testing-guide, commit-message, dangerous-example)
+- Web docs sidebar includes "Examples" section between Guides and Reference
 
 ## Data Directories
 
