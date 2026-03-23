@@ -5,6 +5,8 @@ description: A step-by-step tutorial covering local skills, GitHub skills, and s
 
 This tutorial walks you through three common scenarios: running a local skill, running a skill from GitHub, and inspecting scan results.
 
+`skillx run` is ephemeral — the skill is fetched, injected, used, and automatically cleaned up when the session ends. Nothing is permanently installed.
+
 ## 1. Run a Local Skill
 
 Create a minimal skill directory:

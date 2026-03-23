@@ -22,7 +22,7 @@ AI coding agents (Claude Code, Codex, Copilot, Cursor) can follow instructions f
 3. Hope the skill doesn't contain anything malicious
 4. Remember to clean up when you're done
 
-skillx automates every step and adds a security layer that doesn't exist in the manual workflow.
+Every other skill manager requires permanent installation into your project. skillx doesn't. One command fetches, scans, runs, and auto-cleans — no files are permanently added to your project. When you do want persistence, `skillx install` is there, but it's opt-in, not the default.
 
 ## The Lifecycle
 
