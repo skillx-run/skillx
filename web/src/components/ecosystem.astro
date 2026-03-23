@@ -1,0 +1,150 @@
+---
+const agents = [
+  'Claude Code', 'Codex', 'Copilot', 'Cursor',
+  'Gemini CLI', 'Windsurf', 'Cline', 'Roo Code',
+  'Amp', 'OpenCode', 'Goose', 'Aider',
+];
+const agentsMore = 20;
+
+const sources = [
+  'GitHub', 'GitLab', 'Bitbucket', 'Codeberg',
+  'SourceHut', 'Gitea / Forgejo', 'Hugging Face', 'Gist',
+  'skills.sh', 'ClawHub', 'LobehHub', 'SkillHub Club',
+];
+const sourcesMore = 6;
+---
+
+<section class="ecosystem">
+  <div class="container">
+    <h2>The Agent Skill Ecosystem</h2>
+    <p class="subtitle">Works with every agent. Pulls from every source.</p>
+    <div class="columns">
+      <div class="column">
+        <h3>Agents <span class="count">32+</span></h3>
+        <div class="tags">
+          {agents.map(name => (
+            <span class="tag">{name}</span>
+          ))}
+          <span class="tag more">+ {agentsMore} more</span>
+          <span class="tag custom">+ custom</span>
+        </div>
+        <a href="/agents/overview/" class="see-all">See all agents &rarr;</a>
+      </div>
+      <div class="column">
+        <h3>Sources <span class="count">18+</span></h3>
+        <div class="tags">
+          {sources.map(name => (
+            <span class="tag">{name}</span>
+          ))}
+          <span class="tag more">+ {sourcesMore} more</span>
+        </div>
+        <a href="/platforms/overview/" class="see-all">See all sources &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ecosystem {
+    padding: 5rem 0;
+    border-top: 1px solid #1e293b;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  h2 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 1.1rem;
+    margin-bottom: 3rem;
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+
+  .column h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    font-weight: 600;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    white-space: nowrap;
+    transition: border-color 0.15s;
+  }
+
+  .tag:hover {
+    border-color: #334155;
+  }
+
+  .tag.more {
+    color: #64748b;
+    border-style: dashed;
+  }
+
+  .tag.custom {
+    color: #a5b4fc;
+    border-color: rgba(99, 102, 241, 0.3);
+    border-style: dashed;
+  }
+
+  .see-all {
+    font-size: 0.85rem;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .see-all:hover {
+    color: #a5b4fc;
+  }
+
+  @media (max-width: 768px) {
+    .columns {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+</style>

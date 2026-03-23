@@ -2,55 +2,22 @@
 import Base from '../layouts/base.astro';
 import Nav from '../components/nav.astro';
 import Hero from '../components/hero.astro';
-import InstallSnippet from '../components/install-snippet.astro';
+import Lifecycle from '../components/lifecycle.astro';
+import Features from '../components/features.astro';
 import DemoTerminal from '../components/demo-terminal.astro';
-import AgentGrid from '../components/agent-grid.astro';
+import Ecosystem from '../components/ecosystem.astro';
+import CtaFooter from '../components/cta-footer.astro';
 ---
 
 <Base title="skillx — npx for Agent Skills">
   <Nav />
   <main>
     <Hero />
-    <InstallSnippet />
+    <Lifecycle />
+    <Features />
     <DemoTerminal />
-    <AgentGrid />
-
-    <section class="platforms">
-      <div class="container">
-        <h2>Sources Everywhere</h2>
-        <p class="subtitle">Pull skills from any Git host or skill directory.</p>
-        <div class="platform-grid">
-          <div class="platform-group">
-            <h3>Git Hosts</h3>
-            <ul>
-              <li>GitHub</li>
-              <li>GitLab</li>
-              <li>Bitbucket</li>
-              <li>Codeberg</li>
-              <li>SourceHut</li>
-              <li>Gitea / Forgejo</li>
-              <li>Hugging Face</li>
-              <li>Self-hosted</li>
-            </ul>
-          </div>
-          <div class="platform-group">
-            <h3>Skill Directories</h3>
-            <ul>
-              <li>skills.sh</li>
-              <li>skillsmp.com</li>
-              <li>ClawHub</li>
-              <li>LobehHub</li>
-              <li>SkillHub Club</li>
-              <li>Agent Skills Hub</li>
-              <li>Agent Skills</li>
-              <li>MCP Market</li>
-              <li>Skills Directory</li>
-              <li>Prompts Chat</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
+    <Ecosystem />
+    <CtaFooter />
 
     <footer>
       <div class="container">
@@ -84,58 +51,6 @@ import AgentGrid from '../components/agent-grid.astro';
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
-  }
-
-  .platforms {
-    padding: 6rem 0;
-    border-top: 1px solid #1e293b;
-  }
-
-  .platforms h2 {
-    text-align: center;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-
-  .subtitle {
-    text-align: center;
-    color: #94a3b8;
-    font-size: 1.2rem;
-    margin-bottom: 3rem;
-  }
-
-  .platform-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .platform-group h3 {
-    color: #a5b4fc;
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .platform-group ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  .platform-group li {
-    padding: 0.4rem 0;
-    color: #94a3b8;
-    font-size: 0.95rem;
-  }
-
-  .platform-group li::before {
-    content: '>';
-    color: #6366f1;
-    margin-right: 0.5rem;
-    font-family: monospace;
   }
 
   footer {
@@ -186,9 +101,6 @@ import AgentGrid from '../components/agent-grid.astro';
   }
 
   @media (max-width: 768px) {
-    .platform-grid {
-      grid-template-columns: 1fr;
-    }
     .footer-content {
       flex-direction: column;
       text-align: center;

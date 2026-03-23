@@ -1,0 +1,121 @@
+---
+---
+<section class="features">
+  <div class="container">
+    <h2>Why skillx?</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <span>⊘</span>
+        </div>
+        <div class="feature-header">
+          <h3>Security First</h3>
+          <span class="highlight-badge">23 rules</span>
+        </div>
+        <p>
+          Every skill is scanned across 5 risk levels before injection.
+          Dangerous patterns are blocked outright &mdash; you never run untrusted code.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <span>⚡</span>
+        </div>
+        <div class="feature-header">
+          <h3>Zero Friction</h3>
+          <span class="highlight-badge">auto-cleanup</span>
+        </div>
+        <p>
+          No config needed. One command pulls, scans, injects, runs, and cleans up
+          any skill. Temporary skills vanish when your session ends.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .features {
+    padding: 5rem 0;
+    border-top: 1px solid #1e293b;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  h2 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 3rem;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 2rem;
+    transition: border-color 0.2s;
+  }
+
+  .feature-card:hover {
+    border-color: #334155;
+  }
+
+  .feature-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(99, 102, 241, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    font-size: 1.3rem;
+  }
+
+  .feature-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .feature-header h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .highlight-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    font-weight: 600;
+  }
+
+  .feature-card p {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .feature-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

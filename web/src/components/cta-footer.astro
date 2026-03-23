@@ -1,0 +1,166 @@
+---
+---
+<section class="cta">
+  <div class="glow"></div>
+  <div class="container">
+    <h2>Ready to run your first skill?</h2>
+    <div class="install-bar">
+      <code>curl -fsSL https://skillx.run/install.sh | sh</code>
+      <button class="copy-btn" data-text="curl -fsSL https://skillx.run/install.sh | sh" aria-label="Copy">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="cta-group">
+      <a href="/getting-started/" class="cta-primary">Get Started</a>
+      <a href="/getting-started/" class="cta-secondary">Read the docs</a>
+      <a href="https://github.com/skillx-run/skillx" class="cta-ghost">Star on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('.cta .copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = btn.getAttribute('data-text') || '';
+      await navigator.clipboard.writeText(text);
+      btn.classList.add('copied');
+      setTimeout(() => btn.classList.remove('copied'), 1500);
+    });
+  });
+</script>
+
+<style>
+  .cta {
+    padding: 6rem 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid #1e293b;
+  }
+
+  .glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+
+  .install-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .install-bar code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #a5b4fc;
+  }
+
+  .copy-btn {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .copy-btn:hover {
+    color: #e2e8f0;
+  }
+
+  .copy-btn.copied {
+    color: #22c55e;
+  }
+
+  .cta-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cta-primary {
+    padding: 0.75rem 2rem;
+    background: #6366f1;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background 0.15s;
+  }
+
+  .cta-primary:hover {
+    background: #4f46e5;
+  }
+
+  .cta-secondary {
+    padding: 0.75rem 2rem;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: border-color 0.15s;
+  }
+
+  .cta-secondary:hover {
+    border-color: #6366f1;
+  }
+
+  .cta-ghost {
+    padding: 0.75rem 2rem;
+    color: #94a3b8;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: color 0.15s;
+  }
+
+  .cta-ghost:hover {
+    color: #e2e8f0;
+  }
+
+  @media (max-width: 768px) {
+    h2 {
+      font-size: 1.8rem;
+    }
+    .install-bar code {
+      font-size: 0.75rem;
+    }
+  }
+</style>

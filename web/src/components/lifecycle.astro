@@ -1,0 +1,166 @@
+---
+const steps = [
+  { icon: '↓', name: 'Fetch', desc: 'Pull from any Git host or skill directory' },
+  { icon: '⊘', name: 'Scan', desc: '23 security rules check before use' },
+  { icon: '→', name: 'Inject', desc: 'Copy skill files into agent config' },
+  { icon: '▶', name: 'Run', desc: 'Launch your agent with the skill' },
+  { icon: '✓', name: 'Clean', desc: 'Auto-remove when session ends' },
+];
+---
+
+<section class="lifecycle">
+  <div class="container">
+    <h2>How skillx works</h2>
+    <div class="pipeline">
+      {steps.map((step, i) => (
+        <div class="step">
+          <div class="node">
+            <span class="icon">{step.icon}</span>
+          </div>
+          {i < steps.length - 1 && <div class="connector" />}
+          <div class="label">
+            <span class="name">{step.name}</span>
+            <span class="desc">{step.desc}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .lifecycle {
+    padding: 5rem 0;
+    border-top: 1px solid #1e293b;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  h2 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 3.5rem;
+  }
+
+  .pipeline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+    max-width: 160px;
+  }
+
+  .node {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #0f172a;
+    border: 2px solid #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    transition: border-color 0.2s;
+  }
+
+  .step:hover .node {
+    border-color: #6366f1;
+  }
+
+  .icon {
+    font-size: 1.3rem;
+    color: #a5b4fc;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+  }
+
+  .connector {
+    position: absolute;
+    top: 28px;
+    left: calc(50% + 28px);
+    width: calc(100% - 56px);
+    height: 2px;
+    background: linear-gradient(90deg, #6366f1, #22d3ee);
+    opacity: 0.4;
+    z-index: 0;
+  }
+
+  .label {
+    margin-top: 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+
+  .desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 768px) {
+    .pipeline {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      padding-left: 2rem;
+    }
+
+    .step {
+      flex-direction: row;
+      align-items: center;
+      max-width: none;
+      width: 100%;
+      gap: 1rem;
+      position: relative;
+    }
+
+    .node {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .icon {
+      font-size: 1.1rem;
+    }
+
+    .connector {
+      position: absolute;
+      top: calc(44px);
+      left: 22px;
+      width: 2px;
+      height: calc(100%);
+      background: linear-gradient(180deg, #6366f1, #22d3ee);
+    }
+
+    .label {
+      margin-top: 0;
+      text-align: left;
+      padding: 0.75rem 0;
+    }
+  }
+</style>
