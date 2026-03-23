@@ -1,0 +1,185 @@
+---
+const methods = [
+  { label: 'Shell', cmd: 'curl -fsSL https://skillx.run/install.sh | sh', default: true },
+  { label: 'Homebrew', cmd: 'brew install skillx-run/tap/skillx', default: false },
+  { label: 'Cargo', cmd: 'cargo install skillx', default: false },
+];
+---
+<section class="install">
+  <div class="container">
+    <h2>Try skillx in seconds</h2>
+    <div class="tabs" role="tablist">
+      {methods.map((m, i) => (
+        <button
+          class={`tab ${m.default ? 'active' : ''}`}
+          role="tab"
+          data-index={i}
+          aria-selected={m.default ? 'true' : 'false'}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+    <div class="install-panels">
+      {methods.map((m, i) => (
+        <div class={`install-panel ${m.default ? 'active' : ''}`} data-index={i}>
+          <div class="install-bar">
+            <code>{m.cmd}</code>
+            <button class="copy-btn" data-text={m.cmd} aria-label="Copy">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+    <a href="/getting-started/installation/" class="install-more">More install options &rarr;</a>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('.install .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const index = tab.getAttribute('data-index');
+      const section = tab.closest('.install');
+      section?.querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      section?.querySelectorAll('.install-panel').forEach(p => {
+        p.classList.toggle('active', p.getAttribute('data-index') === index);
+      });
+    });
+  });
+
+  document.querySelectorAll('.install .copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = btn.getAttribute('data-text') || '';
+      await navigator.clipboard.writeText(text);
+      btn.classList.add('copied');
+      setTimeout(() => btn.classList.remove('copied'), 1500);
+    });
+  });
+</script>
+
+<style>
+  .install {
+    padding: 5rem 0;
+    text-align: center;
+    border-top: 1px solid #1e293b;
+  }
+
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+
+  .tabs {
+    display: inline-flex;
+    gap: 0;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 1.5rem;
+  }
+
+  .tab {
+    padding: 0.45rem 1.25rem;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .tab:hover {
+    color: #94a3b8;
+  }
+
+  .tab.active {
+    background: #1e293b;
+    color: #a5b4fc;
+  }
+
+  .install-panels {
+    margin-bottom: 1rem;
+  }
+
+  .install-panel {
+    display: none;
+  }
+
+  .install-panel.active {
+    display: block;
+  }
+
+  .install-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #0c1222;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+  }
+
+  .install-bar code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #a5b4fc;
+  }
+
+  .copy-btn {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .copy-btn:hover {
+    color: #e2e8f0;
+  }
+
+  .copy-btn.copied {
+    color: #22c55e;
+  }
+
+  .install-more {
+    display: block;
+    color: #64748b;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .install-more:hover {
+    color: #a5b4fc;
+  }
+
+  @media (max-width: 768px) {
+    .install-bar code {
+      font-size: 0.75rem;
+    }
+  }
+</style>

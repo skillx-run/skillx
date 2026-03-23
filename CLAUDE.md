@@ -1,5 +1,14 @@
 # skillx Project Guide
 
+> Run any agent skill. Safely. Without installing it.
+
+**Core value props (in priority order):**
+1. **No install needed** — `skillx run` is ephemeral by default: fetch, use, auto-clean. Nothing permanently added to the project.
+2. **Security first** — 23 rules scan every skill before injection. Dangerous patterns are blocked.
+3. **One command** — Full lifecycle (fetch → scan → inject → run → clean) in a single CLI call.
+
+`skillx install` exists for persistent use cases but is opt-in, not the default.
+
 ## Architecture
 
 Monorepo with three components:
@@ -53,8 +62,8 @@ Key modules:
 - `error.rs` — SkillxError (thiserror) + Result alias
 - `ui.rs` — Terminal output helpers (console + indicatif)
 - `commands/` — Command implementations (10 commands, anyhow::Result)
-  - `run.rs` — Temporary run (inject → launch → cleanup, skips inject if already installed)
-  - `install.rs` — Persistent install (explicit sources or from skillx.toml)
+  - `run.rs` — Ephemeral run (fetch → scan → inject → launch → cleanup, the primary usage mode)
+  - `install.rs` — Persistent install (opt-in, explicit sources or from skillx.toml)
   - `uninstall.rs` — Remove installed skills (per-agent partial or full)
   - `list.rs` — List installed skills (table/JSON, --outdated check)
   - `update.rs` — Update installed skills (SHA256 diff, --dry-run)

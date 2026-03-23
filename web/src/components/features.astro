@@ -6,6 +6,19 @@
     <div class="feature-grid">
       <div class="feature-card">
         <div class="feature-icon">
+          <span>⏳</span>
+        </div>
+        <div class="feature-header">
+          <h3>No Install Needed</h3>
+          <span class="highlight-badge">ephemeral</span>
+        </div>
+        <p>
+          Run any skill temporarily. It's fetched, injected, and auto-cleaned
+          when your session ends. Nothing is permanently added to your project.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
           <span>⊘</span>
         </div>
         <div class="feature-header">
@@ -14,7 +27,7 @@
         </div>
         <p>
           Every skill is scanned across 5 risk levels before injection.
-          Dangerous patterns are blocked outright &mdash; you never run untrusted code.
+          Dangerous patterns are blocked &mdash; you never run untrusted code.
         </p>
       </div>
       <div class="feature-card">
@@ -22,12 +35,12 @@
           <span>⚡</span>
         </div>
         <div class="feature-header">
-          <h3>Zero Friction</h3>
-          <span class="highlight-badge">auto-cleanup</span>
+          <h3>One Command</h3>
+          <span class="highlight-badge">zero config</span>
         </div>
         <p>
-          No config needed. One command pulls, scans, injects, runs, and cleans up
-          any skill. Temporary skills vanish when your session ends.
+          No setup, no config files. One command pulls from any Git host,
+          scans, runs, and cleans up. That's it.
         </p>
       </div>
     </div>
@@ -55,7 +68,7 @@
 
   .feature-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
   }
 
@@ -111,6 +124,12 @@
     font-size: 0.95rem;
     line-height: 1.65;
     margin: 0;
+  }
+
+  @media (max-width: 1024px) {
+    .feature-grid {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 
   @media (max-width: 768px) {

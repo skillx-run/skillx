@@ -3,52 +3,82 @@
 <section class="hero">
   <div class="container">
     <div class="badge">v0.3</div>
-    <p class="pain">Agent Skills are scattered. Installing them shouldn't be risky.</p>
+    <p class="pain">Agent skills are powerful. And untrusted.</p>
     <h1>
-      One command to <span class="accent">fetch</span>, <span class="accent">scan</span>, and <span class="accent">run</span> any Agent Skill.
+      Run any agent skill. <span class="accent">Safely.</span> Without installing it.
     </h1>
     <p class="tagline">
-      skillx pulls skills from any Git host or directory, scans them with 23 security rules,
-      injects into your agent, and auto-cleans when done.
+      One command &mdash; fetch, scan, run, auto-clean.
     </p>
+
+    <div class="terminal-wrapper">
+      <div class="terminal-glow"></div>
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <span class="terminal-title">terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="line">
+            <span class="prompt">$</span>
+            <span class="cmd typing">skillx run github:anthropics/skills/pdf-processing "Extract tables"</span>
+          </div>
+          <div class="line output delay-1">
+            <span class="cyan">→</span> Resolving source...
+          </div>
+          <div class="line output delay-2">
+            <span class="green">✓</span> Resolved: pdf-processing
+          </div>
+          <div class="line output delay-3">
+            <span class="cyan">→</span> Scanning for security issues...
+          </div>
+          <div class="line output delay-4">
+            <span class="green">✓</span> Scan Result: <span class="green">PASS</span> <span class="dim">(23 rules checked)</span>
+          </div>
+          <div class="line output delay-5">
+            <span class="green">✓</span> Using agent: Claude Code
+          </div>
+          <div class="line output delay-6">
+            <span class="green">✓</span> Injected 3 files to .claude/skills/pdf-processing
+          </div>
+          <div class="line output delay-7">
+            <span class="cyan">→</span> Launching agent...
+          </div>
+          <div class="line output delay-8">
+            <span class="dim">  [Claude Code running...]</span>
+          </div>
+          <div class="line output delay-9">
+            <span class="green">✓</span> Agent completed. Cleanup done.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="cta-group">
       <a href="/getting-started/" class="cta-primary">Get Started</a>
       <a href="https://github.com/skillx-run/skillx" class="cta-secondary">View on GitHub</a>
     </div>
-    <div class="install-bar">
-      <code>curl -fsSL https://skillx.run/install.sh | sh</code>
-      <button class="copy-btn" data-text="curl -fsSL https://skillx.run/install.sh | sh" aria-label="Copy">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
-        </svg>
-      </button>
-    </div>
-    <a href="/getting-started/installation/" class="install-more">More install options &rarr;</a>
   </div>
 </section>
 
-<script>
-  document.querySelectorAll('.hero .copy-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const text = btn.getAttribute('data-text') || '';
-      await navigator.clipboard.writeText(text);
-      btn.classList.add('copied');
-      setTimeout(() => btn.classList.remove('copied'), 1500);
-    });
-  });
-</script>
-
 <style>
   .hero {
-    padding: 8rem 0 5rem;
+    padding: 8rem 0 4rem;
     text-align: center;
+    position: relative;
+    overflow: hidden;
   }
 
   .container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 0 2rem;
+    position: relative;
+    z-index: 1;
   }
 
   .badge {
@@ -86,18 +116,152 @@
     font-size: 1.15rem;
     color: #94a3b8;
     line-height: 1.7;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
   }
 
+  /* Terminal with glow */
+  .terminal-wrapper {
+    position: relative;
+    max-width: 720px;
+    margin: 0 auto 3rem;
+  }
+
+  .terminal-glow {
+    position: absolute;
+    inset: -2px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(34, 211, 238, 0.3), rgba(99, 102, 241, 0.5));
+    filter: blur(16px);
+    opacity: 0.6;
+    z-index: -1;
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { opacity: 0.5; filter: blur(16px); }
+    50% { opacity: 0.8; filter: blur(22px); }
+  }
+
+  .terminal {
+    background: #0c1222;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(99, 102, 241, 0.1),
+      0 0 30px rgba(99, 102, 241, 0.08),
+      0 20px 60px rgba(0, 0, 0, 0.5);
+    position: relative;
+    z-index: 1;
+  }
+
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+    gap: 0.75rem;
+  }
+
+  .dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .dot.red { background: #ef4444; }
+  .dot.yellow { background: #eab308; }
+  .dot.green { background: #22c55e; }
+
+  .terminal-title {
+    color: #475569;
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .terminal-body {
+    padding: 1.25rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    text-align: left;
+  }
+
+  .line {
+    white-space: nowrap;
+    overflow: hidden;
+    display: flex;
+    align-items: baseline;
+  }
+
+  .prompt {
+    color: #6366f1;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .cmd {
+    color: #e2e8f0;
+  }
+
+  .output {
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  .cyan { color: #22d3ee; }
+  .green { color: #22c55e; }
+  .dim { color: #475569; }
+
+  .delay-1 { animation-delay: 0.8s; }
+  .delay-2 { animation-delay: 1.3s; }
+  .delay-3 { animation-delay: 1.8s; }
+  .delay-4 { animation-delay: 2.5s; }
+  .delay-5 { animation-delay: 3.2s; }
+  .delay-6 { animation-delay: 3.8s; }
+  .delay-7 { animation-delay: 4.4s; }
+  .delay-8 { animation-delay: 5.0s; }
+  .delay-9 { animation-delay: 6.5s; }
+
+  .typing {
+    overflow: hidden;
+    border-right: 2px solid #6366f1;
+    white-space: nowrap;
+    animation:
+      typing 1.5s steps(70) forwards,
+      blink 0.8s step-end 3;
+    width: 0;
+    flex: 0 0 auto;
+    max-width: 100%;
+  }
+
+  @keyframes typing {
+    to { width: 100%; }
+  }
+
+  @keyframes blink {
+    50% { border-color: transparent; }
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  /* CTA */
   .cta-group {
     display: flex;
     gap: 1rem;
     justify-content: center;
     flex-wrap: wrap;
-    margin-bottom: 2.5rem;
   }
 
   .cta-primary {
@@ -130,56 +294,6 @@
     border-color: #6366f1;
   }
 
-  .install-bar {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: #0f172a;
-    border: 1px solid #1e293b;
-    border-radius: 8px;
-    padding: 0.6rem 1rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .install-bar code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    color: #a5b4fc;
-  }
-
-  .copy-btn {
-    background: none;
-    border: none;
-    color: #64748b;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    transition: color 0.15s;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-  }
-
-  .copy-btn:hover {
-    color: #e2e8f0;
-  }
-
-  .copy-btn.copied {
-    color: #22c55e;
-  }
-
-  .install-more {
-    display: block;
-    color: #64748b;
-    font-size: 0.85rem;
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-
-  .install-more:hover {
-    color: #a5b4fc;
-  }
-
   @media (max-width: 768px) {
     h1 {
       font-size: 2.2rem;
@@ -187,8 +301,12 @@
     .hero {
       padding: 5rem 0 3rem;
     }
-    .install-bar code {
-      font-size: 0.75rem;
+    .terminal-body {
+      font-size: 0.7rem;
+      overflow-x: auto;
+    }
+    .terminal-glow {
+      filter: blur(12px);
     }
   }
 </style>
