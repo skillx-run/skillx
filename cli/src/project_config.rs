@@ -244,7 +244,7 @@ mod tests {
 name = "my-project"
 
 [skills]
-pdf-processing = "github:anthropics/skills/pdf-processing"
+pdf-processing = "github:skillx-run/example-skills/pdf-processing"
 code-review = "github:org/skills/code-review"
 "#;
         fs::write(dir.path().join("skillx.toml"), toml_content).unwrap();
@@ -254,7 +254,7 @@ code-review = "github:org/skills/code-review"
         assert_eq!(config.skills.entries.len(), 2);
         assert_eq!(
             config.skills.entries["pdf-processing"].source(),
-            "github:anthropics/skills/pdf-processing"
+            "github:skillx-run/example-skills/pdf-processing"
         );
         assert_eq!(
             config.skills.entries["code-review"].source(),
@@ -283,7 +283,7 @@ code-review = { source = "github:org/skills/cr@v2.1", scope = "project", skip_sc
         let dir = tempfile::tempdir().unwrap();
         let toml_content = r#"
 [skills]
-pdf = "github:anthropics/skills/pdf"
+pdf = "github:skillx-run/example-skills/pdf"
 review = { source = "github:org/skills/cr", scope = "project" }
 "#;
         fs::write(dir.path().join("skillx.toml"), toml_content).unwrap();
@@ -305,7 +305,7 @@ review = { source = "github:org/skills/cr", scope = "project" }
         let dir = tempfile::tempdir().unwrap();
         let toml_content = r#"
 [skills]
-pdf = "github:anthropics/skills/pdf"
+pdf = "github:skillx-run/example-skills/pdf"
 
 [skills.dev]
 testing = "github:org/skills/testing"
@@ -365,7 +365,7 @@ targets = ["claude-code", "cursor"]
         let dir = tempfile::tempdir().unwrap();
         let toml_content = r#"
 [[skills]]
-source = "github:anthropics/skills/pdf-processing"
+source = "github:skillx-run/example-skills/pdf-processing"
 "#;
         fs::write(dir.path().join("skillx.toml"), toml_content).unwrap();
         let result = ProjectConfig::load(dir.path());

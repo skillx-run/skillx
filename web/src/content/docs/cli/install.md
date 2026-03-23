@@ -44,7 +44,7 @@ Two modes of operation:
 When one or more source arguments are provided, skillx installs those specific skills:
 
 ```bash
-skillx install github:anthropics/skills/pdf-processing github:org/skills/formatter
+skillx install github:skillx-run/skillx.run/examples/skills/pdf-processing github:org/skills/formatter
 ```
 
 By default, installed sources are saved to skillx.toml (if it exists). Use `--no-save` to skip saving.
@@ -105,7 +105,7 @@ Skills with active run sessions are skipped during pruning.
 ### Install a single skill
 
 ```bash
-skillx install github:anthropics/skills/pdf-processing
+skillx install github:skillx-run/skillx.run/examples/skills/pdf-processing
 ```
 
 ### Install to a specific agent

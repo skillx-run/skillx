@@ -11,7 +11,7 @@
 **skillx** is a CLI tool that runs Agent Skills without permanently installing them. One command fetches a skill from any Git host, scans it with 23 security rules, injects it into your agent, and cleans everything up when the session ends. No files are left behind.
 
 ```bash
-skillx run github:anthropics/skills/pdf-processing "Extract tables from report.pdf"
+skillx run ./examples/skills/hello-world "Hello"
 ```
 
 ## Why skillx?
@@ -28,14 +28,14 @@ skillx run github:anthropics/skills/pdf-processing "Extract tables from report.p
 # Install skillx
 curl -fsSL https://skillx.run/install.sh | sh
 
-# Run a skill (temporary — auto-cleans when done)
-skillx run github:anthropics/skills/pdf-processing "Extract tables"
+# Run a local skill (temporary — auto-cleans when done)
+skillx run ./examples/skills/hello-world "Hello"
 
-# Run a local skill
-skillx run ./my-skill "Do the thing"
+# Run a skill from GitHub
+skillx run github:skillx-run/skillx.run/examples/skills/code-review "Review the auth module"
 
 # Want persistence? Opt in explicitly
-skillx install github:anthropics/skills/code-review
+skillx install github:skillx-run/skillx.run/examples/skills/code-review
 ```
 
 ## Commands
@@ -107,14 +107,18 @@ name = "my-project"
 preferred = "claude-code"
 
 [skills]
-pdf-processing = "github:anthropics/skills/pdf@v1.2"
-code-review = { source = "github:org/skills/cr@v2.1", scope = "project" }
+hello-world = "github:skillx-run/skillx.run/examples/skills/hello-world"
+code-review = { source = "github:skillx-run/skillx.run/examples/skills/code-review", scope = "project" }
 ```
 
 ```bash
 skillx init                  # Create skillx.toml
 skillx init --from-installed # Create from currently installed skills
 ```
+
+## Examples
+
+Browse the [examples/skills](examples/skills) directory for complete, runnable example skills including hello-world, code-review, testing-guide, and commit-message.
 
 ## Documentation
 

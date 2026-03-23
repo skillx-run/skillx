@@ -3,6 +3,10 @@ title: Writing Skills
 description: How to create Agent Skills — SKILL.md format, frontmatter, directory structure, and best practices.
 ---
 
+:::tip
+See the [examples/skills](https://github.com/skillx-run/skillx.run/tree/main/examples/skills) directory for complete, runnable example skills you can use as starting points.
+:::
+
 ## Skill Directory Structure
 
 A skill is a directory with a `SKILL.md` file and optional supporting files:
@@ -25,36 +29,40 @@ The `SKILL.md` file is a Markdown document with optional YAML frontmatter:
 
 ```markdown
 ---
-name: pdf-processing
-description: Extract tables, text, and metadata from PDF files
-author: your-name
-version: "1.0"
-tags: [pdf, extraction, data]
+name: code-review
+description: Perform structured code reviews with severity levels and actionable feedback
+author: skillx-run
+version: "1.0.0"
+license: MIT
+tags: [review, quality, best-practices]
 ---
 
-# PDF Processing Skill
+# Code Review Skill
 
-## Overview
+You are a code reviewer. Analyze code changes and provide structured, actionable feedback.
 
-This skill helps you extract structured data from PDF files.
+## Review Process
 
-## Instructions
+1. **Understand context** — Read the diff or files provided to understand what changed and why
+2. **Check correctness** — Look for bugs, logic errors, and edge cases
+3. **Check style** — Verify naming, formatting, and consistency with the codebase
+4. **Check security** — Identify potential vulnerabilities (injection, XSS, secrets, etc.)
+5. **Check performance** — Flag unnecessary allocations, N+1 queries, or blocking calls
 
-When asked to process a PDF:
+## Output Format
 
-1. Read the PDF file using the `scripts/extract.py` helper
-2. Parse the extracted text into structured sections
-3. Format tables as CSV or Markdown
-4. Return a summary of the document
+For each finding, use this format:
 
-## Scripts
+    [SEVERITY] file:line — Brief description
+      → Suggested fix or explanation
 
-- `scripts/extract.py` — PDF text and table extraction
-- `scripts/convert.sh` — Convert PDF pages to images
+## Summary
 
-## Examples
+End your review with a brief summary:
 
-See `references/examples.md` for sample inputs and outputs.
+    ## Summary
+    - N critical, N warnings, N suggestions
+    - Overall: [Approve / Request Changes / Needs Discussion]
 ```
 
 ### Frontmatter Fields
@@ -193,10 +201,10 @@ skillx scan --fail-on warn ./my-skill
 
 ```bash
 # Run with a test prompt
-skillx run ./my-skill "Test: process the example data in references/"
+skillx run ./examples/skills/hello-world "Hello"
 
 # Run with a prompt file
-skillx run ./my-skill -f test-prompt.txt
+skillx run ./examples/skills/code-review -f test-prompt.txt
 ```
 
 ### View Metadata

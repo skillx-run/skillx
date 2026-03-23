@@ -26,11 +26,11 @@ Skill Info
 
   Name:         pdf-processing
   Description:  Extract and analyze PDF documents
-  Author:       anthropics
-  Version:      v1.2
+  Author:       skillx-run
+  Version:      main
   License:      MIT
   Tags:         pdf, extraction, analysis
-  Source:       github:anthropics/skills/pdf-processing@v1.2
+  Source:       github:skillx-run/skillx.run/examples/skills/pdf-processing@main
   Path:         ~/.skillx/cache/a1b2c3d4/pdf-processing
 
   Files:
@@ -66,7 +66,7 @@ skillx info ./my-skill
 ### Inspect a GitHub skill
 
 ```bash
-skillx info github:anthropics/skills/pdf-processing
+skillx info github:skillx-run/skillx.run/examples/skills/pdf-processing
 ```
 
 ### Inspect a remote URL skill
