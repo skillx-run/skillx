@@ -7,19 +7,14 @@ use crate::error::{Result, SkillxError};
 use super::manifest::Manifest;
 
 /// How a file was injected — determines cleanup strategy.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum InjectionType {
     /// Direct file copy — cleanup by deleting the file.
+    #[default]
     CopiedFile,
     /// Section appended to an aggregate file — cleanup by removing the section.
     AggregateSection,
-}
-
-impl Default for InjectionType {
-    fn default() -> Self {
-        InjectionType::CopiedFile
-    }
 }
 
 /// Record of an injected file for manifest tracking.
@@ -81,9 +76,9 @@ pub fn extract_skill_body(source_dir: &Path) -> Result<String> {
     })?;
 
     // Strip YAML frontmatter (--- ... ---)
-    if content.starts_with("---") {
-        if let Some(end) = content[3..].find("---") {
-            let body = &content[3 + end + 3..];
+    if let Some(rest) = content.strip_prefix("---") {
+        if let Some(end) = rest.find("---") {
+            let body = &rest[end + 3..];
             return Ok(body.trim_start_matches('\n').to_string());
         }
     }
