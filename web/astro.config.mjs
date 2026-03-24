@@ -71,6 +71,7 @@ export default defineConfig({
           label: 'Examples',
           items: [
             { label: 'Overview', slug: 'examples/overview' },
+            { label: 'Name Poem', slug: 'examples/name-poem' },
             { label: 'Hello World', slug: 'examples/hello-world' },
             { label: 'Code Review', slug: 'examples/code-review' },
             { label: 'Testing Guide', slug: 'examples/testing-guide' },
