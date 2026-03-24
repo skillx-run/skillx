@@ -11,7 +11,7 @@ use skillx::project_config::ProjectConfig;
 use skillx::scanner::report::TextFormatter;
 use skillx::scanner::ScanEngine;
 use skillx::session::cleanup::{cleanup_session, recover_orphaned_sessions};
-use skillx::session::inject::inject_skill;
+use skillx::session::inject;
 use skillx::session::manifest::Manifest;
 use skillx::session::Session;
 use skillx::source::resolver;
@@ -224,7 +224,15 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         );
         manifest.scan_result = scan_report;
 
-        inject_skill(&skill_dir, &inject_path, &mut manifest)?;
+        let records = adapter.prepare_injection(&skill_name, &skill_dir, &inject_path)?;
+        for record in &records {
+            let full_path = inject_path.join(&record.path);
+            manifest.add_record(&skillx::session::inject::InjectedRecord {
+                path: full_path.to_string_lossy().to_string(),
+                sha256: record.sha256.clone(),
+                injection_type: record.injection_type.clone(),
+            });
+        }
 
         // Handle attachments (supports both files and directories)
         for attach in &args.attach {
@@ -267,7 +275,16 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
                 .parse()
                 .map_err(|e: String| anyhow::anyhow!(e))?;
             let extra_inject_path = adapter.inject_path(&entry.name, &extra_scope);
-            inject_skill(&entry.dir, &extra_inject_path, &mut manifest)?;
+            let extra_records =
+                adapter.prepare_injection(&entry.name, &entry.dir, &extra_inject_path)?;
+            for record in &extra_records {
+                let full_path = extra_inject_path.join(&record.path);
+                manifest.add_record(&inject::InjectedRecord {
+                    path: full_path.to_string_lossy().to_string(),
+                    sha256: record.sha256.clone(),
+                    injection_type: record.injection_type.clone(),
+                });
+            }
             ui::success(&format!("Injected extra skill: {}", entry.name));
         }
 

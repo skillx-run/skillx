@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use crate::config::Config;
 use crate::error::{Result, SkillxError};
+use crate::session::inject::InjectionType;
 use crate::ui;
 
 use super::manifest::Manifest;
@@ -21,6 +22,35 @@ pub fn cleanup_session(session_dir: &Path) -> Result<()> {
 
     // Remove injected files (with change detection via SHA-256)
     for file in &manifest.injected_files {
+        match file.injection_type {
+            InjectionType::AggregateSection => {
+                // Remove the skillx marker section from the aggregate file
+                let path = PathBuf::from(&file.path);
+                match crate::session::inject::remove_from_aggregate_file(
+                    &path,
+                    &manifest.skill_name,
+                ) {
+                    Ok(true) => {}
+                    Ok(false) => {
+                        ui::warn(&format!(
+                            "Skill section not found in {}",
+                            file.path
+                        ));
+                    }
+                    Err(e) => {
+                        ui::warn(&format!(
+                            "Failed to clean aggregate file {}: {e}",
+                            file.path
+                        ));
+                    }
+                }
+                continue;
+            }
+            InjectionType::CopiedFile => {
+                // Default: remove the file
+            }
+        }
+
         let path = PathBuf::from(&file.path);
         if path.exists() {
             // Check if file was modified by user

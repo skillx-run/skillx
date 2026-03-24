@@ -8,7 +8,7 @@ use skillx::installed::{InjectedFileRecord, Injection, InstalledSkill, Installed
 use skillx::project_config::ProjectConfig;
 use skillx::scanner::report::TextFormatter;
 use skillx::scanner::ScanEngine;
-use skillx::session::inject::inject_and_collect;
+use skillx::session::inject;
 use skillx::source::resolver;
 use skillx::types::Scope;
 use skillx::ui;
@@ -178,12 +178,13 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
                 scope
             ));
 
-            let records = inject_and_collect(&skill.dir, &inject_path)?;
+            let records = adapter.prepare_injection(&skill.name, &skill.dir, &inject_path)?;
             let files: Vec<InjectedFileRecord> = records
                 .iter()
-                .map(|(rel, sha)| InjectedFileRecord {
-                    relative: rel.clone(),
-                    sha256: sha.clone(),
+                .filter(|r| r.injection_type == inject::InjectionType::CopiedFile)
+                .map(|r| InjectedFileRecord {
+                    relative: r.path.clone(),
+                    sha256: r.sha256.clone(),
                 })
                 .collect();
 
@@ -389,12 +390,13 @@ async fn install_from_toml(
                 .ok_or_else(|| anyhow::anyhow!("agent not found: {agent_name}"))?;
             let inject_path = adapter.inject_path(&fetched.name, &skill_scope);
 
-            let records = inject_and_collect(&fetched.dir, &inject_path)?;
+            let records = adapter.prepare_injection(&fetched.name, &fetched.dir, &inject_path)?;
             let files: Vec<InjectedFileRecord> = records
                 .iter()
-                .map(|(rel, sha)| InjectedFileRecord {
-                    relative: rel.clone(),
-                    sha256: sha.clone(),
+                .filter(|r| r.injection_type == inject::InjectionType::CopiedFile)
+                .map(|r| InjectedFileRecord {
+                    relative: r.path.clone(),
+                    sha256: r.sha256.clone(),
                 })
                 .collect();
 

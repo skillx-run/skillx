@@ -29,6 +29,8 @@ pub enum PromptStyle {
     Positional,
     /// Agent does not accept an initial prompt in interactive mode (e.g., aider TUI)
     None,
+    /// Subcommand then prompt: `binary sub "msg"` (e.g., `kiro-cli chat "msg"`)
+    Subcommand(String, Box<PromptStyle>),
 }
 
 /// How prompt is passed in non-interactive (print) mode.
@@ -52,6 +54,7 @@ pub struct AgentDef {
     pub supports_yolo: bool,
     pub yolo_args: Vec<String>,
     pub detection: DetectionMethod,
+    /// Legacy: used by CustomAgentConfig deserialization. Prefer prompt_style for new code.
     pub prompt_flag: Option<String>,
     pub prompt_style: PromptStyle,
     pub print_style: Option<PrintStyle>,
@@ -477,6 +480,10 @@ fn apply_prompt_style(cmd: &mut tokio::process::Command, style: &PromptStyle, pr
         PromptStyle::None => {
             // Agent doesn't accept initial prompt in interactive mode
         }
+        PromptStyle::Subcommand(sub, inner) => {
+            cmd.arg(sub);
+            apply_prompt_style(cmd, inner, prompt);
+        }
     }
 }
 
@@ -509,7 +516,10 @@ pub fn tier3_adapters() -> Vec<Box<dyn AgentAdapter>> {
         Box::new(GenericAdapter(
             AgentDef::cli("kiro", "Kiro", "kiro-cli", ".kiro")
                 // kiro-cli chat "msg" (interactive) / kiro-cli chat "msg" --no-interactive (print)
-                .with_prompt_style(PromptStyle::Flag("chat".into()))
+                .with_prompt_style(PromptStyle::Subcommand(
+                    "chat".into(),
+                    Box::new(PromptStyle::Positional),
+                ))
                 .with_print_style(PrintStyle::Subcommand(
                     "chat".into(),
                     Box::new(PromptStyle::Positional),
@@ -807,5 +817,105 @@ mod tests {
         let err = result.unwrap_err();
         assert!(err.contains("invalid lifecycle"));
         assert!(err.contains("invalid_value"));
+    }
+
+    // ── PromptStyle / PrintStyle unit tests ──
+
+    /// Helper: build a Command and collect its args as strings.
+    fn collect_args(f: impl FnOnce(&mut tokio::process::Command)) -> Vec<String> {
+        let mut cmd = tokio::process::Command::new("test-bin");
+        f(&mut cmd);
+        // Command.as_std() exposes the inner std::process::Command
+        let std_cmd = cmd.as_std();
+        std_cmd
+            .get_args()
+            .map(|a| a.to_string_lossy().to_string())
+            .collect()
+    }
+
+    #[test]
+    fn test_prompt_style_flag() {
+        let args = collect_args(|cmd| {
+            apply_prompt_style(cmd, &PromptStyle::Flag("-i".into()), "hello");
+        });
+        assert_eq!(args, vec!["-i", "hello"]);
+    }
+
+    #[test]
+    fn test_prompt_style_positional() {
+        let args = collect_args(|cmd| {
+            apply_prompt_style(cmd, &PromptStyle::Positional, "hello");
+        });
+        assert_eq!(args, vec!["hello"]);
+    }
+
+    #[test]
+    fn test_prompt_style_none() {
+        let args = collect_args(|cmd| {
+            apply_prompt_style(cmd, &PromptStyle::None, "hello");
+        });
+        assert!(args.is_empty());
+    }
+
+    #[test]
+    fn test_prompt_style_subcommand() {
+        let args = collect_args(|cmd| {
+            apply_prompt_style(
+                cmd,
+                &PromptStyle::Subcommand("chat".into(), Box::new(PromptStyle::Positional)),
+                "hello",
+            );
+        });
+        assert_eq!(args, vec!["chat", "hello"]);
+    }
+
+    #[test]
+    fn test_print_style_flag() {
+        let args = collect_args(|cmd| {
+            apply_print_style(cmd, &PrintStyle::Flag("-p".into()), "hello");
+        });
+        assert_eq!(args, vec!["-p", "hello"]);
+    }
+
+    #[test]
+    fn test_print_style_subcommand() {
+        let args = collect_args(|cmd| {
+            apply_print_style(
+                cmd,
+                &PrintStyle::Subcommand("exec".into(), Box::new(PromptStyle::Positional)),
+                "hello",
+            );
+        });
+        assert_eq!(args, vec!["exec", "hello"]);
+    }
+
+    #[test]
+    fn test_print_style_subcommand_with_flag() {
+        // goose run -t "msg"
+        let args = collect_args(|cmd| {
+            apply_print_style(
+                cmd,
+                &PrintStyle::Subcommand("run".into(), Box::new(PromptStyle::Flag("-t".into()))),
+                "hello",
+            );
+        });
+        assert_eq!(args, vec!["run", "-t", "hello"]);
+    }
+
+    #[test]
+    fn test_chain_builders() {
+        let def = AgentDef::cli("test", "Test", "test", ".test")
+            .with_prompt_style(PromptStyle::Positional)
+            .with_print_style(PrintStyle::Flag("-p".into()))
+            .with_yolo(vec!["--auto"])
+            .with_extra_args(vec!["--verbose"])
+            .with_aggregate_file(".hints");
+
+        assert!(matches!(def.prompt_style, PromptStyle::Positional));
+        assert!(def.print_style.is_some());
+        assert!(def.supports_yolo);
+        assert_eq!(def.yolo_args, vec!["--auto"]);
+        assert_eq!(def.extra_launch_args, vec!["--verbose"]);
+        assert_eq!(def.aggregate_file.as_deref(), Some(".hints"));
     }
 }

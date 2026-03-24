@@ -75,11 +75,14 @@ pub fn extract_skill_body(source_dir: &Path) -> Result<String> {
         SkillxError::Session(format!("failed to read {}: {e}", skill_path.display()))
     })?;
 
-    // Strip YAML frontmatter (--- ... ---)
+    // Strip YAML frontmatter (--- ... ---).
+    // Match closing --- only at the start of a line to avoid false matches
+    // with markdown horizontal rules in the body.
     if let Some(rest) = content.strip_prefix("---") {
-        if let Some(end) = rest.find("---") {
-            let body = &rest[end + 3..];
-            return Ok(body.trim_start_matches('\n').to_string());
+        if let Some(end) = rest.find("\n---") {
+            // Skip past \n---
+            let after_marker = &rest[end + 4..];
+            return Ok(after_marker.trim_start_matches('\n').to_string());
         }
     }
     Ok(content)
@@ -257,6 +260,21 @@ mod tests {
             .unwrap();
         let body = extract_skill_body(dir.path()).unwrap();
         assert!(body.starts_with("# No Frontmatter"));
+    }
+
+    #[test]
+    fn test_extract_skill_body_with_horizontal_rule_in_body() {
+        let dir = TempDir::new().unwrap();
+        // Body contains a markdown horizontal rule (---) that should NOT be treated as frontmatter end
+        std::fs::write(
+            dir.path().join("SKILL.md"),
+            "---\nname: test\n---\n\n# Title\n\nSome text\n\n---\n\nMore text after rule.\n",
+        )
+        .unwrap();
+        let body = extract_skill_body(dir.path()).unwrap();
+        assert!(body.contains("# Title"));
+        assert!(body.contains("---"));
+        assert!(body.contains("More text after rule."));
     }
 
     #[test]

@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use crate::error::{Result, SkillxError};
 use crate::scanner::ScanReport;
+use crate::session::inject::{InjectedRecord, InjectionType};
 
 /// Manifest tracking all injected files for a session.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -25,6 +26,9 @@ pub struct Manifest {
 pub struct InjectedFile {
     pub path: String,
     pub sha256: String,
+    /// How this file was injected — determines cleanup strategy.
+    #[serde(default)]
+    pub injection_type: InjectionType,
 }
 
 /// An attachment that was copied alongside the skill.
@@ -78,7 +82,20 @@ impl Manifest {
 
     /// Add an injected file record.
     pub fn add_file(&mut self, path: String, sha256: String) {
-        self.injected_files.push(InjectedFile { path, sha256 });
+        self.injected_files.push(InjectedFile {
+            path,
+            sha256,
+            injection_type: InjectionType::CopiedFile,
+        });
+    }
+
+    /// Add an injected file from an InjectedRecord (includes injection_type).
+    pub fn add_record(&mut self, record: &InjectedRecord) {
+        self.injected_files.push(InjectedFile {
+            path: record.path.clone(),
+            sha256: record.sha256.clone(),
+            injection_type: record.injection_type.clone(),
+        });
     }
 
     /// Add an injected attachment record.
