@@ -11,7 +11,7 @@ use skillx::project_config::ProjectConfig;
 use skillx::scanner::report::TextFormatter;
 use skillx::scanner::ScanEngine;
 use skillx::session::cleanup::{cleanup_session, recover_orphaned_sessions};
-use skillx::session::inject::inject_skill;
+use skillx::session::inject;
 use skillx::session::manifest::Manifest;
 use skillx::session::Session;
 use skillx::source::resolver;
@@ -61,6 +61,10 @@ pub struct RunArgs {
     /// Agent YOLO mode: pass permission-skip flags to the agent
     #[arg(long)]
     pub yolo: bool,
+
+    /// Non-interactive mode: agent processes prompt and exits
+    #[arg(short = 'p', long = "print")]
+    pub print: bool,
 
     /// Maximum run duration (e.g., "30m", "2h")
     #[arg(long)]
@@ -220,7 +224,22 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         );
         manifest.scan_result = scan_report;
 
-        inject_skill(&skill_dir, &inject_path, &mut manifest)?;
+        let records = adapter.prepare_injection(&skill_name, &skill_dir, &inject_path)?;
+        for record in &records {
+            // AggregateSection records already have the correct path (e.g., ".goosehints");
+            // CopiedFile records are relative to inject_path and need joining.
+            let manifest_path = match record.injection_type {
+                inject::InjectionType::AggregateSection => record.path.clone(),
+                inject::InjectionType::CopiedFile => {
+                    inject_path.join(&record.path).to_string_lossy().to_string()
+                }
+            };
+            manifest.add_record(&inject::InjectedRecord {
+                path: manifest_path,
+                sha256: record.sha256.clone(),
+                injection_type: record.injection_type.clone(),
+            });
+        }
 
         // Handle attachments (supports both files and directories)
         for attach in &args.attach {
@@ -263,7 +282,22 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
                 .parse()
                 .map_err(|e: String| anyhow::anyhow!(e))?;
             let extra_inject_path = adapter.inject_path(&entry.name, &extra_scope);
-            inject_skill(&entry.dir, &extra_inject_path, &mut manifest)?;
+            let extra_records =
+                adapter.prepare_injection(&entry.name, &entry.dir, &extra_inject_path)?;
+            for record in &extra_records {
+                let manifest_path = match record.injection_type {
+                    inject::InjectionType::AggregateSection => record.path.clone(),
+                    inject::InjectionType::CopiedFile => extra_inject_path
+                        .join(&record.path)
+                        .to_string_lossy()
+                        .to_string(),
+                };
+                manifest.add_record(&inject::InjectedRecord {
+                    path: manifest_path,
+                    sha256: record.sha256.clone(),
+                    injection_type: record.injection_type.clone(),
+                });
+            }
             ui::success(&format!("Injected extra skill: {}", entry.name));
         }
 
@@ -290,6 +324,13 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     // ── Phase 7: Resolve prompt ──
     let prompt = resolve_prompt(&args)?;
 
+    // Validate early: --print requires a prompt
+    if args.print && prompt.is_none() {
+        return Err(anyhow::anyhow!(
+            "--print mode requires a prompt (positional argument, -f, or --stdin)"
+        ));
+    }
+
     // ── Phase 8: Launch ──
     ui::step("Launching agent...");
 
@@ -312,6 +353,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         skill_dir: inject_path.clone(),
         prompt,
         yolo: args.yolo,
+        print_mode: args.print,
         extra_args: vec![],
     };
 

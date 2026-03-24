@@ -31,16 +31,22 @@ Either condition is sufficient.
 
 ### Launch
 
-skillx spawns `claude` with the following arguments:
+skillx spawns `claude` with the prompt as a positional argument:
 
 ```bash
-claude --prompt "your prompt here"
+claude "your prompt here"
+```
+
+With `--print` mode (non-interactive):
+
+```bash
+claude -p "your prompt here"
 ```
 
 With YOLO mode (`--yolo`):
 
 ```bash
-claude --prompt "your prompt here" --dangerously-skip-permissions
+claude "your prompt here" --dangerously-skip-permissions
 ```
 
 ### YOLO Mode
@@ -48,24 +54,27 @@ claude --prompt "your prompt here" --dangerously-skip-permissions
 Claude Code's `--dangerously-skip-permissions` flag skips all permission prompts. The agent can read, write, and execute without asking for confirmation.
 
 ```bash
-skillx run --yolo github:org/skills/formatter "Format all files"
-# Equivalent to: claude --prompt "..." --dangerously-skip-permissions
+skillx run --yolo ./examples/skills/code-review "Review all files"
+# Equivalent to: claude "..." --dangerously-skip-permissions
 ```
 
 ### Example Workflow
 
 ```bash
 # Normal mode — Claude Code will ask for permissions
-skillx run github:org/skills/code-review "Review the auth module"
+skillx run ./examples/skills/code-review "Review the auth module"
+
+# Non-interactive (print) mode — process prompt and exit
+skillx run --print ./examples/skills/code-review "Review src/main.rs"
 
 # YOLO mode — no permission prompts
-skillx run --yolo github:org/skills/formatter "Fix all lint errors"
+skillx run --yolo ./examples/skills/code-review "Fix all lint errors"
 
 # With timeout
-skillx run --timeout 30m github:org/skills/migration "Run migration"
+skillx run --timeout 30m ./examples/skills/code-review "Review the full codebase"
 
 # Project-scoped injection
-skillx run --scope project ./my-skill "Set up project"
+skillx run --scope project ./examples/skills/hello-world "Set up project"
 ```
 
 ## OpenAI Codex
@@ -94,32 +103,41 @@ skillx spawns `codex` with the prompt as a positional argument:
 codex "your prompt here"
 ```
 
+With `--print` mode (non-interactive):
+
+```bash
+codex exec "your prompt here"
+```
+
 With YOLO mode (`--yolo`):
 
 ```bash
-codex "your prompt here" --full-auto
+codex "your prompt here" --yolo
 ```
 
 ### YOLO Mode
 
-Codex's `--full-auto` flag enables fully autonomous operation without user confirmation.
+Codex's `--yolo` flag enables fully autonomous operation without user confirmation.
 
 ```bash
-skillx run --yolo --agent codex ./my-skill "Refactor the database layer"
-# Equivalent to: codex "..." --full-auto
+skillx run --yolo --agent codex ./examples/skills/code-review "Refactor the database layer"
+# Equivalent to: codex "..." --yolo
 ```
 
 ### Example Workflow
 
 ```bash
 # Normal mode
-skillx run --agent codex github:org/skills/testing "Add unit tests"
+skillx run --agent codex ./examples/skills/testing-guide "Add unit tests"
+
+# Non-interactive (print) mode
+skillx run --print --agent codex ./examples/skills/code-review "Review src/main.rs"
 
 # YOLO mode
-skillx run --yolo --agent codex ./my-skill "Fix all TODOs"
+skillx run --yolo --agent codex ./examples/skills/code-review "Fix all TODOs"
 
 # With timeout and auto-confirm warnings
-skillx run --yes --timeout 1h --agent codex ./my-skill "Complete refactor"
+skillx run --yes --timeout 1h --agent codex ./examples/skills/code-review "Complete refactor"
 ```
 
 ## Tier 3 CLI Agents
@@ -197,13 +215,28 @@ skillx detects Gemini CLI by checking:
 | Global | `~/.gemini/skills/<skill-name>/` |
 | Project | `.gemini/skills/<skill-name>/` |
 
-### YOLO Mode
+### Launch
 
-Gemini CLI supports YOLO mode with the `--sandbox=none` flag.
+skillx spawns `gemini` with the following arguments:
 
 ```bash
-skillx run --yolo --agent gemini-cli ./my-skill "prompt"
-# Equivalent to: gemini --prompt "..." --sandbox=none
+# Interactive mode with initial prompt
+gemini -i "your prompt here"
+```
+
+With `--print` mode (non-interactive):
+
+```bash
+gemini -p "your prompt here"
+```
+
+### YOLO Mode
+
+Gemini CLI supports YOLO mode with the `--yolo` flag.
+
+```bash
+skillx run --yolo --agent gemini-cli ./examples/skills/hello-world "prompt"
+# Equivalent to: gemini -i "..." --yolo
 ```
 
 ## OpenCode
@@ -224,6 +257,20 @@ skillx detects OpenCode by checking:
 | Global | `~/.opencode/skills/<skill-name>/` |
 | Project | `.opencode/skills/<skill-name>/` |
 
+### Launch
+
+skillx spawns `opencode` with the prompt as a positional argument:
+
+```bash
+opencode "your prompt here"
+```
+
+With `--print` mode (non-interactive, auto-approves all permissions):
+
+```bash
+opencode run "your prompt here"
+```
+
 ### YOLO Mode
 
 Not supported.
@@ -243,12 +290,25 @@ skillx detects Amp by checking:
 
 | Scope | Path |
 |-------|------|
-| Global | `~/.amp/skills/<skill-name>/` |
-| Project | `.amp/skills/<skill-name>/` |
+| Global | `~/.config/agents/skills/<skill-name>/` |
+| Project | `.agents/skills/<skill-name>/` |
+
+### Launch
+
+skillx spawns `amp` with the `-x` (execute) flag for prompt delivery:
+
+```bash
+amp -x "your prompt here"
+```
 
 ### YOLO Mode
 
-Not supported.
+Amp supports YOLO mode with the `--dangerously-allow-all` flag.
+
+```bash
+skillx run --yolo --agent amp ./examples/skills/hello-world "prompt"
+# Equivalent to: amp -x "..." --dangerously-allow-all
+```
 
 ## Comparison
 
@@ -256,7 +316,8 @@ Not supported.
 |---------|------------|-------|------------|----------|-----|
 | Binary | `claude` | `codex` | `gemini` | `opencode` | `amp` |
 | Lifecycle | ManagedProcess | ManagedProcess | ManagedProcess | ManagedProcess | ManagedProcess |
-| Initial prompt | `--prompt` flag | Positional arg | `--prompt` flag | Positional arg | `--prompt` flag |
-| YOLO flag | `--dangerously-skip-permissions` | `--full-auto` | `--sandbox=none` | N/A | N/A |
-| Global inject | `~/.claude/skills/` | `~/.codex/skills/` | `~/.gemini/skills/` | `~/.opencode/skills/` | `~/.amp/skills/` |
-| Project inject | `.claude/skills/` | `.agents/skills/` | `.gemini/skills/` | `.opencode/skills/` | `.amp/skills/` |
+| Initial prompt | Positional arg | Positional arg | `-i` flag | Positional arg | `-x` flag |
+| Print mode | `-p` flag | `exec` subcommand | `-p` flag | `run` subcommand | N/A |
+| YOLO flag | `--dangerously-skip-permissions` | `--yolo` | `--yolo` | N/A | `--dangerously-allow-all` |
+| Global inject | `~/.claude/skills/` | `~/.codex/skills/` | `~/.gemini/skills/` | `~/.opencode/skills/` | `~/.config/agents/skills/` |
+| Project inject | `.claude/skills/` | `.agents/skills/` | `.gemini/skills/` | `.opencode/skills/` | `.agents/skills/` |

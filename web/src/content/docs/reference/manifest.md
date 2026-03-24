@@ -28,7 +28,7 @@ After cleanup (archived):
 {
   "session_id": "a1b2c3d4",
   "skill_name": "pdf-processing",
-  "source": "github:anthropics/skills/pdf-processing",
+  "source": "github:skillx-run/skillx.run/examples/skills/code-review",
   "agent": "claude-code",
   "lifecycle_mode": "ManagedProcess",
   "scope": "global",

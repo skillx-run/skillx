@@ -237,3 +237,7 @@ This places skill files in the current working directory (e.g., `.cursor/skills/
 ### Keeping Skills Active
 
 If you want to keep a skill available across multiple prompts in a single session, don't press Enter until you're fully done. The skill files remain injected until you signal completion.
+
+### Skill Discovery
+
+IDE agents discover skills by scanning their respective skills directories. When skillx injects a skill at the project scope (e.g., `.cursor/skills/code-review/`), the agent sees the `SKILL.md` file in its project context and follows the instructions within. Global-scope skills are discovered similarly from the home directory (e.g., `~/.cursor/skills/code-review/`).

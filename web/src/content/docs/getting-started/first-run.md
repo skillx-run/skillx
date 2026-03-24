@@ -9,34 +9,10 @@ This tutorial walks you through three common scenarios: running a local skill, r
 
 ## 1. Run a Local Skill
 
-Create a minimal skill directory:
+The repository includes example skills you can try immediately. Clone the repo and run the hello-world example:
 
 ```bash
-mkdir my-first-skill
-```
-
-Create `my-first-skill/SKILL.md`:
-
-```markdown
----
-name: hello-world
-description: A simple greeting skill
-author: you
-version: "0.1"
-tags: [demo]
----
-
-# Hello World Skill
-
-When the user asks you to greet someone, respond with a warm,
-personalized greeting that includes their name and a fun fact
-about the current day.
-```
-
-Now run it:
-
-```bash
-skillx run ./my-first-skill "Greet Alice"
+skillx run ./examples/skills/hello-world "Hello"
 ```
 
 You'll see output like:
@@ -60,13 +36,13 @@ skillx copies `SKILL.md` into your agent's skills directory, launches the agent 
 Skills can live in any GitHub repository. Use the `github:` prefix:
 
 ```bash
-skillx run github:anthropics/skills/pdf-processing "Summarize report.pdf"
+skillx run github:skillx-run/skillx.run/examples/skills/code-review "Review the auth module"
 ```
 
 Or use a full URL:
 
 ```bash
-skillx run https://github.com/anthropics/skills/tree/main/pdf-processing "Summarize report.pdf"
+skillx run https://github.com/skillx-run/skillx.run/tree/main/examples/skills/code-review "Review the auth module"
 ```
 
 On first fetch, skillx downloads the skill via the GitHub API and caches it locally. Subsequent runs use the cached copy (default TTL: 24 hours).
@@ -74,7 +50,7 @@ On first fetch, skillx downloads the skill via the GitHub API and caches it loca
 To force a fresh download:
 
 ```bash
-skillx run --no-cache github:anthropics/skills/pdf-processing "Summarize report.pdf"
+skillx run --no-cache github:skillx-run/skillx.run/examples/skills/code-review "Review the auth module"
 ```
 
 ## 3. Inspect Scan Results
@@ -179,10 +155,10 @@ skillx run --agent cursor ./my-first-skill "Do the thing"
 For CLI agents that support it, skip permission prompts:
 
 ```bash
-skillx run --yolo github:org/skills/formatter "Format all files"
+skillx run --yolo ./examples/skills/code-review "Review all changed files"
 ```
 
-This passes `--dangerously-skip-permissions` to Claude Code, `--full-auto` to Codex, or `--sandbox=none` to Gemini CLI.
+This passes `--dangerously-skip-permissions` to Claude Code, `--yolo` to Codex, or `--yolo` to Gemini CLI.
 
 :::caution
 YOLO mode gives the agent unrestricted access. Only use it with skills you trust completely.
@@ -193,3 +169,4 @@ YOLO mode gives the agent unrestricted access. Only use it with skills you trust
 - [CLI Reference: run](/cli/run/) — all flags and options
 - [Security Overview](/security/overview/) — understand the scanner
 - [Writing Skills](/guides/writing-skills/) — create and share your own skills
+- [Examples](https://github.com/skillx-run/skillx.run/tree/main/examples/skills) — browse complete, runnable example skills

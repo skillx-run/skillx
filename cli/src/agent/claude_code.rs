@@ -73,7 +73,13 @@ impl AgentAdapter for ClaudeCodeAdapter {
         let mut cmd = tokio::process::Command::new("claude");
 
         if let Some(ref prompt) = config.prompt {
-            cmd.arg("--prompt").arg(prompt);
+            if config.print_mode {
+                // Non-interactive: execute and exit
+                cmd.arg("-p").arg(prompt);
+            } else {
+                // Interactive: start session with initial prompt
+                cmd.arg(prompt);
+            }
         }
 
         if config.yolo {

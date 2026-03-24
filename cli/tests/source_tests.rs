@@ -296,7 +296,7 @@ fn test_gemini_cli_adapter_properties() {
         skillx::agent::LifecycleMode::ManagedProcess
     );
     assert!(adapter.supports_yolo());
-    assert_eq!(adapter.yolo_args(), vec!["--sandbox=none"]);
+    assert_eq!(adapter.yolo_args(), vec!["--yolo"]);
 }
 
 #[test]
@@ -322,7 +322,8 @@ fn test_amp_adapter_properties() {
         adapter.lifecycle_mode(),
         skillx::agent::LifecycleMode::ManagedProcess
     );
-    assert!(!adapter.supports_yolo());
+    assert!(adapter.supports_yolo());
+    assert_eq!(adapter.yolo_args(), vec!["--dangerously-allow-all"]);
 }
 
 #[test]
@@ -387,7 +388,7 @@ fn test_amp_inject_path_project() {
     let adapter = skillx::agent::amp::AmpAdapter;
     use skillx::agent::AgentAdapter;
     let path = adapter.inject_path("my-skill", &skillx::types::Scope::Project);
-    assert_eq!(path, std::path::PathBuf::from(".amp/skills/my-skill"));
+    assert_eq!(path, std::path::PathBuf::from(".agents/skills/my-skill"));
 }
 
 #[test]

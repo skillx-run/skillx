@@ -31,6 +31,7 @@ Fetch a skill, scan it for security issues, inject it into the active agent's co
 | `--skip-scan` | — | — | Skip the security scan (not recommended) |
 | `--yes` | — | — | Auto-confirm WARN level risks |
 | `--yolo` | — | — | Pass permission-skip flags to the agent |
+| `--print` | `-p` | — | Non-interactive mode: agent processes prompt and exits |
 | `--timeout <dur>` | — | — | Maximum run duration (e.g., `30m`, `2h`) |
 
 ## Lifecycle Phases
@@ -81,7 +82,7 @@ Skill files are copied to the agent's expected directory:
 | Codex | `~/.codex/skills/<name>/` | `.agents/skills/<name>/` |
 | Gemini CLI | `~/.gemini/skills/<name>/` | `.gemini/skills/<name>/` |
 | OpenCode | `~/.opencode/skills/<name>/` | `.opencode/skills/<name>/` |
-| Amp | `~/.amp/skills/<name>/` | `.amp/skills/<name>/` |
+| Amp | `~/.config/agents/skills/<name>/` | `.agents/skills/<name>/` |
 | Copilot | `~/.github/skills/<name>/` | `.github/skills/<name>/` |
 | Cursor | `~/.cursor/skills/<name>/` | `.cursor/skills/<name>/` |
 | Windsurf | `~/.windsurf/skills/<name>/` | `.windsurf/skills/<name>/` |
@@ -95,6 +96,8 @@ Each file is hashed with SHA-256 and recorded in the session manifest.
 
 - **CLI agents** (Claude Code, Codex, Gemini CLI, OpenCode, Amp, and Tier 3 CLI agents): spawned as child processes with the prompt as an argument
 - **IDE agents** (Copilot, Cursor, Windsurf, Cline, Roo Code, Universal, and Tier 3 IDE agents): prompt copied to clipboard; skillx waits for Enter
+
+When `--print` is used, CLI agents are launched in non-interactive mode: the agent processes the prompt and exits automatically without opening an interactive session. The exact flag varies by agent (e.g., `claude -p`, `codex exec`, `gemini -p`, `opencode run`).
 
 ### Phase 7: Wait
 
@@ -121,40 +124,46 @@ Prompts are resolved in priority order:
 ### Basic usage
 
 ```bash
-skillx run ./my-skill "Refactor the auth module"
+skillx run ./examples/skills/hello-world "Hello"
 ```
 
 ### GitHub skill with timeout
 
 ```bash
-skillx run --timeout 30m github:org/skills/formatter "Format all Python files"
+skillx run --timeout 30m github:skillx-run/skillx.run/examples/skills/code-review "Review the auth module"
 ```
 
 ### Pipe prompt from another command
 
 ```bash
-git diff HEAD~1 | skillx run ./code-review-skill --stdin
+git diff HEAD~1 | skillx run ./examples/skills/code-review --stdin
 ```
 
 ### Project-scoped injection
 
 ```bash
-skillx run --scope project ./my-skill "Set up the project"
+skillx run --scope project ./examples/skills/hello-world "Set up the project"
+```
+
+### Non-interactive (print) mode
+
+```bash
+skillx run --print ./examples/skills/code-review "Review src/main.rs"
 ```
 
 ### YOLO mode with auto-confirm
 
 ```bash
-skillx run --yes --yolo github:org/skills/migration "Run database migration"
+skillx run --yes --yolo ./examples/skills/code-review "Fix all lint errors"
 ```
 
 ### Attach context files
 
 ```bash
-skillx run ./analysis-skill \
+skillx run ./examples/skills/code-review \
   --attach ./data.csv \
   --attach ./schema.sql \
-  "Analyze the data and suggest optimizations"
+  "Review the data processing code"
 ```
 
 ## Exit Codes
