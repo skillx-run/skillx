@@ -59,6 +59,10 @@ impl AgentAdapter for CodexAdapter {
         vec!["--yolo"]
     }
 
+    fn skill_invocation_prefix(&self, skill_name: &str) -> Option<String> {
+        Some(format!("${}", skill_name))
+    }
+
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
         match scope {
             Scope::Project => PathBuf::from(".agents").join("skills").join(skill_name),

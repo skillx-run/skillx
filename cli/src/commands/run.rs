@@ -324,6 +324,17 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     // ── Phase 7: Resolve prompt ──
     let prompt = resolve_prompt(&args)?;
 
+    // Format prompt with skill invocation prefix (e.g., "/name-poem" for Claude Code)
+    let prompt = if let Some(prefix) = adapter.skill_invocation_prefix(&skill_name) {
+        match prompt {
+            Some(p) if p == prefix || p.starts_with(&format!("{} ", prefix)) => Some(p),
+            Some(p) => Some(format!("{} {}", prefix, p)),
+            None => Some(prefix),
+        }
+    } else {
+        prompt
+    };
+
     // Validate early: --print requires a prompt
     if args.print && prompt.is_none() {
         return Err(anyhow::anyhow!(

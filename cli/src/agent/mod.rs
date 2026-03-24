@@ -170,6 +170,13 @@ pub trait AgentAdapter: Send + Sync {
         })
     }
 
+    /// Skill invocation prefix for this agent (e.g., "/name" for Claude Code, "$name" for Codex).
+    /// Returns None if the agent embeds skills differently (aggregate files, --read flags).
+    /// Default: "/skill-name" (Agent Skills standard).
+    fn skill_invocation_prefix(&self, skill_name: &str) -> Option<String> {
+        Some(format!("/{}", skill_name))
+    }
+
     /// Optional cleanup when session ends.
     fn on_cleanup(&self) -> Result<()> {
         Ok(())
