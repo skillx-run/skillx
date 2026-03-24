@@ -11,7 +11,7 @@
 **skillx** is a CLI tool that runs Agent Skills without permanently installing them. One command fetches a skill from any Git host, scans it with 23 security rules, injects it into your agent, and cleans everything up when the session ends. No files are left behind.
 
 ```bash
-skillx run ./examples/skills/hello-world "Hello"
+skillx run ./examples/skills/name-poem "Your Name"
 ```
 
 ## Why skillx?
@@ -29,13 +29,13 @@ skillx run ./examples/skills/hello-world "Hello"
 curl -fsSL https://skillx.run/install.sh | sh
 
 # Run a local skill (temporary — auto-cleans when done)
-skillx run ./examples/skills/hello-world "Hello"
+skillx run ./examples/skills/name-poem "Your Name"
 
 # Run a skill from GitHub
-skillx run github:skillx-run/skillx.run/examples/skills/code-review "Review the auth module"
+skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
 
 # Want persistence? Opt in explicitly
-skillx install github:skillx-run/skillx.run/examples/skills/code-review
+skillx install github:skillx-run/skillx.run/examples/skills/name-poem
 ```
 
 ## Commands
@@ -107,7 +107,7 @@ name = "my-project"
 preferred = "claude-code"
 
 [skills]
-hello-world = "github:skillx-run/skillx.run/examples/skills/hello-world"
+name-poem = "github:skillx-run/skillx.run/examples/skills/name-poem"
 code-review = { source = "github:skillx-run/skillx.run/examples/skills/code-review", scope = "project" }
 ```
 
@@ -118,7 +118,7 @@ skillx init --from-installed # Create from currently installed skills
 
 ## Examples
 
-Browse the [examples/skills](examples/skills) directory for complete, runnable example skills including hello-world, code-review, testing-guide, and commit-message.
+Browse the [examples/skills](examples/skills) directory for complete, runnable example skills including name-poem, hello-world, code-review, testing-guide, and commit-message.
 
 ## Documentation
 

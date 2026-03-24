@@ -3,9 +3,15 @@ title: Example Skills
 description: Overview of official example skills included in the skillx repository — starters, practical tools, and security demonstrations.
 ---
 
-The skillx repository includes five example skills in the `examples/skills/` directory. These serve as both learning resources and templates for writing your own skills.
+The skillx repository includes six example skills in the `examples/skills/` directory. These serve as both learning resources and templates for writing your own skills.
 
 ## Categories
+
+### Showcase
+
+| Skill | Description |
+|-------|-------------|
+| [name-poem](/examples/name-poem) | Generate beautiful poems from names — classical Chinese acrostic poetry, haiku, sijo, and more |
 
 ### Starter
 
@@ -34,6 +40,9 @@ The skillx repository includes five example skills in the `examples/skills/` dir
 If you have the skillx repository cloned locally, run examples directly from the filesystem:
 
 ```bash
+# Run the name-poem skill
+skillx run ./examples/skills/name-poem "Your Name"
+
 # Run the hello-world skill
 skillx run ./examples/skills/hello-world "Hello"
 
@@ -49,6 +58,9 @@ skillx run ./examples/skills/commit-message --agent claude-code "Generate a comm
 You can run the examples without cloning the repository. skillx fetches them directly from GitHub:
 
 ```bash
+# Run name-poem from GitHub
+skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
+
 # Run hello-world from GitHub
 skillx run github:skillx-run/skillx.run/examples/skills/hello-world "Hello"
 
@@ -73,6 +85,7 @@ The scanner will flag multiple rules — prompt injection (MD-001), sensitive di
 
 Each example demonstrates a different skill pattern:
 
+- **name-poem** — Multilingual prompt design with cultural awareness and structured output
 - **hello-world** — Minimal SKILL.md with frontmatter and simple instructions
 - **code-review** — Structured output format with severity levels
 - **testing-guide** — Multi-file skill with a `references/` directory

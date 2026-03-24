@@ -36,13 +36,13 @@ skillx copies `SKILL.md` into your agent's skills directory, launches the agent 
 Skills can live in any GitHub repository. Use the `github:` prefix:
 
 ```bash
-skillx run github:skillx-run/skillx.run/examples/skills/code-review "Review the auth module"
+skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
 ```
 
 Or use a full URL:
 
 ```bash
-skillx run https://github.com/skillx-run/skillx.run/tree/main/examples/skills/code-review "Review the auth module"
+skillx run https://github.com/skillx-run/skillx.run/tree/main/examples/skills/name-poem "Your Name"
 ```
 
 On first fetch, skillx downloads the skill via the GitHub API and caches it locally. Subsequent runs use the cached copy (default TTL: 24 hours).
@@ -50,7 +50,7 @@ On first fetch, skillx downloads the skill via the GitHub API and caches it loca
 To force a fresh download:
 
 ```bash
-skillx run --no-cache github:skillx-run/skillx.run/examples/skills/code-review "Review the auth module"
+skillx run --no-cache github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
 ```
 
 ## 3. Inspect Scan Results

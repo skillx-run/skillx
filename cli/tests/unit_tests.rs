@@ -447,6 +447,47 @@ fn test_markdown_analyzer_disable_security() {
     assert!(report.findings.iter().any(|f| f.rule_id == "MD-006"));
 }
 
+// ==================== Name Poem Example Skill ====================
+
+#[test]
+fn test_name_poem_skill_passes_markdown_scan() {
+    let skill_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("examples/skills/name-poem/SKILL.md");
+    let content = std::fs::read_to_string(&skill_path).unwrap();
+    let report =
+        skillx::scanner::markdown_analyzer::MarkdownAnalyzer::analyze(&content, "SKILL.md");
+    assert_eq!(
+        report.overall_level(),
+        skillx::scanner::RiskLevel::Pass,
+        "name-poem SKILL.md should pass scanner with no findings above INFO"
+    );
+}
+
+#[test]
+fn test_name_poem_skill_passes_full_scan() {
+    let skill_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("examples/skills/name-poem");
+    let report = skillx::scanner::ScanEngine::scan(&skill_dir).unwrap();
+    assert_eq!(report.overall_level(), skillx::scanner::RiskLevel::Pass);
+}
+
+#[test]
+fn test_name_poem_frontmatter_parsed() {
+    let skill_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("examples/skills/name-poem/SKILL.md");
+    let content = std::fs::read_to_string(&skill_path).unwrap();
+    let metadata = skillx::source::parse_frontmatter(&content).unwrap();
+    assert_eq!(metadata.name.as_deref(), Some("name-poem"));
+    assert_eq!(metadata.license.as_deref(), Some("MIT"));
+    assert_eq!(metadata.description.as_deref(), Some("Generate beautiful poems from names — classical Chinese acrostic poetry, haiku, sonnets, sijo, and more"));
+}
+
 // ==================== Script Analyzer ====================
 
 #[test]
@@ -1573,4 +1614,81 @@ fn test_sc009_chmod_644_does_not_trigger() {
         .filter(|f| f.rule_id == "SC-009")
         .collect();
     assert!(sc009.is_empty(), "chmod 644 should not trigger SC-009");
+}
+
+// ==================== Skill Invocation Prefix ====================
+
+#[test]
+fn test_claude_code_skill_prefix() {
+    use skillx::agent::claude_code::ClaudeCodeAdapter;
+    use skillx::agent::AgentAdapter;
+    let adapter = ClaudeCodeAdapter;
+    assert_eq!(
+        adapter.skill_invocation_prefix("name-poem"),
+        Some("/name-poem".to_string())
+    );
+}
+
+#[test]
+fn test_codex_skill_prefix() {
+    use skillx::agent::codex::CodexAdapter;
+    use skillx::agent::AgentAdapter;
+    let adapter = CodexAdapter;
+    assert_eq!(
+        adapter.skill_invocation_prefix("name-poem"),
+        Some("$name-poem".to_string())
+    );
+}
+
+#[test]
+fn test_gemini_skill_prefix() {
+    use skillx::agent::gemini_cli::GeminiCliAdapter;
+    use skillx::agent::AgentAdapter;
+    let adapter = GeminiCliAdapter;
+    assert_eq!(
+        adapter.skill_invocation_prefix("name-poem"),
+        Some("/name-poem".to_string())
+    );
+}
+
+#[test]
+fn test_amp_skill_prefix() {
+    use skillx::agent::amp::AmpAdapter;
+    use skillx::agent::AgentAdapter;
+    let adapter = AmpAdapter;
+    assert_eq!(
+        adapter.skill_invocation_prefix("name-poem"),
+        Some("/name-poem".to_string())
+    );
+}
+
+#[test]
+fn test_generic_goose_skill_prefix() {
+    use skillx::agent::generic::{AgentDef, GenericAdapter, PromptStyle};
+    use skillx::agent::AgentAdapter;
+    let adapter = GenericAdapter(
+        AgentDef::cli("goose", "Goose", "goose", ".goose")
+            .with_prompt_style(PromptStyle::None)
+            .with_aggregate_file(".goosehints"),
+    );
+    assert_eq!(adapter.skill_invocation_prefix("name-poem"), None);
+}
+
+#[test]
+fn test_generic_aider_skill_prefix() {
+    use skillx::agent::generic::{AgentDef, GenericAdapter};
+    use skillx::agent::AgentAdapter;
+    let adapter = GenericAdapter(AgentDef::cli("aider", "Aider", "aider", ".aider"));
+    assert_eq!(adapter.skill_invocation_prefix("name-poem"), None);
+}
+
+#[test]
+fn test_generic_default_skill_prefix() {
+    use skillx::agent::generic::{AgentDef, GenericAdapter};
+    use skillx::agent::AgentAdapter;
+    let adapter = GenericAdapter(AgentDef::cli("kiro", "Kiro", "kiro-cli", ".kiro"));
+    assert_eq!(
+        adapter.skill_invocation_prefix("name-poem"),
+        Some("/name-poem".to_string())
+    );
 }

@@ -352,6 +352,16 @@ impl AgentAdapter for GenericAdapter {
         }
     }
 
+    fn skill_invocation_prefix(&self, skill_name: &str) -> Option<String> {
+        if self.0.aggregate_file.is_some() || self.0.name == "aider" {
+            // Goose: skill content embedded in .goosehints
+            // Aider: skill loaded via --read SKILL.md
+            None
+        } else {
+            Some(format!("/{}", skill_name))
+        }
+    }
+
     fn prepare_injection(
         &self,
         skill_name: &str,
