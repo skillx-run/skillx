@@ -138,6 +138,20 @@ You can customize behavior by creating `~/.skillx/config.toml`. See [config.toml
 
 ## Uninstall
 
+### Shell Script
+
+```bash
+rm ~/.local/bin/skillx
+rm -rf ~/.skillx  # Remove data directory
+```
+
+### Homebrew
+
+```bash
+brew uninstall skillx
+rm -rf ~/.skillx  # Remove data directory
+```
+
 ### Cargo
 
 ```bash
