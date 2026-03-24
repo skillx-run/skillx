@@ -226,9 +226,16 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
 
         let records = adapter.prepare_injection(&skill_name, &skill_dir, &inject_path)?;
         for record in &records {
-            let full_path = inject_path.join(&record.path);
-            manifest.add_record(&skillx::session::inject::InjectedRecord {
-                path: full_path.to_string_lossy().to_string(),
+            // AggregateSection records already have the correct path (e.g., ".goosehints");
+            // CopiedFile records are relative to inject_path and need joining.
+            let manifest_path = match record.injection_type {
+                inject::InjectionType::AggregateSection => record.path.clone(),
+                inject::InjectionType::CopiedFile => {
+                    inject_path.join(&record.path).to_string_lossy().to_string()
+                }
+            };
+            manifest.add_record(&inject::InjectedRecord {
+                path: manifest_path,
                 sha256: record.sha256.clone(),
                 injection_type: record.injection_type.clone(),
             });
@@ -278,9 +285,17 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
             let extra_records =
                 adapter.prepare_injection(&entry.name, &entry.dir, &extra_inject_path)?;
             for record in &extra_records {
-                let full_path = extra_inject_path.join(&record.path);
+                let manifest_path = match record.injection_type {
+                    inject::InjectionType::AggregateSection => record.path.clone(),
+                    inject::InjectionType::CopiedFile => {
+                        extra_inject_path
+                            .join(&record.path)
+                            .to_string_lossy()
+                            .to_string()
+                    }
+                };
                 manifest.add_record(&inject::InjectedRecord {
-                    path: full_path.to_string_lossy().to_string(),
+                    path: manifest_path,
                     sha256: record.sha256.clone(),
                     injection_type: record.injection_type.clone(),
                 });
@@ -311,6 +326,13 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     // ── Phase 7: Resolve prompt ──
     let prompt = resolve_prompt(&args)?;
 
+    // Validate early: --print requires a prompt
+    if args.print && prompt.is_none() {
+        return Err(anyhow::anyhow!(
+            "--print mode requires a prompt (positional argument, -f, or --stdin)"
+        ));
+    }
+
     // ── Phase 8: Launch ──
     ui::step("Launching agent...");
 
@@ -326,13 +348,6 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
                 adapter.display_name()
             ));
         }
-    }
-
-    // Validate: --print requires a prompt
-    if args.print && prompt.is_none() {
-        return Err(anyhow::anyhow!(
-            "--print mode requires a prompt (positional argument, -f, or --stdin)"
-        ));
     }
 
     let launch_config = LaunchConfig {

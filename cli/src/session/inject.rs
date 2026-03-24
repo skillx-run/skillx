@@ -69,10 +69,28 @@ pub fn inject_skill(source_dir: &Path, target_dir: &Path, manifest: &mut Manifes
 }
 
 /// Extract the body of a SKILL.md file (strip YAML frontmatter).
+/// Falls back to README.md if SKILL.md doesn't exist.
+/// Returns an error only if neither file exists.
 pub fn extract_skill_body(source_dir: &Path) -> Result<String> {
     let skill_path = source_dir.join("SKILL.md");
-    let content = std::fs::read_to_string(&skill_path).map_err(|e| {
-        SkillxError::Session(format!("failed to read {}: {e}", skill_path.display()))
+    let content = if skill_path.exists() {
+        std::fs::read_to_string(&skill_path)
+    } else {
+        let readme = source_dir.join("README.md");
+        if readme.exists() {
+            std::fs::read_to_string(&readme)
+        } else {
+            return Err(SkillxError::Session(format!(
+                "no SKILL.md or README.md in {}",
+                source_dir.display()
+            )));
+        }
+    }
+    .map_err(|e| {
+        SkillxError::Session(format!(
+            "failed to read skill file in {}: {e}",
+            source_dir.display()
+        ))
     })?;
 
     // Strip YAML frontmatter (--- ... ---).

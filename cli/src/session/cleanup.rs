@@ -127,6 +127,11 @@ fn cleanup_empty_dirs_from_files(manifest: &Manifest) -> Result<()> {
     let mut dir_set = HashSet::new();
 
     for file in &manifest.injected_files {
+        // Only track directories for CopiedFile records; AggregateSection
+        // records point to shared files (e.g., .goosehints) that we don't own.
+        if file.injection_type == InjectionType::AggregateSection {
+            continue;
+        }
         let path = PathBuf::from(&file.path);
         // Walk up the parent chain to collect all ancestor dirs
         let mut current = path.as_path();
