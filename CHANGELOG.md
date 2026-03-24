@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-03-24
+
+### Added
+
+- `--print` / `-p` flag on `run` command for non-interactive mode (agent processes prompt and exits)
+- Skill invocation prefix: `run` command auto-prepends `/skill-name` to user prompt (Agent Skills standard)
+- `skill_invocation_prefix()` trait method with per-agent customization (Codex: `$skill-name`, Goose/Aider: `None`)
+- `prepare_injection()` trait method for custom injection strategies (e.g., Goose → `.goosehints` aggregate file)
+- Aggregate file injection with `<!-- skillx:begin:name -->` / `<!-- skillx:end:name -->` marker comments
+- `PromptStyle` (Flag/Positional/None) and `PrintStyle` (Flag/Subcommand) in `AgentDef` for flexible agent command construction
+- Agent YOLO flags: Claude (`--dangerously-skip-permissions`), Codex (`--yolo`), Gemini (`--yolo`), Amp (`--dangerously-allow-all`)
+- 5 example skills: name-poem, hello-world, code-review, testing-guide, commit-message (`examples/skills/`)
+- Examples documentation section in web docs sidebar
+- Landing page redesign: terminal hero with glow effect, install tabs, reordered sections
+- PR preview deployments via Cloudflare Pages
+- README badges (CI, crates.io, downloads, license, docs)
+
+### Fixed
+
+- Agent injection paths (Amp injects to `.agents/skills/`, not `.amp/skills/`)
+- Aggregate path joining bug for nested injection directories
+- Clippy warnings in `inject.rs`
+- `cargo-deny` advisory IDs (RUSTSEC-2025-0057, RUSTSEC-2025-0119)
+- Web: numerous docs accuracy fixes (scanner rules count, platform support status, agent list, config.toml sections)
+
+### Changed
+
+- Aider adapter auto-adds `--read SKILL.md` in launch when skill directory contains SKILL.md
+- Web: complete documentation overhaul (installation, run command, platforms, agents, scanner, config.toml, CI integration)
+- Web: ecosystem section redesigned with card layout and visual hierarchy
+
 ## [0.3.2] - 2026-03-22
 
 ### Added
@@ -107,6 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SARIF 2.1.0 output format for scanner results
 - Text and JSON output formatters
 
+[0.4.0]: https://github.com/skillx-run/skillx/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/skillx-run/skillx/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/skillx-run/skillx/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/skillx-run/skillx/compare/v0.2.0...v0.3.0
