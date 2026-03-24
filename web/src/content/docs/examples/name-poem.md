@@ -68,7 +68,7 @@ A three-line sijo with the name's meaning blooming through natural imagery.
 ### From GitHub
 
 ```bash
-skillx run github:skillx-run/skillx.run/examples/skills/name-poem "你的名字"
+skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
 ```
 
 ## Scan Output

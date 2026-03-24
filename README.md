@@ -11,7 +11,7 @@
 **skillx** is a CLI tool that runs Agent Skills without permanently installing them. One command fetches a skill from any Git host, scans it with 23 security rules, injects it into your agent, and cleans everything up when the session ends. No files are left behind.
 
 ```bash
-skillx run ./examples/skills/name-poem "你的名字"
+skillx run ./examples/skills/name-poem "Your Name"
 ```
 
 ## Why skillx?
@@ -29,10 +29,10 @@ skillx run ./examples/skills/name-poem "你的名字"
 curl -fsSL https://skillx.run/install.sh | sh
 
 # Run a local skill (temporary — auto-cleans when done)
-skillx run ./examples/skills/name-poem "你的名字"
+skillx run ./examples/skills/name-poem "Your Name"
 
 # Run a skill from GitHub
-skillx run github:skillx-run/skillx.run/examples/skills/name-poem "你的名字"
+skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
 
 # Want persistence? Opt in explicitly
 skillx install github:skillx-run/skillx.run/examples/skills/name-poem

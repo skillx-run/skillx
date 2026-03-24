@@ -41,7 +41,7 @@ If you have the skillx repository cloned locally, run examples directly from the
 
 ```bash
 # Run the name-poem skill
-skillx run ./examples/skills/name-poem "你的名字"
+skillx run ./examples/skills/name-poem "Your Name"
 
 # Run the hello-world skill
 skillx run ./examples/skills/hello-world "Hello"
@@ -59,7 +59,7 @@ You can run the examples without cloning the repository. skillx fetches them dir
 
 ```bash
 # Run name-poem from GitHub
-skillx run github:skillx-run/skillx.run/examples/skills/name-poem "你的名字"
+skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
 
 # Run hello-world from GitHub
 skillx run github:skillx-run/skillx.run/examples/skills/hello-world "Hello"
