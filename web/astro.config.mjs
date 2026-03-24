@@ -7,6 +7,15 @@ export default defineConfig({
     starlight({
       title: 'skillx',
       description: 'npx for Agent Skills — fetch, scan, inject, run, clean in one command',
+      components: {
+        ThemeSelect: './src/components/empty.astro',
+      },
+      head: [
+        {
+          tag: 'script',
+          content: `document.documentElement.dataset.theme = 'light';`,
+        },
+      ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/skillx-run/skillx' },
       ],
