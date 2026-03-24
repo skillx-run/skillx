@@ -185,6 +185,7 @@ cargo run -- cache ls            # List cache
 - Most agents now natively support SKILL.md in `.<agent>/skills/` directories (Agent Skills standard)
 - Example skills in `examples/skills/` (name-poem, hello-world, code-review, testing-guide, commit-message, dangerous-example)
 - Web docs sidebar includes "Examples" section between Guides and Reference
+- Web site is light-theme only (no dark mode) — ThemeSelect is overridden with empty component in astro.config.mjs
 
 ## Data Directories
 

@@ -19,7 +19,7 @@ const { Content } = await render(post);
   <Nav />
   <main>
     <article class="container">
-      <header>
+      <header class="post-header">
         <time datetime={post.data.date.toISOString()}>
           {post.data.date.toLocaleDateString('en-US', {
             year: 'numeric',
@@ -30,11 +30,11 @@ const { Content } = await render(post);
         <h1>{post.data.title}</h1>
         {post.data.author && <p class="author">By {post.data.author}</p>}
       </header>
-      <div class="content">
+      <div class="content neo-box">
         <Content />
       </div>
-      <footer>
-        <a href="/blog">&larr; Back to blog</a>
+      <footer class="post-footer">
+        <a href="/blog" class="back-link">&larr; Back to blog</a>
       </footer>
     </article>
   </main>
@@ -42,100 +42,155 @@ const { Content } = await render(post);
 
 <style>
   main {
-    background: #020617;
-    color: #e2e8f0;
+    background: #fffbf2;
+    color: #1a1a1a;
     min-height: 100vh;
+    padding-bottom: 6rem;
   }
 
   .container {
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 4rem 2rem;
+    padding: 6rem 2rem;
   }
 
-  header {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid #1e293b;
+  .post-header {
+    margin-bottom: 4rem;
+    text-align: center;
   }
 
   time {
-    color: #64748b;
-    font-size: 0.85rem;
+    display: inline-block;
+    color: #1a1a1a;
+    font-size: 0.9rem;
     font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    background: #ff9f1c;
+    padding: 0.25rem 0.75rem;
+    border: 2px solid #1a1a1a;
+    margin-bottom: 1.5rem;
+    box-shadow: 3px 3px 0px #1a1a1a;
   }
 
   h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-size: 3.5rem;
+    font-weight: 900;
     margin: 0.5rem 0;
-    line-height: 1.2;
+    line-height: 1.1;
+    text-transform: uppercase;
   }
 
   .author {
-    color: #94a3b8;
-    margin-top: 0.5rem;
+    color: #333;
+    margin-top: 1rem;
+    font-weight: 700;
+    font-size: 1.1rem;
   }
 
   .content {
+    background: white;
+    padding: 3rem;
     line-height: 1.7;
+    font-size: 1.1rem;
+    font-weight: 500;
   }
 
   .content :global(h2) {
-    font-size: 1.5rem;
-    margin-top: 2rem;
-    margin-bottom: 0.75rem;
+    font-size: 2rem;
+    font-weight: 900;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    border-bottom: 3px solid #1a1a1a;
+    display: inline-block;
   }
 
   .content :global(h3) {
-    font-size: 1.2rem;
-    margin-top: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
   }
 
   .content :global(p) {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .content :global(pre) {
-    background: #0f172a;
-    border: 1px solid #1e293b;
-    border-radius: 8px;
-    padding: 1rem;
+    background: #f5f5f5;
+    border: 2px solid #1a1a1a;
+    border-radius: 4px;
+    padding: 1.5rem;
     overflow-x: auto;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 4px 4px 0px #1a1a1a;
   }
 
   .content :global(code) {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.9em;
+    background: #eee;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+  }
+
+  .content :global(pre code) {
+    background: transparent;
+    padding: 0;
+    border: none;
   }
 
   .content :global(ul), .content :global(ol) {
-    margin-bottom: 1rem;
-    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
   }
 
   .content :global(li) {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
   }
 
   .content :global(strong) {
-    color: #f8fafc;
+    font-weight: 800;
   }
 
-  footer {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid #1e293b;
+  .content :global(blockquote) {
+    border-left: 4px solid #6366f1;
+    padding-left: 1.5rem;
+    font-style: italic;
+    margin: 2rem 0;
+    color: #333;
   }
 
-  footer a {
-    color: #6366f1;
+  .post-footer {
+    margin-top: 4rem;
+    text-align: center;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: #1a1a1a;
     text-decoration: none;
+    font-weight: 800;
+    border: 2px solid #1a1a1a;
+    padding: 0.75rem 1.5rem;
+    background: white;
+    box-shadow: 4px 4px 0px #1a1a1a;
+    transition: all 0.1s;
   }
 
-  footer a:hover {
-    text-decoration: underline;
+  .back-link:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #1a1a1a;
+    background: #f5f5f5;
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 2.2rem;
+    }
+    .content {
+      padding: 1.5rem;
+    }
   }
 </style>

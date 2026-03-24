@@ -5,14 +5,13 @@
     <div class="badge">v0.4</div>
     <p class="pain">Agent skills are powerful. And untrusted.</p>
     <h1>
-      Run any agent skill. <span class="accent">Safely.</span> Without installing it.
+      Run any agent skill. <span class="accent">Safely.</span> <br/>Without installing it.
     </h1>
     <p class="tagline">
       One command &mdash; fetch, scan, run, auto-clean.
     </p>
 
     <div class="terminal-wrapper">
-      <div class="terminal-glow"></div>
       <div class="terminal">
         <div class="terminal-header">
           <div class="dots">
@@ -20,7 +19,7 @@
             <span class="dot yellow"></span>
             <span class="dot green"></span>
           </div>
-          <span class="terminal-title">terminal</span>
+          <span class="terminal-title">terminal — skillx run</span>
         </div>
         <div class="terminal-body">
           <div class="line">
@@ -37,7 +36,7 @@
             <span class="cyan">→</span> Scanning for security issues...
           </div>
           <div class="line output delay-4">
-            <span class="green">✓</span> Scan Result: <span class="green">PASS</span> <span class="dim">(23 rules checked)</span>
+            <span class="green">✓</span> Scan Result: <span class="pass-badge">PASS</span> <span class="dim">(23 rules checked)</span>
           </div>
           <div class="line output delay-5">
             <span class="green">✓</span> Using agent: Claude Code
@@ -52,196 +51,194 @@
             <span class="dim">  [Claude Code running...]</span>
           </div>
           <div class="line output delay-9">
-            <span class="green">✓</span> Agent completed. Cleanup done.
+            <span class="green">✓</span> Agent completed.
+          </div>
+          <div class="line output delay-10">
+            <span class="green">✓</span> Cleanup done.
           </div>
         </div>
       </div>
     </div>
 
     <div class="cta-group">
-      <a href="/getting-started/" class="cta-primary">Get Started</a>
-      <a href="https://github.com/skillx-run/skillx" class="cta-secondary">View on GitHub</a>
+      <a href="/getting-started/" class="neo-btn">Get Started</a>
+      <a href="https://github.com/skillx-run/skillx" class="neo-btn neo-btn-secondary">View on GitHub</a>
     </div>
   </div>
 </section>
 
 <style>
   .hero {
-    padding: 8rem 0 4rem;
+    padding: 8rem 0 6rem;
     text-align: center;
     position: relative;
-    overflow: hidden;
+    background: #fffbf2;
   }
 
   .container {
     max-width: 900px;
     margin: 0 auto;
     padding: 0 2rem;
-    position: relative;
-    z-index: 1;
   }
 
   .badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
-    background: rgba(99, 102, 241, 0.15);
-    color: #a5b4fc;
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: 9999px;
+    background: #ff9f1c;
+    color: #000;
+    border: 2px solid #000;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    box-shadow: 2px 2px 0px #000;
   }
 
   .pain {
-    color: #64748b;
-    font-size: 1.1rem;
+    color: #666;
+    font-size: 1.2rem;
+    font-weight: 600;
     margin-bottom: 1rem;
-    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   h1 {
-    font-size: 3.5rem;
-    font-weight: 800;
-    line-height: 1.15;
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1.1;
     margin-bottom: 1.5rem;
-    letter-spacing: -0.03em;
+    color: #1a1a1a;
   }
 
   .accent {
     color: #6366f1;
+    text-decoration: underline;
+    text-decoration-thickness: 4px;
+    text-underline-offset: 4px;
   }
 
   .tagline {
-    font-size: 1.15rem;
-    color: #94a3b8;
-    line-height: 1.7;
-    margin-bottom: 3rem;
+    font-size: 1.25rem;
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 4rem;
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+    font-weight: 500;
   }
 
-  /* Terminal with glow */
+  /* Neobrutalist Terminal */
   .terminal-wrapper {
     position: relative;
-    max-width: 720px;
-    margin: 0 auto 3rem;
-  }
-
-  .terminal-glow {
-    position: absolute;
-    inset: -2px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(34, 211, 238, 0.3), rgba(99, 102, 241, 0.5));
-    filter: blur(16px);
-    opacity: 0.6;
-    z-index: -1;
-    animation: glowPulse 4s ease-in-out infinite;
-  }
-
-  @keyframes glowPulse {
-    0%, 100% { opacity: 0.5; filter: blur(16px); }
-    50% { opacity: 0.8; filter: blur(22px); }
+    max-width: 760px;
+    margin: 0 auto 4rem;
   }
 
   .terminal {
-    background: #0c1222;
-    border: 1px solid rgba(99, 102, 241, 0.25);
-    border-radius: 12px;
+    background: #ffffff;
+    border: 3px solid #1a1a1a;
+    border-radius: 4px;
     overflow: hidden;
-    box-shadow:
-      0 0 0 1px rgba(99, 102, 241, 0.1),
-      0 0 30px rgba(99, 102, 241, 0.08),
-      0 20px 60px rgba(0, 0, 0, 0.5);
-    position: relative;
-    z-index: 1;
+    box-shadow: 8px 8px 0px #1a1a1a;
+    text-align: left;
   }
 
   .terminal-header {
     display: flex;
     align-items: center;
     padding: 0.75rem 1rem;
-    background: #0f172a;
-    border-bottom: 1px solid #1e293b;
+    background: #f0f0f0;
+    border-bottom: 3px solid #1a1a1a;
     gap: 0.75rem;
   }
 
   .dots {
     display: flex;
-    gap: 6px;
+    gap: 8px;
   }
 
   .dot {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
+    border: 2px solid #1a1a1a;
   }
 
-  .dot.red { background: #ef4444; }
-  .dot.yellow { background: #eab308; }
-  .dot.green { background: #22c55e; }
+  .dot.red { background: #ff5f56; }
+  .dot.yellow { background: #ffbd2e; }
+  .dot.green { background: #27c93f; }
 
   .terminal-title {
-    color: #475569;
-    font-size: 0.8rem;
+    color: #1a1a1a;
+    font-size: 0.9rem;
     font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
   }
 
   .terminal-body {
-    padding: 1.25rem;
+    padding: 1.5rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    line-height: 1.8;
-    text-align: left;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: #1a1a1a;
   }
 
   .line {
-    white-space: nowrap;
-    overflow: hidden;
+    white-space: pre-wrap;
     display: flex;
     align-items: baseline;
+    margin-bottom: 0.25rem;
   }
 
   .prompt {
     color: #6366f1;
-    margin-right: 0.5rem;
-    flex-shrink: 0;
+    margin-right: 0.75rem;
+    font-weight: 800;
   }
 
   .cmd {
-    color: #e2e8f0;
+    font-weight: 600;
   }
 
   .output {
     opacity: 0;
-    animation: fadeIn 0.3s ease forwards;
+    animation: fadeIn 0.2s ease forwards;
   }
 
-  .cyan { color: #22d3ee; }
-  .green { color: #22c55e; }
-  .dim { color: #475569; }
+  .cyan { color: #0891b2; font-weight: 700; }
+  .green { color: #16a34a; font-weight: 700; }
+  .dim { color: #666; }
+  
+  .pass-badge {
+    background: #22c55e;
+    color: white;
+    padding: 0 0.4rem;
+    font-weight: 800;
+    border: 2px solid #1a1a1a;
+    font-size: 0.8rem;
+  }
 
-  .delay-1 { animation-delay: 0.8s; }
-  .delay-2 { animation-delay: 1.3s; }
-  .delay-3 { animation-delay: 1.8s; }
-  .delay-4 { animation-delay: 2.5s; }
-  .delay-5 { animation-delay: 3.2s; }
-  .delay-6 { animation-delay: 3.8s; }
-  .delay-7 { animation-delay: 4.4s; }
-  .delay-8 { animation-delay: 5.0s; }
-  .delay-9 { animation-delay: 6.5s; }
+  .delay-1 { animation-delay: 0.6s; }
+  .delay-2 { animation-delay: 1.0s; }
+  .delay-3 { animation-delay: 1.4s; }
+  .delay-4 { animation-delay: 2.0s; }
+  .delay-5 { animation-delay: 2.6s; }
+  .delay-6 { animation-delay: 3.2s; }
+  .delay-7 { animation-delay: 3.8s; }
+  .delay-8 { animation-delay: 4.4s; }
+  .delay-9 { animation-delay: 5.5s; }
+  .delay-10 { animation-delay: 6.0s; }
 
   .typing {
     overflow: hidden;
-    border-right: 2px solid #6366f1;
+    border-right: 3px solid #6366f1;
     white-space: nowrap;
     animation:
-      typing 1.5s steps(70) forwards,
-      blink 0.8s step-end 3;
+      typing 1.2s steps(70) forwards,
+      blink 0.8s step-end infinite;
     width: 0;
-    flex: 0 0 auto;
-    max-width: 100%;
   }
 
   @keyframes typing {
@@ -259,54 +256,25 @@
   /* CTA */
   .cta-group {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
     justify-content: center;
     flex-wrap: wrap;
   }
 
-  .cta-primary {
-    padding: 0.75rem 2rem;
-    background: #6366f1;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: background 0.15s;
-  }
-
-  .cta-primary:hover {
-    background: #4f46e5;
-  }
-
-  .cta-secondary {
-    padding: 0.75rem 2rem;
-    border: 1px solid #334155;
-    color: #e2e8f0;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: border-color 0.15s;
-  }
-
-  .cta-secondary:hover {
-    border-color: #6366f1;
-  }
+  /* Use global neo-btn classes defined in custom.css */
 
   @media (max-width: 768px) {
     h1 {
-      font-size: 2.2rem;
+      font-size: 2.5rem;
     }
     .hero {
-      padding: 5rem 0 3rem;
+      padding: 5rem 0 4rem;
     }
     .terminal-body {
-      font-size: 0.7rem;
-      overflow-x: auto;
+      font-size: 0.75rem;
     }
-    .terminal-glow {
-      filter: blur(12px);
+    .terminal-title {
+      display: none;
     }
   }
 </style>

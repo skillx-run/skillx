@@ -4,7 +4,7 @@
   <div class="container">
     <h2>Why skillx?</h2>
     <div class="feature-grid">
-      <div class="feature-card">
+      <div class="feature-card neo-box">
         <div class="feature-icon">
           <span>⏳</span>
         </div>
@@ -17,7 +17,7 @@
           when your session ends. Nothing is permanently added to your project.
         </p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card neo-box">
         <div class="feature-icon">
           <span>⊘</span>
         </div>
@@ -30,7 +30,7 @@
           Dangerous patterns are blocked &mdash; you never run untrusted code.
         </p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card neo-box">
         <div class="feature-icon">
           <span>⚡</span>
         </div>
@@ -49,81 +49,89 @@
 
 <style>
   .features {
-    padding: 5rem 0;
-    border-top: 1px solid #1e293b;
+    padding: 6rem 0;
+    background: #fdf6e3;
+    border-top: 3px solid #1a1a1a;
+    border-bottom: 3px solid #1a1a1a;
   }
 
   .container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 0 2rem;
   }
 
   h2 {
     text-align: center;
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 3rem;
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 4rem;
+    color: #1a1a1a;
+    text-transform: uppercase;
   }
 
   .feature-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    gap: 2rem;
   }
 
   .feature-card {
-    background: #0f172a;
-    border: 1px solid #1e293b;
-    border-radius: 12px;
-    padding: 2rem;
-    transition: border-color 0.2s;
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
   }
 
   .feature-card:hover {
-    border-color: #334155;
+    transform: translate(-4px, -4px);
+    box-shadow: 8px 8px 0px #1a1a1a;
   }
 
   .feature-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    background: rgba(99, 102, 241, 0.12);
+    width: 52px;
+    height: 52px;
+    border: 2px solid #1a1a1a;
+    background: #6366f1;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1.25rem;
-    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    box-shadow: 3px 3px 0px #1a1a1a;
   }
 
   .feature-header {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
   }
 
   .feature-header h3 {
-    font-size: 1.15rem;
-    font-weight: 700;
+    font-size: 1.4rem;
+    font-weight: 800;
     margin: 0;
+    color: #1a1a1a;
   }
 
   .highlight-badge {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    padding: 0.15rem 0.5rem;
-    border-radius: 4px;
-    background: rgba(99, 102, 241, 0.15);
-    color: #a5b4fc;
-    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border: 2px solid #1a1a1a;
+    background: #ff9f1c;
+    color: #000;
+    font-weight: 800;
   }
 
   .feature-card p {
-    color: #94a3b8;
-    font-size: 0.95rem;
-    line-height: 1.65;
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.6;
     margin: 0;
+    font-weight: 500;
   }
 
   @media (max-width: 1024px) {
@@ -135,6 +143,9 @@
   @media (max-width: 768px) {
     .feature-grid {
       grid-template-columns: 1fr;
+    }
+    h2 {
+      font-size: 2rem;
     }
   }
 </style>

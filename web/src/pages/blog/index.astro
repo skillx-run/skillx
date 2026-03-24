@@ -12,13 +12,14 @@ const posts = (await getCollection('blog')).sort(
   <Nav />
   <main>
     <div class="container">
-      <h1>Blog</h1>
+      <header class="blog-header">
+        <h1>Blog</h1>
+        <p class="subtitle">Latest news and updates from the skillx team.</p>
+      </header>
       <div class="posts">
         {posts.map((post) => (
-          <article class="post-card">
+          <article class="post-card neo-box">
             <a href={`/blog/${post.id}`}>
-              <h2>{post.data.title}</h2>
-              <p class="description">{post.data.description}</p>
               <time datetime={post.data.date.toISOString()}>
                 {post.data.date.toLocaleDateString('en-US', {
                   year: 'numeric',
@@ -26,6 +27,9 @@ const posts = (await getCollection('blog')).sort(
                   day: 'numeric',
                 })}
               </time>
+              <h2>{post.data.title}</h2>
+              <p class="description">{post.data.description}</p>
+              <span class="read-more">Read more &rarr;</span>
             </a>
           </article>
         ))}
@@ -36,61 +40,102 @@ const posts = (await getCollection('blog')).sort(
 
 <style>
   main {
-    background: #020617;
-    color: #e2e8f0;
+    background: #fffbf2;
+    color: #1a1a1a;
     min-height: 100vh;
+    padding-bottom: 6rem;
   }
 
   .container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 4rem 2rem;
+    padding: 6rem 2rem;
+  }
+
+  .blog-header {
+    text-align: center;
+    margin-bottom: 4rem;
   }
 
   h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    color: #1a1a1a;
+  }
+
+  .subtitle {
+    font-size: 1.25rem;
+    color: #333;
+    font-weight: 500;
   }
 
   .posts {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2.5rem;
   }
 
   .post-card {
-    border: 1px solid #1e293b;
-    border-radius: 8px;
-    overflow: hidden;
-    transition: border-color 0.15s;
+    background: white;
+    transition: transform 0.2s, box-shadow 0.2s;
   }
 
   .post-card:hover {
-    border-color: #6366f1;
+    transform: translate(-4px, -4px);
+    box-shadow: 8px 8px 0px #1a1a1a;
   }
 
   .post-card a {
     display: block;
-    padding: 1.5rem;
+    padding: 2.5rem;
     text-decoration: none;
     color: inherit;
   }
 
+  time {
+    display: inline-block;
+    color: #1a1a1a;
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    background: #ff9f1c;
+    padding: 0.2rem 0.6rem;
+    border: 2px solid #1a1a1a;
+    margin-bottom: 1.5rem;
+    box-shadow: 2px 2px 0px #1a1a1a;
+  }
+
   .post-card h2 {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    line-height: 1.2;
   }
 
   .description {
-    color: #94a3b8;
-    margin-bottom: 0.75rem;
-    line-height: 1.5;
+    color: #333;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    font-size: 1.1rem;
+    font-weight: 500;
   }
 
-  time {
-    color: #64748b;
-    font-size: 0.85rem;
-    font-family: 'JetBrains Mono', monospace;
+  .read-more {
+    font-weight: 800;
+    color: #6366f1;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 2px;
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 2.5rem;
+    }
+    .post-card a {
+      padding: 1.5rem;
+    }
   }
 </style>
