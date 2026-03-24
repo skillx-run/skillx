@@ -287,12 +287,10 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
             for record in &extra_records {
                 let manifest_path = match record.injection_type {
                     inject::InjectionType::AggregateSection => record.path.clone(),
-                    inject::InjectionType::CopiedFile => {
-                        extra_inject_path
-                            .join(&record.path)
-                            .to_string_lossy()
-                            .to_string()
-                    }
+                    inject::InjectionType::CopiedFile => extra_inject_path
+                        .join(&record.path)
+                        .to_string_lossy()
+                        .to_string(),
                 };
                 manifest.add_record(&inject::InjectedRecord {
                     path: manifest_path,

@@ -369,8 +369,11 @@ impl AgentAdapter for GenericAdapter {
         // If agent has an aggregate file, also append skill content there
         if let Some(ref agg_file) = self.0.aggregate_file {
             let body = inject::extract_skill_body(source_dir)?;
-            let record =
-                inject::append_to_aggregate_file(std::path::Path::new(agg_file), skill_name, &body)?;
+            let record = inject::append_to_aggregate_file(
+                std::path::Path::new(agg_file),
+                skill_name,
+                &body,
+            )?;
             records.push(record);
         }
 

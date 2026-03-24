@@ -139,16 +139,12 @@ pub fn append_to_aggregate_file(
     // Ensure parent dir exists
     if let Some(parent) = target.parent() {
         std::fs::create_dir_all(parent).map_err(|e| {
-            SkillxError::Session(format!(
-                "failed to create dir {}: {e}",
-                parent.display()
-            ))
+            SkillxError::Session(format!("failed to create dir {}: {e}", parent.display()))
         })?;
     }
 
-    std::fs::write(target, &new_content).map_err(|e| {
-        SkillxError::Session(format!("failed to write {}: {e}", target.display()))
-    })?;
+    std::fs::write(target, &new_content)
+        .map_err(|e| SkillxError::Session(format!("failed to write {}: {e}", target.display())))?;
 
     // Hash the section content for tracking
     let mut hasher = Sha256::new();
@@ -181,9 +177,8 @@ pub fn remove_from_aggregate_file(target: &Path, skill_name: &str) -> Result<boo
         format!("{trimmed}\n")
     };
 
-    std::fs::write(target, &final_content).map_err(|e| {
-        SkillxError::Session(format!("failed to write {}: {e}", target.display()))
-    })?;
+    std::fs::write(target, &final_content)
+        .map_err(|e| SkillxError::Session(format!("failed to write {}: {e}", target.display())))?;
 
     Ok(true)
 }
@@ -274,8 +269,11 @@ mod tests {
     #[test]
     fn test_extract_skill_body_without_frontmatter() {
         let dir = TempDir::new().unwrap();
-        std::fs::write(dir.path().join("SKILL.md"), "# No Frontmatter\n\nJust content.\n")
-            .unwrap();
+        std::fs::write(
+            dir.path().join("SKILL.md"),
+            "# No Frontmatter\n\nJust content.\n",
+        )
+        .unwrap();
         let body = extract_skill_body(dir.path()).unwrap();
         assert!(body.starts_with("# No Frontmatter"));
     }

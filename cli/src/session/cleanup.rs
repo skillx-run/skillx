@@ -32,10 +32,7 @@ pub fn cleanup_session(session_dir: &Path) -> Result<()> {
                 ) {
                     Ok(true) => {}
                     Ok(false) => {
-                        ui::warn(&format!(
-                            "Skill section not found in {}",
-                            file.path
-                        ));
+                        ui::warn(&format!("Skill section not found in {}", file.path));
                     }
                     Err(e) => {
                         ui::warn(&format!(

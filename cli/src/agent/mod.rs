@@ -162,13 +162,12 @@ pub trait AgentAdapter: Send + Sync {
         source_dir: &Path,
         target_dir: &Path,
     ) -> Result<Vec<InjectedRecord>> {
-        crate::session::inject::inject_and_collect(source_dir, target_dir)
-            .map(|records| {
-                records
-                    .into_iter()
-                    .map(|(path, sha256)| InjectedRecord::copied_file(path, sha256))
-                    .collect()
-            })
+        crate::session::inject::inject_and_collect(source_dir, target_dir).map(|records| {
+            records
+                .into_iter()
+                .map(|(path, sha256)| InjectedRecord::copied_file(path, sha256))
+                .collect()
+        })
     }
 
     /// Optional cleanup when session ends.
