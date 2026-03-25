@@ -28,10 +28,10 @@ The shorthand `github:` prefix resolves to a GitHub repository:
 skillx run github:skillx-run/skillx-skills "prompt"
 
 # owner/repo/path (skill in a subdirectory)
-skillx run github:skillx-run/skillx.run/examples/skills/code-review "prompt"
+skillx run github:skillx-run/skillx/examples/skills/code-review "prompt"
 
 # owner/repo/path@ref (specific branch or tag)
-skillx run github:skillx-run/skillx.run/examples/skills/code-review@main "prompt"
+skillx run github:skillx-run/skillx/examples/skills/code-review@main "prompt"
 ```
 
 ### 3. `gist:` Prefix

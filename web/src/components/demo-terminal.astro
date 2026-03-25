@@ -15,7 +15,7 @@
       <div class="terminal-body">
         <div class="line">
           <span class="prompt">$</span>
-          <span class="cmd typing">skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"</span>
+          <span class="cmd typing">skillx run github:skillx-run/skillx/examples/skills/name-poem "Your Name"</span>
         </div>
         <div class="line output delay-1">
           <span class="cyan">→</span> Resolving source...
@@ -171,7 +171,7 @@
     border-right: 2px solid #6366f1;
     white-space: nowrap;
     animation:
-      typing 1.5s steps(80) forwards,
+      typing 1.5s steps(73) forwards,
       blink 0.8s step-end 3;
     width: 0;
     flex: 0 0 auto;
@@ -179,7 +179,7 @@
   }
 
   @keyframes typing {
-    to { width: 100%; }
+    to { width: 74ch; }
   }
 
   @keyframes blink {

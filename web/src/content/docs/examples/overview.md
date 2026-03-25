@@ -59,16 +59,16 @@ You can run the examples without cloning the repository. skillx fetches them dir
 
 ```bash
 # Run name-poem from GitHub
-skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
+skillx run github:skillx-run/skillx/examples/skills/name-poem "Your Name"
 
 # Run hello-world from GitHub
-skillx run github:skillx-run/skillx.run/examples/skills/hello-world "Hello"
+skillx run github:skillx-run/skillx/examples/skills/hello-world "Hello"
 
 # Run code-review from GitHub
-skillx run github:skillx-run/skillx.run/examples/skills/code-review "Review my last commit"
+skillx run github:skillx-run/skillx/examples/skills/code-review "Review my last commit"
 
 # Run testing-guide from GitHub
-skillx run github:skillx-run/skillx.run/examples/skills/testing-guide "Help me write tests for utils.ts"
+skillx run github:skillx-run/skillx/examples/skills/testing-guide "Help me write tests for utils.ts"
 ```
 
 ### Scanning the Dangerous Example

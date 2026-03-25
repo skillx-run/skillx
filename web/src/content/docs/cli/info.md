@@ -30,7 +30,7 @@ Skill Info
   Version:      main
   License:      MIT
   Tags:         pdf, extraction, analysis
-  Source:       github:skillx-run/skillx.run/examples/skills/pdf-processing@main
+  Source:       github:skillx-run/skillx/examples/skills/pdf-processing@main
   Path:         ~/.skillx/cache/a1b2c3d4/pdf-processing
 
   Files:
@@ -66,7 +66,7 @@ skillx info ./my-skill
 ### Inspect a GitHub skill
 
 ```bash
-skillx info github:skillx-run/skillx.run/examples/skills/pdf-processing
+skillx info github:skillx-run/skillx/examples/skills/pdf-processing
 ```
 
 ### Inspect a remote URL skill

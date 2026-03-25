@@ -130,7 +130,7 @@ skillx run ./examples/skills/hello-world "Hello"
 ### GitHub skill with timeout
 
 ```bash
-skillx run --timeout 30m github:skillx-run/skillx.run/examples/skills/code-review "Review the auth module"
+skillx run --timeout 30m github:skillx-run/skillx/examples/skills/code-review "Review the auth module"
 ```
 
 ### Pipe prompt from another command
