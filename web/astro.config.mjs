@@ -18,6 +18,7 @@ export default defineConfig({
       ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/skillx-run/skillx' },
+        { icon: 'x.com', label: 'X', href: 'https://x.com/SkillxRun' },
       ],
       sidebar: [
         {
