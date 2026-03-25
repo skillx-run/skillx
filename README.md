@@ -32,10 +32,10 @@ curl -fsSL https://skillx.run/install.sh | sh
 skillx run ./examples/skills/name-poem "Your Name"
 
 # Run a skill from GitHub
-skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
+skillx run github:skillx-run/skillx/examples/skills/name-poem "Your Name"
 
 # Want persistence? Opt in explicitly
-skillx install github:skillx-run/skillx.run/examples/skills/name-poem
+skillx install github:skillx-run/skillx/examples/skills/name-poem
 ```
 
 ## Commands
@@ -107,8 +107,8 @@ name = "my-project"
 preferred = "claude-code"
 
 [skills]
-name-poem = "github:skillx-run/skillx.run/examples/skills/name-poem"
-code-review = { source = "github:skillx-run/skillx.run/examples/skills/code-review", scope = "project" }
+name-poem = "github:skillx-run/skillx/examples/skills/name-poem"
+code-review = { source = "github:skillx-run/skillx/examples/skills/code-review", scope = "project" }
 ```
 
 ```bash

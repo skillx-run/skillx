@@ -138,7 +138,7 @@ Copies the skill to the project root and displays the content for manual use wit
 You do not need a local clone to try this skill:
 
 ```bash
-skillx run github:skillx-run/skillx.run/examples/skills/hello-world "Hello"
+skillx run github:skillx-run/skillx/examples/skills/hello-world "Hello"
 ```
 
 skillx fetches the skill from GitHub, caches it locally, scans it, and injects it — all in one command.

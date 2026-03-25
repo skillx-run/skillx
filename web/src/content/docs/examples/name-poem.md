@@ -68,7 +68,7 @@ A three-line sijo with the name's meaning blooming through natural imagery.
 ### From GitHub
 
 ```bash
-skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
+skillx run github:skillx-run/skillx/examples/skills/name-poem "Your Name"
 ```
 
 ## Scan Output
@@ -99,16 +99,16 @@ Add the name-poem skill to your project for creative team-building or onboarding
 name = "my-project"
 
 [skills]
-name-poem = "github:skillx-run/skillx.run/examples/skills/name-poem"
+name-poem = "github:skillx-run/skillx/examples/skills/name-poem"
 ```
 
 ### Combining with Other Skills
 
 ```toml
 [skills]
-name-poem = "github:skillx-run/skillx.run/examples/skills/name-poem"
-code-review = "github:skillx-run/skillx.run/examples/skills/code-review"
-commit-message = "github:skillx-run/skillx.run/examples/skills/commit-message"
+name-poem = "github:skillx-run/skillx/examples/skills/name-poem"
+code-review = "github:skillx-run/skillx/examples/skills/code-review"
+commit-message = "github:skillx-run/skillx/examples/skills/commit-message"
 ```
 
 ## Next Steps

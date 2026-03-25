@@ -27,7 +27,7 @@ That's six steps before you even start working.
 ## The Solution
 
 ```bash
-skillx run github:skillx-run/skillx.run/examples/skills/code-review "Review the auth module"
+skillx run github:skillx-run/skillx/examples/skills/code-review "Review the auth module"
 ```
 
 One command. skillx handles the entire lifecycle:

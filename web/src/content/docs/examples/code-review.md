@@ -107,7 +107,7 @@ preferred = "claude-code"
 targets = ["claude-code", "cursor", "copilot"]
 
 [skills]
-code-review = "github:skillx-run/skillx.run/examples/skills/code-review"
+code-review = "github:skillx-run/skillx/examples/skills/code-review"
 ```
 
 Now any team member can run:
@@ -126,18 +126,18 @@ Pin to a specific commit or tag to prevent unexpected changes:
 
 ```toml
 [skills]
-code-review = "github:skillx-run/skillx.run/examples/skills/code-review@v1.0.0"
+code-review = "github:skillx-run/skillx/examples/skills/code-review@v1.0.0"
 ```
 
 ### Combining with Other Skills
 
 ```toml
 [skills]
-code-review = "github:skillx-run/skillx.run/examples/skills/code-review"
-testing-guide = "github:skillx-run/skillx.run/examples/skills/testing-guide"
+code-review = "github:skillx-run/skillx/examples/skills/code-review"
+testing-guide = "github:skillx-run/skillx/examples/skills/testing-guide"
 
 [skills.dev]
-commit-message = "github:skillx-run/skillx.run/examples/skills/commit-message"
+commit-message = "github:skillx-run/skillx/examples/skills/commit-message"
 ```
 
 The `[skills.dev]` section is for development-only skills that are not needed in CI or production.

@@ -8,7 +8,7 @@ description: What skillx is, why it exists, and how its fetch-scan-inject-run-cl
 **skillx** is a cross-platform CLI tool that provides a zero-install experience for Agent Skills — reusable prompt-and-script packages that extend AI coding agents. Think of it as **npx for Agent Skills**: one command handles the complete lifecycle so you never manually clone, copy, or clean up skill files.
 
 ```bash
-skillx run github:skillx-run/skillx.run/examples/skills/name-poem "Your Name"
+skillx run github:skillx-run/skillx/examples/skills/name-poem "Your Name"
 ```
 
 That single command fetches the skill, scans it for security issues, injects it into your agent's context, launches the agent, waits for completion, and cleans everything up.
@@ -82,7 +82,7 @@ Each run creates a session with a unique ID. The session tracks injected files, 
 curl -fsSL https://skillx.run/install.sh | sh
 
 # Run a skill from GitHub
-skillx run github:skillx-run/skillx.run/examples/skills/code-review "Review my auth module"
+skillx run github:skillx-run/skillx/examples/skills/code-review "Review my auth module"
 
 # Scan a skill without running it
 skillx scan ./my-local-skill

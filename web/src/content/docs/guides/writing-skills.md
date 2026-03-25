@@ -4,7 +4,7 @@ description: How to create Agent Skills — SKILL.md format, frontmatter, direct
 ---
 
 :::tip
-See the [examples/skills](https://github.com/skillx-run/skillx.run/tree/main/examples/skills) directory for complete, runnable example skills you can use as starting points.
+See the [examples/skills](https://github.com/skillx-run/skillx/tree/main/examples/skills) directory for complete, runnable example skills you can use as starting points.
 :::
 
 ## Skill Directory Structure

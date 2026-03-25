@@ -21,7 +21,7 @@ List all currently cached skills.
 $ skillx cache ls
 
 Cached Skills
-  pdf-processing — github:skillx-run/skillx.run/examples/skills/pdf-processing@main (cached 2026-03-22 10:30)
+  pdf-processing — github:skillx-run/skillx/examples/skills/pdf-processing@main (cached 2026-03-22 10:30)
   code-review — github:org/skills/code-review@v2.1 (cached 2026-03-21 14:15)
 
   2 entries

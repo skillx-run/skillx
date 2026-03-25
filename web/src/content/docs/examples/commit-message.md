@@ -137,7 +137,7 @@ Add the commit-message skill to your project's `skillx.toml` for consistent comm
 
 ```toml
 [skills]
-commit-message = "github:skillx-run/skillx.run/examples/skills/commit-message"
+commit-message = "github:skillx-run/skillx/examples/skills/commit-message"
 ```
 
 Then any team member can run:
