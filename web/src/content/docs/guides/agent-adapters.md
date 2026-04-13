@@ -29,11 +29,11 @@ pub trait AgentAdapter: Send + Sync {
     /// Whether this agent can receive an initial prompt.
     fn supports_initial_prompt(&self) -> bool;
 
-    /// Whether this agent supports YOLO (auto-approve) mode.
-    fn supports_yolo(&self) -> bool;
+    /// Whether this agent supports auto-approve mode.
+    fn supports_auto_approve(&self) -> bool;
 
-    /// YOLO mode CLI arguments (default: empty).
-    fn yolo_args(&self) -> Vec<&str> {
+    /// Auto-approve mode CLI arguments (default: empty).
+    fn auto_approve_args(&self) -> Vec<&str> {
         vec![]
     }
 
@@ -99,11 +99,11 @@ impl AgentAdapter for MyAgentAdapter {
         true
     }
 
-    fn supports_yolo(&self) -> bool {
+    fn supports_auto_approve(&self) -> bool {
         true
     }
 
-    fn yolo_args(&self) -> Vec<&str> {
+    fn auto_approve_args(&self) -> Vec<&str> {
         vec!["--auto-approve"]
     }
 
@@ -127,8 +127,8 @@ impl AgentAdapter for MyAgentAdapter {
             cmd.arg("--prompt").arg(prompt);
         }
 
-        if config.yolo {
-            for arg in self.yolo_args() {
+        if config.auto_approve {
+            for arg in self.auto_approve_args() {
                 cmd.arg(arg);
             }
         }
@@ -194,10 +194,10 @@ fn test_my_agent_inject_path_project() {
 }
 
 #[test]
-fn test_my_agent_yolo_args() {
+fn test_my_agent_auto_approve_args() {
     let adapter = MyAgentAdapter;
-    assert!(adapter.supports_yolo());
-    assert_eq!(adapter.yolo_args(), vec!["--auto-approve"]);
+    assert!(adapter.supports_auto_approve());
+    assert_eq!(adapter.auto_approve_args(), vec!["--auto-approve"]);
 }
 ```
 
@@ -232,7 +232,7 @@ pub struct LaunchConfig {
     pub skill_name: String,      // Name of the skill
     pub skill_dir: PathBuf,      // Path where skill is injected
     pub prompt: Option<String>,  // User's prompt
-    pub yolo: bool,              // Whether YOLO mode is requested
+    pub auto_approve: bool,      // Whether auto-approve mode is requested
     pub extra_args: Vec<String>, // Additional CLI arguments
 }
 ```

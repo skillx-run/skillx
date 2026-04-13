@@ -704,22 +704,22 @@ fn test_agent_inject_paths() {
 }
 
 #[test]
-fn test_agent_yolo_args() {
+fn test_agent_auto_approve_args() {
     use skillx::agent::AgentAdapter;
 
     let claude = skillx::agent::claude_code::ClaudeCodeAdapter;
-    assert!(claude.supports_yolo());
-    assert_eq!(claude.yolo_args(), vec!["--dangerously-skip-permissions"]);
+    assert!(claude.supports_auto_approve());
+    assert_eq!(claude.auto_approve_args(), vec!["--dangerously-skip-permissions"]);
 
     let codex = skillx::agent::codex::CodexAdapter;
-    assert!(codex.supports_yolo());
-    assert_eq!(codex.yolo_args(), vec!["--yolo"]);
+    assert!(codex.supports_auto_approve());
+    assert_eq!(codex.auto_approve_args(), vec!["--yolo"]);
 
     let copilot = skillx::agent::copilot::CopilotAdapter;
-    assert!(!copilot.supports_yolo());
+    assert!(!copilot.supports_auto_approve());
 
     let cursor = skillx::agent::cursor::CursorAdapter;
-    assert!(!cursor.supports_yolo());
+    assert!(!cursor.supports_auto_approve());
 }
 
 // ==================== Regex Compilation ====================

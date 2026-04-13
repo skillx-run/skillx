@@ -48,7 +48,7 @@ skillx run ./my-skill "Analyze this code"
 
 The Universal adapter does not support:
 
-- **YOLO mode** — it doesn't know which agent you'll use
+- **Auto-approve mode** — it doesn't know which agent you'll use
 - **Initial prompt delivery** — prompt is clipboard-only
 - **Process management** — no process to spawn
 

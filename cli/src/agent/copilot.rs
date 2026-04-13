@@ -58,7 +58,7 @@ impl AgentAdapter for CopilotAdapter {
         false
     }
 
-    fn supports_yolo(&self) -> bool {
+    fn supports_auto_approve(&self) -> bool {
         false
     }
 

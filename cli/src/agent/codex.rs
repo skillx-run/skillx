@@ -51,11 +51,11 @@ impl AgentAdapter for CodexAdapter {
         true
     }
 
-    fn supports_yolo(&self) -> bool {
+    fn supports_auto_approve(&self) -> bool {
         true
     }
 
-    fn yolo_args(&self) -> Vec<&str> {
+    fn auto_approve_args(&self) -> Vec<&str> {
         vec!["--yolo"]
     }
 
@@ -86,8 +86,8 @@ impl AgentAdapter for CodexAdapter {
             }
         }
 
-        if config.yolo {
-            for arg in self.yolo_args() {
+        if config.auto_approve {
+            for arg in self.auto_approve_args() {
                 cmd.arg(arg);
             }
         }

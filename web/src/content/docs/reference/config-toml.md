@@ -193,8 +193,8 @@ binary = "mycli"
 config_dir = ".mycli"
 lifecycle = "managed_process"
 supports_prompt = true
-supports_yolo = true
-yolo_args = ["--yes"]
+supports_auto_approve = true
+auto_approve_args = ["--yes"]
 prompt_flag = "--message"
 ```
 
@@ -206,8 +206,8 @@ prompt_flag = "--message"
 | `config_dir` | string | required | Config directory name (e.g., `.mycli`) |
 | `lifecycle` | string | required | `managed_process` or `file_inject_and_wait` |
 | `supports_prompt` | bool | `true` | Whether the agent accepts a prompt argument |
-| `supports_yolo` | bool | `false` | Whether the agent supports YOLO mode |
-| `yolo_args` | list | `[]` | Arguments to pass in YOLO mode |
+| `supports_auto_approve` | bool | `false` | Whether the agent supports auto-approve mode |
+| `auto_approve_args` | list | `[]` | Arguments to pass in auto-approve mode |
 | `prompt_flag` | string | — | Flag for passing prompt (e.g., `--message`) |
 
 Custom agents use the same `GenericAdapter` as Tier 3 built-in agents.

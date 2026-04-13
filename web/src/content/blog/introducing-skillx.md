@@ -43,7 +43,7 @@ One command. skillx handles the entire lifecycle:
 
 ### Supported Agents
 
-- **Claude Code** — Full lifecycle with `--yolo` mode
+- **Claude Code** — Full lifecycle with `--auto-approve` mode
 - **OpenAI Codex** — Full lifecycle with `--full-auto`
 - **GitHub Copilot** — File injection + clipboard
 - **Cursor** — File injection + clipboard

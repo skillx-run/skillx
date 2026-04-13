@@ -62,7 +62,7 @@ Injected files are removed after the agent completes. If a run is interrupted (C
 
 1. **Never skip the scan** unless you wrote the skill yourself
 2. **Read DANGER findings** — use `detail N` to understand what was flagged
-3. **Avoid YOLO mode** with untrusted skills
+3. **Avoid auto-approve mode** with untrusted skills
 4. **Use `--fail-on warn`** in CI environments
 5. **Check scan results** before running skills from unknown authors
 

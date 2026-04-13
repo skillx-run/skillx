@@ -31,7 +31,7 @@ Agent Environments
   Claude Code [✓ detected]
     claude binary found
     Lifecycle: ManagedProcess
-    YOLO: --dangerously-skip-permissions
+    Auto-approve: --dangerously-skip-permissions
 
   Cursor [✓ detected]
     Cursor process detected
@@ -54,7 +54,7 @@ Agent Environments
   Claude Code [✓ detected]
     claude binary found
     Lifecycle: ManagedProcess
-    YOLO: --dangerously-skip-permissions
+    Auto-approve: --dangerously-skip-permissions
 
   OpenAI Codex [✗ not found]
 
@@ -78,7 +78,7 @@ For each detected agent, the output shows:
 | **Status** | Whether the agent was detected on the system |
 | **Info** | How the agent was detected (binary found, process running, etc.) |
 | **Lifecycle** | `ManagedProcess` (skillx spawns it) or `FileInjectAndWait` (inject files, wait for user) |
-| **YOLO** | The flags passed in `--yolo` mode, if supported |
+| **Auto-approve** | The flags passed in `--auto-approve` mode, if supported |
 
 ## Detection Methods
 
@@ -110,7 +110,7 @@ preferred = "claude-code"
 
 ## Built-in Agents
 
-| Name | Display Name | Lifecycle | YOLO Args |
+| Name | Display Name | Lifecycle | Auto-approve Args |
 |------|-------------|-----------|-----------|
 | `claude-code` | Claude Code | ManagedProcess | `--dangerously-skip-permissions` |
 | `codex` | OpenAI Codex | ManagedProcess | `--full-auto` |

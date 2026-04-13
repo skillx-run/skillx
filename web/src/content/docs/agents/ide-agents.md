@@ -53,7 +53,7 @@ skillx run --agent copilot ./my-skill "Explain this codebase"
 
 After running, switch to VS Code, open Copilot Chat, and paste the prompt (Cmd+V / Ctrl+V). The skill files are already in place for Copilot to reference.
 
-### YOLO Mode
+### Auto-approve Mode
 
 Not supported. Copilot does not have a flag to skip confirmations.
 
@@ -97,7 +97,7 @@ skillx run --agent cursor ./my-skill "Refactor the auth module"
 
 Switch to Cursor, open the AI chat panel, and paste the prompt. The skill's SKILL.md and supporting files are injected where Cursor can find them.
 
-### YOLO Mode
+### Auto-approve Mode
 
 Not supported. Cursor does not have a CLI flag for autonomous mode.
 
@@ -218,7 +218,7 @@ skillx run --agent roo ./my-skill "Implement feature"
 | Lifecycle | FileInjectAndWait | FileInjectAndWait | FileInjectAndWait | FileInjectAndWait | FileInjectAndWait |
 | Detection | VS Code extension | Binary or process | Binary or process | VS Code extension | VS Code extension |
 | Prompt delivery | Clipboard | Clipboard | Clipboard | Clipboard | Clipboard |
-| YOLO mode | No | No | No | No | No |
+| Auto-approve mode | No | No | No | No | No |
 | Global inject | `~/.github/skills/` | `~/.cursor/skills/` | `~/.windsurf/skills/` | `~/.cline/skills/` | `~/.roo/skills/` |
 | Project inject | `.github/skills/` | `.cursor/skills/` | `.windsurf/skills/` | `.cline/skills/` | `.roo/skills/` |
 

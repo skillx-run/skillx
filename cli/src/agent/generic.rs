@@ -51,8 +51,8 @@ pub struct AgentDef {
     pub config_dir: String,
     pub lifecycle: LifecycleMode,
     pub supports_prompt: bool,
-    pub supports_yolo: bool,
-    pub yolo_args: Vec<String>,
+    pub supports_auto_approve: bool,
+    pub auto_approve_args: Vec<String>,
     pub detection: DetectionMethod,
     /// Legacy: used by CustomAgentConfig deserialization. Prefer prompt_style for new code.
     pub prompt_flag: Option<String>,
@@ -73,8 +73,8 @@ impl AgentDef {
             config_dir: config_dir.to_string(),
             lifecycle: LifecycleMode::ManagedProcess,
             supports_prompt: true,
-            supports_yolo: false,
-            yolo_args: Vec::new(),
+            supports_auto_approve: false,
+            auto_approve_args: Vec::new(),
             detection: DetectionMethod::Binary,
             prompt_flag: None,
             prompt_style: PromptStyle::Flag("--prompt".to_string()),
@@ -94,8 +94,8 @@ impl AgentDef {
             config_dir: config_dir.to_string(),
             lifecycle: LifecycleMode::FileInjectAndWait,
             supports_prompt: false,
-            supports_yolo: false,
-            yolo_args: Vec::new(),
+            supports_auto_approve: false,
+            auto_approve_args: Vec::new(),
             detection: DetectionMethod::VscodeExtension(ext_prefix.to_string()),
             prompt_flag: None,
             prompt_style: PromptStyle::None,
@@ -115,8 +115,8 @@ impl AgentDef {
             config_dir: config_dir.to_string(),
             lifecycle: LifecycleMode::FileInjectAndWait,
             supports_prompt: false,
-            supports_yolo: false,
-            yolo_args: Vec::new(),
+            supports_auto_approve: false,
+            auto_approve_args: Vec::new(),
             detection: DetectionMethod::Process(proc_name.to_string()),
             prompt_flag: None,
             prompt_style: PromptStyle::None,
@@ -136,8 +136,8 @@ impl AgentDef {
             config_dir: config_dir.to_string(),
             lifecycle: LifecycleMode::FileInjectAndWait,
             supports_prompt: false,
-            supports_yolo: false,
-            yolo_args: Vec::new(),
+            supports_auto_approve: false,
+            auto_approve_args: Vec::new(),
             detection: DetectionMethod::ConfigDirOnly,
             prompt_flag: None,
             prompt_style: PromptStyle::None,
@@ -162,10 +162,10 @@ impl AgentDef {
         self
     }
 
-    /// Enable YOLO mode with the given flags.
-    pub fn with_yolo(mut self, args: Vec<&str>) -> Self {
-        self.supports_yolo = true;
-        self.yolo_args = args.into_iter().map(String::from).collect();
+    /// Enable auto-approve mode with the given flags.
+    pub fn with_auto_approve(mut self, args: Vec<&str>) -> Self {
+        self.supports_auto_approve = true;
+        self.auto_approve_args = args.into_iter().map(String::from).collect();
         self
     }
 
@@ -230,8 +230,8 @@ impl AgentDef {
             config_dir: cfg.config_dir.clone(),
             lifecycle,
             supports_prompt: cfg.supports_prompt,
-            supports_yolo: cfg.supports_yolo,
-            yolo_args: cfg.yolo_args.clone(),
+            supports_auto_approve: cfg.supports_auto_approve,
+            auto_approve_args: cfg.auto_approve_args.clone(),
             detection,
             prompt_flag: cfg.prompt_flag.clone(),
             prompt_style,
@@ -332,12 +332,12 @@ impl AgentAdapter for GenericAdapter {
         self.0.supports_prompt
     }
 
-    fn supports_yolo(&self) -> bool {
-        self.0.supports_yolo
+    fn supports_auto_approve(&self) -> bool {
+        self.0.supports_auto_approve
     }
 
-    fn yolo_args(&self) -> Vec<&str> {
-        self.0.yolo_args.iter().map(|s| s.as_str()).collect()
+    fn auto_approve_args(&self) -> Vec<&str> {
+        self.0.auto_approve_args.iter().map(|s| s.as_str()).collect()
     }
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
@@ -436,8 +436,8 @@ impl AgentAdapter for GenericAdapter {
                     cmd.arg(arg);
                 }
 
-                if config.yolo && def.supports_yolo {
-                    for arg in &def.yolo_args {
+                if config.auto_approve && def.supports_auto_approve {
+                    for arg in &def.auto_approve_args {
                         cmd.arg(arg);
                     }
                 }
@@ -538,13 +538,13 @@ pub fn tier3_adapters() -> Vec<Box<dyn AgentAdapter>> {
                     Box::new(PromptStyle::Positional),
                 ))
                 .with_print_extra_args(vec!["--no-interactive"])
-                .with_yolo(vec!["--trust-all-tools"]),
+                .with_auto_approve(vec!["--trust-all-tools"]),
         )),
         Box::new(GenericAdapter(
             AgentDef::cli("aider", "Aider", "aider", ".aider")
                 .with_prompt_style(PromptStyle::None)
                 .with_print_style(PrintStyle::Flag("-m".into()))
-                .with_yolo(vec!["--yes-always"]),
+                .with_auto_approve(vec!["--yes-always"]),
         )),
         Box::new(GenericAdapter(AgentDef::cli(
             "openclaw",
@@ -668,7 +668,7 @@ mod tests {
         assert_eq!(def.config_dir, ".goose");
         assert_eq!(def.lifecycle, LifecycleMode::ManagedProcess);
         assert!(def.supports_prompt);
-        assert!(!def.supports_yolo);
+        assert!(!def.supports_auto_approve);
         assert!(matches!(def.detection, DetectionMethod::Binary));
     }
 
@@ -769,8 +769,8 @@ mod tests {
             config_dir: ".myagent".to_string(),
             lifecycle: "managed_process".to_string(),
             supports_prompt: true,
-            supports_yolo: true,
-            yolo_args: vec!["--auto".to_string()],
+            supports_auto_approve: true,
+            auto_approve_args: vec!["--auto".to_string()],
             prompt_flag: Some("--message".to_string()),
         };
         let def = AgentDef::from_config(&cfg).unwrap();
@@ -779,8 +779,8 @@ mod tests {
         assert_eq!(def.binary_name.as_deref(), Some("myagent"));
         assert_eq!(def.lifecycle, LifecycleMode::ManagedProcess);
         assert!(def.supports_prompt);
-        assert!(def.supports_yolo);
-        assert_eq!(def.yolo_args, vec!["--auto"]);
+        assert!(def.supports_auto_approve);
+        assert_eq!(def.auto_approve_args, vec!["--auto"]);
         assert_eq!(def.prompt_flag.as_deref(), Some("--message"));
 
         // Wrap as GenericAdapter and verify trait methods
@@ -788,8 +788,8 @@ mod tests {
         assert_eq!(adapter.name(), "my-agent");
         assert_eq!(adapter.display_name(), "My Custom Agent");
         assert!(adapter.supports_initial_prompt());
-        assert!(adapter.supports_yolo());
-        assert_eq!(adapter.yolo_args(), vec!["--auto"]);
+        assert!(adapter.supports_auto_approve());
+        assert_eq!(adapter.auto_approve_args(), vec!["--auto"]);
     }
 
     #[test]
@@ -801,8 +801,8 @@ mod tests {
             config_dir: ".simple".to_string(),
             lifecycle: "file_inject_and_wait".to_string(),
             supports_prompt: true,
-            supports_yolo: false,
-            yolo_args: vec![],
+            supports_auto_approve: false,
+            auto_approve_args: vec![],
             prompt_flag: None,
         };
         let def = AgentDef::from_config(&cfg).unwrap();
@@ -821,8 +821,8 @@ mod tests {
             config_dir: ".bad".to_string(),
             lifecycle: "invalid_value".to_string(),
             supports_prompt: true,
-            supports_yolo: false,
-            yolo_args: vec![],
+            supports_auto_approve: false,
+            auto_approve_args: vec![],
             prompt_flag: None,
         };
         let result = AgentDef::from_config(&cfg);
@@ -920,14 +920,14 @@ mod tests {
         let def = AgentDef::cli("test", "Test", "test", ".test")
             .with_prompt_style(PromptStyle::Positional)
             .with_print_style(PrintStyle::Flag("-p".into()))
-            .with_yolo(vec!["--auto"])
+            .with_auto_approve(vec!["--auto"])
             .with_extra_args(vec!["--verbose"])
             .with_aggregate_file(".hints");
 
         assert!(matches!(def.prompt_style, PromptStyle::Positional));
         assert!(def.print_style.is_some());
-        assert!(def.supports_yolo);
-        assert_eq!(def.yolo_args, vec!["--auto"]);
+        assert!(def.supports_auto_approve);
+        assert_eq!(def.auto_approve_args, vec!["--auto"]);
         assert_eq!(def.extra_launch_args, vec!["--verbose"]);
         assert_eq!(def.aggregate_file.as_deref(), Some(".hints"));
     }

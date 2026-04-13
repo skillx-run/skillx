@@ -43,18 +43,18 @@ With `--print` mode (non-interactive):
 claude -p "your prompt here"
 ```
 
-With YOLO mode (`--yolo`):
+With auto-approve mode (`--auto-approve`):
 
 ```bash
 claude "your prompt here" --dangerously-skip-permissions
 ```
 
-### YOLO Mode
+### Auto-approve Mode
 
 Claude Code's `--dangerously-skip-permissions` flag skips all permission prompts. The agent can read, write, and execute without asking for confirmation.
 
 ```bash
-skillx run --yolo ./examples/skills/code-review "Review all files"
+skillx run --auto-approve ./examples/skills/code-review "Review all files"
 # Equivalent to: claude "..." --dangerously-skip-permissions
 ```
 
@@ -67,8 +67,8 @@ skillx run ./examples/skills/code-review "Review the auth module"
 # Non-interactive (print) mode — process prompt and exit
 skillx run --print ./examples/skills/code-review "Review src/main.rs"
 
-# YOLO mode — no permission prompts
-skillx run --yolo ./examples/skills/code-review "Fix all lint errors"
+# Auto-approve mode — no permission prompts
+skillx run --auto-approve ./examples/skills/code-review "Fix all lint errors"
 
 # With timeout
 skillx run --timeout 30m ./examples/skills/code-review "Review the full codebase"
@@ -109,18 +109,18 @@ With `--print` mode (non-interactive):
 codex exec "your prompt here"
 ```
 
-With YOLO mode (`--yolo`):
+With auto-approve mode (`--auto-approve`):
 
 ```bash
 codex "your prompt here" --yolo
 ```
 
-### YOLO Mode
+### Auto-approve Mode
 
 Codex's `--yolo` flag enables fully autonomous operation without user confirmation.
 
 ```bash
-skillx run --yolo --agent codex ./examples/skills/code-review "Refactor the database layer"
+skillx run --auto-approve --agent codex ./examples/skills/code-review "Refactor the database layer"
 # Equivalent to: codex "..." --yolo
 ```
 
@@ -133,8 +133,8 @@ skillx run --agent codex ./examples/skills/testing-guide "Add unit tests"
 # Non-interactive (print) mode
 skillx run --print --agent codex ./examples/skills/code-review "Review src/main.rs"
 
-# YOLO mode
-skillx run --yolo --agent codex ./examples/skills/code-review "Fix all TODOs"
+# Auto-approve mode
+skillx run --auto-approve --agent codex ./examples/skills/code-review "Fix all TODOs"
 
 # With timeout and auto-confirm warnings
 skillx run --yes --timeout 1h --agent codex ./examples/skills/code-review "Complete refactor"
@@ -159,7 +159,7 @@ The following CLI agents are implemented via the data-driven `GenericAdapter`. T
 | Qoder | `qoder` |
 | Kode | `kode` |
 
-Each follows the same injection pattern: `~/.<name>/skills/<skill-name>/` (global) and `.<name>/skills/<skill-name>/` (project). None support YOLO mode.
+Each follows the same injection pattern: `~/.<name>/skills/<skill-name>/` (global) and `.<name>/skills/<skill-name>/` (project). None support auto-approve mode.
 
 ## Process Management
 
@@ -230,12 +230,12 @@ With `--print` mode (non-interactive):
 gemini -p "your prompt here"
 ```
 
-### YOLO Mode
+### Auto-approve Mode
 
-Gemini CLI supports YOLO mode with the `--yolo` flag.
+Gemini CLI supports auto-approve mode with the `--yolo` flag.
 
 ```bash
-skillx run --yolo --agent gemini-cli ./examples/skills/hello-world "prompt"
+skillx run --auto-approve --agent gemini-cli ./examples/skills/hello-world "prompt"
 # Equivalent to: gemini -i "..." --yolo
 ```
 
@@ -271,7 +271,7 @@ With `--print` mode (non-interactive, auto-approves all permissions):
 opencode run "your prompt here"
 ```
 
-### YOLO Mode
+### Auto-approve Mode
 
 Not supported.
 
@@ -301,12 +301,12 @@ skillx spawns `amp` with the `-x` (execute) flag for prompt delivery:
 amp -x "your prompt here"
 ```
 
-### YOLO Mode
+### Auto-approve Mode
 
-Amp supports YOLO mode with the `--dangerously-allow-all` flag.
+Amp supports auto-approve mode with the `--dangerously-allow-all` flag.
 
 ```bash
-skillx run --yolo --agent amp ./examples/skills/hello-world "prompt"
+skillx run --auto-approve --agent amp ./examples/skills/hello-world "prompt"
 # Equivalent to: amp -x "..." --dangerously-allow-all
 ```
 
@@ -318,6 +318,6 @@ skillx run --yolo --agent amp ./examples/skills/hello-world "prompt"
 | Lifecycle | ManagedProcess | ManagedProcess | ManagedProcess | ManagedProcess | ManagedProcess |
 | Initial prompt | Positional arg | Positional arg | `-i` flag | Positional arg | `-x` flag |
 | Print mode | `-p` flag | `exec` subcommand | `-p` flag | `run` subcommand | N/A |
-| YOLO flag | `--dangerously-skip-permissions` | `--yolo` | `--yolo` | N/A | `--dangerously-allow-all` |
+| Auto-approve flag | `--dangerously-skip-permissions` | `--yolo` | `--yolo` | N/A | `--dangerously-allow-all` |
 | Global inject | `~/.claude/skills/` | `~/.codex/skills/` | `~/.gemini/skills/` | `~/.opencode/skills/` | `~/.config/agents/skills/` |
 | Project inject | `.claude/skills/` | `.agents/skills/` | `.gemini/skills/` | `.opencode/skills/` | `.agents/skills/` |

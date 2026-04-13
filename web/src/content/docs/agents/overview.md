@@ -11,21 +11,21 @@ In skillx, an "agent" is an AI coding assistant that can read instructions from 
 
 ### Tier 1 — Dedicated Adapters (CLI)
 
-| Agent | Type | Detection | YOLO |
+| Agent | Type | Detection | Auto-approve |
 |-------|------|-----------|------|
 | Claude Code | CLI | `claude` binary or `~/.claude/` | `--dangerously-skip-permissions` |
 | OpenAI Codex | CLI | `codex` binary or `~/.codex/` | `--full-auto` |
 
 ### Tier 1 — Dedicated Adapters (IDE)
 
-| Agent | Type | Detection | YOLO |
+| Agent | Type | Detection | Auto-approve |
 |-------|------|-----------|------|
 | GitHub Copilot | IDE | VS Code extension `github.copilot-*` | — |
 | Cursor | IDE | `cursor` binary or process | — |
 
 ### Tier 2 — Dedicated Adapters
 
-| Agent | Type | Detection | YOLO |
+| Agent | Type | Detection | Auto-approve |
 |-------|------|-----------|------|
 | Gemini CLI | CLI | `gemini` binary or `~/.gemini/` | `--sandbox=none` |
 | OpenCode | CLI | `opencode` binary or `~/.config/opencode/` | — |
@@ -58,7 +58,7 @@ binary = "my-agent"
 config_dir = ".my-agent"
 lifecycle = "managed_process"   # or "file_inject_and_wait"
 supports_prompt = true
-supports_yolo = false
+supports_auto_approve = false
 ```
 
 Custom agents use the same `GenericAdapter` as Tier 3 agents.
@@ -143,7 +143,7 @@ Features:
 - Exit code captured
 - Ctrl+C kills the agent process
 - `--timeout` support
-- `--yolo` mode for permission-skipping (Claude Code, Codex, Gemini CLI)
+- `--auto-approve` mode for permission-skipping (Claude Code, Codex, Gemini CLI)
 
 ### FileInjectAndWait
 
@@ -188,11 +188,11 @@ skillx run --scope global ./my-skill "prompt"   # default
 skillx run --scope project ./my-skill "prompt"   # project-local
 ```
 
-## YOLO Mode
+## Auto-approve Mode
 
 CLI agents can skip their built-in permission prompts:
 
-| Agent | YOLO Flag |
+| Agent | Auto-approve Flag |
 |-------|-----------|
 | Claude Code | `--dangerously-skip-permissions` |
 | OpenAI Codex | `--full-auto` |
@@ -200,11 +200,11 @@ CLI agents can skip their built-in permission prompts:
 | All others | Not supported |
 
 ```bash
-skillx run --yolo ./my-skill "prompt"
+skillx run --auto-approve ./my-skill "prompt"
 ```
 
 :::caution
-YOLO mode gives the agent unrestricted access to your system. Only use with trusted skills.
+Auto-approve mode gives the agent unrestricted access to your system. Only use with trusted skills.
 :::
 
 ## Next Steps

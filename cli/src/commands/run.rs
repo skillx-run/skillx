@@ -58,9 +58,9 @@ pub struct RunArgs {
     #[arg(long)]
     pub yes: bool,
 
-    /// Agent YOLO mode: pass permission-skip flags to the agent
-    #[arg(long)]
-    pub yolo: bool,
+    /// Auto-approve mode: pass permission-skip flags to the agent
+    #[arg(long = "auto-approve", alias = "auto")]
+    pub auto_approve: bool,
 
     /// Non-interactive mode: agent processes prompt and exits
     #[arg(short = 'p', long = "print")]
@@ -345,15 +345,15 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
     // ── Phase 8: Launch ──
     ui::step("Launching agent...");
 
-    if args.yolo {
-        if adapter.supports_yolo() {
+    if args.auto_approve {
+        if adapter.supports_auto_approve() {
             ui::warn(&format!(
-                "YOLO mode: passing {}",
-                adapter.yolo_args().join(" ")
+                "Auto-approve mode: passing {}",
+                adapter.auto_approve_args().join(" ")
             ));
         } else {
             ui::warn(&format!(
-                "{} does not support YOLO mode — ignoring --yolo",
+                "{} does not support auto-approve mode — ignoring --auto-approve",
                 adapter.display_name()
             ));
         }
@@ -363,7 +363,7 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         skill_name: skill_name.clone(),
         skill_dir: inject_path.clone(),
         prompt,
-        yolo: args.yolo,
+        auto_approve: args.auto_approve,
         print_mode: args.print,
         extra_args: vec![],
     };

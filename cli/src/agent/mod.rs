@@ -110,7 +110,7 @@ pub struct LaunchConfig {
     pub skill_name: String,
     pub skill_dir: PathBuf,
     pub prompt: Option<String>,
-    pub yolo: bool,
+    pub auto_approve: bool,
     pub print_mode: bool,
     pub extra_args: Vec<String>,
 }
@@ -140,11 +140,11 @@ pub trait AgentAdapter: Send + Sync {
     /// Whether this agent supports receiving an initial prompt.
     fn supports_initial_prompt(&self) -> bool;
 
-    /// Whether this agent supports YOLO (auto-approve) mode.
-    fn supports_yolo(&self) -> bool;
+    /// Whether this agent supports auto-approve mode.
+    fn supports_auto_approve(&self) -> bool;
 
-    /// Arguments to pass for YOLO mode.
-    fn yolo_args(&self) -> Vec<&str> {
+    /// Arguments to pass for auto-approve mode.
+    fn auto_approve_args(&self) -> Vec<&str> {
         vec![]
     }
 

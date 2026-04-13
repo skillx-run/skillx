@@ -84,7 +84,7 @@ cargo clippy
 2. Implement `AgentAdapter` trait (with `#[async_trait]`)
 3. Add `pub mod my_agent;` to `cli/src/agent/mod.rs`
 4. Register in `AgentRegistry::new()` in `cli/src/agent/registry.rs`
-5. Add tests for inject paths and yolo args
+5. Add tests for inject paths and auto-approve args
 
 ## Adding a New Scanner Rule
 
