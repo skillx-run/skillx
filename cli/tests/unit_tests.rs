@@ -709,7 +709,10 @@ fn test_agent_auto_approve_args() {
 
     let claude = skillx::agent::claude_code::ClaudeCodeAdapter;
     assert!(claude.supports_auto_approve());
-    assert_eq!(claude.auto_approve_args(), vec!["--dangerously-skip-permissions"]);
+    assert_eq!(
+        claude.auto_approve_args(),
+        vec!["--dangerously-skip-permissions"]
+    );
 
     let codex = skillx::agent::codex::CodexAdapter;
     assert!(codex.supports_auto_approve());

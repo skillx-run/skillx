@@ -337,7 +337,11 @@ impl AgentAdapter for GenericAdapter {
     }
 
     fn auto_approve_args(&self) -> Vec<&str> {
-        self.0.auto_approve_args.iter().map(|s| s.as_str()).collect()
+        self.0
+            .auto_approve_args
+            .iter()
+            .map(|s| s.as_str())
+            .collect()
     }
 
     fn inject_path(&self, skill_name: &str, scope: &Scope) -> PathBuf {
