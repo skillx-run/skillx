@@ -187,6 +187,36 @@ cargo run -- cache ls            # List cache
 - Web docs sidebar includes "Examples" section between Guides and Reference
 - Web site is light-theme only (no dark mode) — ThemeSelect is overridden with empty component in astro.config.mjs
 
+## Release Process
+
+Tag-triggered automated release via `.github/workflows/release.yml`.
+
+### Steps
+
+1. Merge all PRs to `main`
+2. On `main`, create a version bump commit:
+   - `cli/Cargo.toml` — update `version`
+   - `CHANGELOG.md` — add `[X.Y.Z] - YYYY-MM-DD` section + compare link at bottom
+   - `web/src/content/docs/getting-started/installation.md` — update example output version
+3. Tag and push:
+   ```bash
+   git tag vX.Y.Z
+   git push origin main --follow-tags
+   ```
+
+### Automated Pipeline (triggered by `v*` tag)
+
+1. **Test gate** — `cargo test` + `cargo clippy` (blocks everything if fails)
+2. **Build** — cross-compile 5 targets (linux x86/arm, macos x86/arm, windows)
+3. **Release** — SHA256 checksums + GitHub Release with auto-generated notes
+4. **Publish** — `cargo publish` to crates.io (`CARGO_REGISTRY_TOKEN` secret)
+5. **Homebrew** — update `skillx-run/homebrew-tap` formula (`HOMEBREW_TAP_TOKEN` secret)
+
+### Version Files
+
+- `cli/Cargo.toml` — source of truth (SARIF output uses `env!("CARGO_PKG_VERSION")` automatically)
+- `Formula/skillx.rb` — template only, auto-updated by release CI (do not manually update SHA256)
+
 ## Data Directories
 
 ```
