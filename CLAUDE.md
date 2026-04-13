@@ -174,9 +174,9 @@ cargo run -- cache ls            # List cache
 - Agent prompt passing: Claude (`claude "msg"` / `claude -p "msg"`), Codex (`codex "msg"` / `codex exec "msg"`), Gemini (`gemini -i "msg"` / `gemini -p "msg"`), Amp (`amp -x "msg"`), OpenCode (`opencode "msg"` / `opencode run "msg"`)
 - `skill_invocation_prefix()` trait method: default `/skill-name` (Agent Skills standard), Codex overrides to `$skill-name`, Goose/Aider return `None`
 - `run` command auto-prepends skill invocation prefix to user prompt (e.g., `"/name-poem 李白"`); skips if user prompt already starts with prefix; generates prefix-only prompt when no user prompt given
-- Agent YOLO flags: Claude (`--dangerously-skip-permissions`), Codex (`--yolo`), Gemini (`--yolo`), Amp (`--dangerously-allow-all`)
+- Agent auto-approve flags: Claude (`--dangerously-skip-permissions`), Codex (`--yolo`), Gemini (`--yolo`), Amp (`--dangerously-allow-all`)
 - `AgentDef` has `PromptStyle` (Flag/Positional/None), `PrintStyle` (Flag/Subcommand), `extra_launch_args`, `print_extra_args`, `aggregate_file`
-- `PromptStyle`/`PrintStyle` chain setters: `.with_prompt_style()`, `.with_print_style()`, `.with_yolo()`, `.with_extra_args()`, `.with_aggregate_file()`
+- `PromptStyle`/`PrintStyle` chain setters: `.with_prompt_style()`, `.with_print_style()`, `.with_auto_approve()`, `.with_extra_args()`, `.with_aggregate_file()`
 - `prepare_injection()` trait method on `AgentAdapter`: default raw-copy, GenericAdapter overrides for `aggregate_file` (Goose → `.goosehints`)
 - `InjectedRecord` has `InjectionType` (CopiedFile/AggregateSection) for cleanup dispatch
 - Aggregate file injection uses `<!-- skillx:begin:name -->` / `<!-- skillx:end:name -->` marker comments

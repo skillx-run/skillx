@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `prepare_injection()` trait method for custom injection strategies (e.g., Goose → `.goosehints` aggregate file)
 - Aggregate file injection with `<!-- skillx:begin:name -->` / `<!-- skillx:end:name -->` marker comments
 - `PromptStyle` (Flag/Positional/None) and `PrintStyle` (Flag/Subcommand) in `AgentDef` for flexible agent command construction
-- Agent YOLO flags: Claude (`--dangerously-skip-permissions`), Codex (`--yolo`), Gemini (`--yolo`), Amp (`--dangerously-allow-all`)
+- Agent auto-approve flags: Claude (`--dangerously-skip-permissions`), Codex (`--yolo`), Gemini (`--yolo`), Amp (`--dangerously-allow-all`)
 - 5 example skills: name-poem, hello-world, code-review, testing-guide, commit-message (`examples/skills/`)
 - Examples documentation section in web docs sidebar
 - Landing page redesign: terminal hero with glow effect, install tabs, reordered sections

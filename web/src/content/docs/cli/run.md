@@ -30,7 +30,7 @@ Fetch a skill, scan it for security issues, inject it into the active agent's co
 | `--no-cache` | — | — | Force re-fetch, skip cache |
 | `--skip-scan` | — | — | Skip the security scan (not recommended) |
 | `--yes` | — | — | Auto-confirm WARN level risks |
-| `--yolo` | — | — | Pass permission-skip flags to the agent |
+| `--auto-approve` | `--auto` | — | Pass permission-skip flags to the agent |
 | `--print` | `-p` | — | Non-interactive mode: agent processes prompt and exits |
 | `--timeout <dur>` | — | — | Maximum run duration (e.g., `30m`, `2h`) |
 
@@ -151,10 +151,10 @@ skillx run --scope project ./examples/skills/hello-world "Set up the project"
 skillx run --print ./examples/skills/code-review "Review src/main.rs"
 ```
 
-### YOLO mode with auto-confirm
+### Auto-approve mode with auto-confirm
 
 ```bash
-skillx run --yes --yolo ./examples/skills/code-review "Fix all lint errors"
+skillx run --yes --auto-approve ./examples/skills/code-review "Fix all lint errors"
 ```
 
 ### Attach context files

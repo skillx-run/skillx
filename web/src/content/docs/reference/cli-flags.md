@@ -39,7 +39,7 @@ skillx run <source> [prompt] [options]
 | `--no-cache` | — | bool | false | Force re-fetch, skip cache |
 | `--skip-scan` | — | bool | false | Skip the security scan |
 | `--yes` | — | bool | false | Auto-confirm WARN level risks |
-| `--yolo` | — | bool | false | Pass permission-skip flags to the agent |
+| `--auto-approve` | `--auto` | bool | false | Pass permission-skip flags to the agent |
 | `--timeout` | — | string | — | Max run duration (e.g., `30m`, `2h`, `300s`) |
 
 ### Prompt Resolution Priority
@@ -66,7 +66,7 @@ The `--timeout` flag accepts human-friendly durations:
 skillx run ./my-skill "prompt"
 skillx run -f prompt.txt github:org/repo/skill
 echo "prompt" | skillx run --stdin ./skill
-skillx run --agent codex --yolo --timeout 1h ./skill "prompt"
+skillx run --agent codex --auto-approve --timeout 1h ./skill "prompt"
 skillx run --scope project --attach data.csv ./skill "analyze"
 ```
 

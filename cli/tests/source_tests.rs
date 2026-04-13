@@ -295,8 +295,8 @@ fn test_gemini_cli_adapter_properties() {
         adapter.lifecycle_mode(),
         skillx::agent::LifecycleMode::ManagedProcess
     );
-    assert!(adapter.supports_yolo());
-    assert_eq!(adapter.yolo_args(), vec!["--yolo"]);
+    assert!(adapter.supports_auto_approve());
+    assert_eq!(adapter.auto_approve_args(), vec!["--yolo"]);
 }
 
 #[test]
@@ -309,7 +309,7 @@ fn test_opencode_adapter_properties() {
         adapter.lifecycle_mode(),
         skillx::agent::LifecycleMode::ManagedProcess
     );
-    assert!(!adapter.supports_yolo());
+    assert!(!adapter.supports_auto_approve());
 }
 
 #[test]
@@ -322,8 +322,8 @@ fn test_amp_adapter_properties() {
         adapter.lifecycle_mode(),
         skillx::agent::LifecycleMode::ManagedProcess
     );
-    assert!(adapter.supports_yolo());
-    assert_eq!(adapter.yolo_args(), vec!["--dangerously-allow-all"]);
+    assert!(adapter.supports_auto_approve());
+    assert_eq!(adapter.auto_approve_args(), vec!["--dangerously-allow-all"]);
 }
 
 #[test]
@@ -336,7 +336,7 @@ fn test_windsurf_adapter_properties() {
         adapter.lifecycle_mode(),
         skillx::agent::LifecycleMode::FileInjectAndWait
     );
-    assert!(!adapter.supports_yolo());
+    assert!(!adapter.supports_auto_approve());
 }
 
 #[test]
@@ -349,7 +349,7 @@ fn test_cline_adapter_properties() {
         adapter.lifecycle_mode(),
         skillx::agent::LifecycleMode::FileInjectAndWait
     );
-    assert!(!adapter.supports_yolo());
+    assert!(!adapter.supports_auto_approve());
 }
 
 #[test]
@@ -362,7 +362,7 @@ fn test_roo_adapter_properties() {
         adapter.lifecycle_mode(),
         skillx::agent::LifecycleMode::FileInjectAndWait
     );
-    assert!(!adapter.supports_yolo());
+    assert!(!adapter.supports_auto_approve());
 }
 
 // ==================== Agent Inject Paths ====================

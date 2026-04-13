@@ -39,9 +39,9 @@ pub struct CustomAgentConfig {
     #[serde(default = "default_true")]
     pub supports_prompt: bool,
     #[serde(default)]
-    pub supports_yolo: bool,
+    pub supports_auto_approve: bool,
     #[serde(default)]
-    pub yolo_args: Vec<String>,
+    pub auto_approve_args: Vec<String>,
     pub prompt_flag: Option<String>,
 }
 
@@ -246,8 +246,8 @@ binary = "mycli"
 config_dir = ".mycli"
 lifecycle = "managed_process"
 supports_prompt = true
-supports_yolo = true
-yolo_args = ["--yes"]
+supports_auto_approve = true
+auto_approve_args = ["--yes"]
 prompt_flag = "--message"
 
 [[custom_agents]]
@@ -264,8 +264,8 @@ lifecycle = "file_inject_and_wait"
         assert_eq!(cli.binary.as_deref(), Some("mycli"));
         assert_eq!(cli.lifecycle, "managed_process");
         assert!(cli.supports_prompt);
-        assert!(cli.supports_yolo);
-        assert_eq!(cli.yolo_args, vec!["--yes"]);
+        assert!(cli.supports_auto_approve);
+        assert_eq!(cli.auto_approve_args, vec!["--yes"]);
         assert_eq!(cli.prompt_flag.as_deref(), Some("--message"));
 
         let ide = &config.custom_agents[1];
@@ -275,8 +275,8 @@ lifecycle = "file_inject_and_wait"
         assert_eq!(ide.lifecycle, "file_inject_and_wait");
         // default: supports_prompt = true
         assert!(ide.supports_prompt);
-        // default: supports_yolo = false
-        assert!(!ide.supports_yolo);
+        // default: supports_auto_approve = false
+        assert!(!ide.supports_auto_approve);
     }
 
     #[test]

@@ -150,18 +150,18 @@ skillx run --agent codex ./my-first-skill "Do the thing"
 skillx run --agent cursor ./my-first-skill "Do the thing"
 ```
 
-## 6. YOLO Mode
+## 6. Auto-approve Mode
 
 For CLI agents that support it, skip permission prompts:
 
 ```bash
-skillx run --yolo ./examples/skills/code-review "Review all changed files"
+skillx run --auto-approve ./examples/skills/code-review "Review all changed files"
 ```
 
 This passes `--dangerously-skip-permissions` to Claude Code, `--yolo` to Codex, or `--yolo` to Gemini CLI.
 
 :::caution
-YOLO mode gives the agent unrestricted access. Only use it with skills you trust completely.
+Auto-approve mode gives the agent unrestricted access. Only use it with skills you trust completely.
 :::
 
 ## Next Steps

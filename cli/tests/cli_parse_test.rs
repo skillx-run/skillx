@@ -46,8 +46,8 @@ fn test_run_basic() {
         skip_scan: bool,
         #[arg(long)]
         yes: bool,
-        #[arg(long)]
-        yolo: bool,
+        #[arg(long = "auto-approve", alias = "auto")]
+        auto_approve: bool,
         #[arg(long)]
         timeout: Option<String>,
     }
@@ -158,7 +158,7 @@ fn test_run_basic() {
         Commands::Run(args) => {
             assert_eq!(args.source.as_deref(), Some("./my-skill"));
             assert_eq!(args.prompt.as_deref(), Some("do something"));
-            assert!(!args.yolo);
+            assert!(!args.auto_approve);
             assert!(!args.skip_scan);
             assert_eq!(args.scope, "global");
         }
@@ -172,7 +172,7 @@ fn test_run_basic() {
         "github:org/repo/path",
         "--agent",
         "claude-code",
-        "--yolo",
+        "--auto-approve",
         "--skip-scan",
         "--timeout",
         "30m",
@@ -184,7 +184,7 @@ fn test_run_basic() {
         Commands::Run(args) => {
             assert_eq!(args.source.as_deref(), Some("github:org/repo/path"));
             assert_eq!(args.agent.as_deref(), Some("claude-code"));
-            assert!(args.yolo);
+            assert!(args.auto_approve);
             assert!(args.skip_scan);
             assert_eq!(args.timeout.as_deref(), Some("30m"));
             assert_eq!(args.scope, "project");

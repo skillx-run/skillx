@@ -119,7 +119,7 @@ Agent Environments
   Claude Code [✓ detected]
     claude binary found
     Lifecycle: ManagedProcess
-    YOLO: --dangerously-skip-permissions
+    Auto-approve: --dangerously-skip-permissions
 ```
 
 ## Data Directories
