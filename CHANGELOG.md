@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-04-14
+
+### Changed
+
+- Rename `--yolo` CLI flag to `--auto-approve` / `--auto` for better clarity and alignment with "Security first" positioning
+- Redesign website with neo-brutalist light-only theme
+- Add release process documentation to CLAUDE.md
+
+### Fixed
+
+- Fix incorrect repo name in example paths (`skillx.run` → `skillx`)
+- Fix terminal typing animation cursor width and steps
+
+### Added
+
+- Uninstall instructions for Shell Script and Homebrew installation methods
+- X (@SkillxRun) social media link to website
+
 ## [0.4.0] - 2026-03-24
 
 ### Added
@@ -138,6 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SARIF 2.1.0 output format for scanner results
 - Text and JSON output formatters
 
+[0.5.0]: https://github.com/skillx-run/skillx/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/skillx-run/skillx/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/skillx-run/skillx/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/skillx-run/skillx/compare/v0.3.0...v0.3.1
