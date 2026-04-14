@@ -1,6 +1,7 @@
 pub mod archive;
 pub mod bitbucket;
 pub mod gist;
+pub mod git_clone;
 pub mod gitea;
 pub mod github;
 pub mod gitlab;
