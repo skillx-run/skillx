@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-04-15
+
+### Changed
+
+- Refactor all source fetchers with three-tier download strategy: archive tarball → git clone → API fallback, avoiding API rate limits and improving download reliability across GitHub, GitLab, Bitbucket, Gitea, and SourceHut
+- Adapt fetch tier order based on subpath presence: subpath requests use git sparse clone first (only downloads needed subdirectory), whole-repo requests use tarball first
+
+### Fixed
+
+- Fix skill caching not working: `CacheManager::write_meta()` now properly persists cache metadata after downloads
+- Fix temp directory leaks on fetch failure paths with RAII cleanup guard
+- Restore SourceHut platform-specific error messages (e.g., "Set SRHT_TOKEN") for 401/403/404 responses
+
 ## [0.5.0] - 2026-04-14
 
 ### Changed
@@ -156,6 +169,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SARIF 2.1.0 output format for scanner results
 - Text and JSON output formatters
 
+[0.6.0]: https://github.com/skillx-run/skillx/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/skillx-run/skillx/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/skillx-run/skillx/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/skillx-run/skillx/compare/v0.3.1...v0.3.2

@@ -2,7 +2,7 @@ class Skillx < Formula
   desc "npx for Agent Skills — fetch, scan, inject, run, clean in one command"
   homepage "https://skillx.run"
   license "Apache-2.0"
-  version "0.5.0"
+  version "0.6.0"
 
   on_macos do
     on_arm do
