@@ -185,6 +185,7 @@ cargo run -- cache ls            # List cache
 - Aider: GenericAdapter auto-adds `--read SKILL.md` in launch when skill_dir has SKILL.md
 - Most agents now natively support SKILL.md in `.<agent>/skills/` directories (Agent Skills standard)
 - Example skills in `examples/skills/` (name-poem, hello-world, code-review, testing-guide, commit-message, dangerous-example)
+- Project release skill in `.claude/skills/release/` (used by Claude Code for version bump workflow)
 - Example skills are used in e2e tests (`e2e_tests.rs`): scan all examples, run command with `--agent universal`, gate blocking, cleanup verification, session archival
 - Run command e2e tests use `--agent universal` (always available, no binary needed) + `write_stdin("\n")` to avoid stdin blocking in CI
 - Web docs sidebar includes "Examples" section between Guides and Reference
@@ -201,18 +202,13 @@ cargo run -- cache ls            # List cache
 
 Tag-triggered automated release via `.github/workflows/release.yml`.
 
-### Steps
+### Prepare release
 
-1. Merge all PRs to `main`
-2. On `main`, create a version bump commit:
-   - `cli/Cargo.toml` — update `version`
-   - `CHANGELOG.md` — add `[X.Y.Z] - YYYY-MM-DD` section + compare link at bottom
-   - `web/src/content/docs/getting-started/installation.md` — update example output version
-3. Tag and push:
-   ```bash
-   git tag vX.Y.Z
-   git push origin main --follow-tags
-   ```
+Use the release skill (`/release` or `/release X.Y.Z`). It handles version bumps, changelog, commit, and tag. Then push:
+
+```bash
+git push origin main --follow-tags
+```
 
 ### Automated Pipeline (triggered by `v*` tag)
 
