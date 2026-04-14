@@ -155,10 +155,9 @@ async fn try_clone(
     // Set up sparse checkout for subpath
     if let Some(sp) = subpath {
         if use_sparse {
-            let out =
-                run_git(&["sparse-checkout", "set", sp], Some(&clone_dir), 30)
-                    .await
-                    .ok()?;
+            let out = run_git(&["sparse-checkout", "set", sp], Some(&clone_dir), 30)
+                .await
+                .ok()?;
             if !out.status.success() {
                 // sparse-checkout failed; fall through to full-tree copy+filter
                 ui::warn("Sparse checkout failed, using full clone");
@@ -257,10 +256,7 @@ pub async fn try_fetch_tarball(
 
     let resp = req.send().await.ok()?;
     if !resp.status().is_success() {
-        ui::warn(&format!(
-            "Archive download failed: HTTP {}",
-            resp.status()
-        ));
+        ui::warn(&format!("Archive download failed: HTTP {}", resp.status()));
         return None;
     }
 
@@ -300,10 +296,7 @@ pub async fn try_fetch_tarball(
 ///
 /// `build_request` is called on each attempt (RequestBuilder is consumed by send).
 /// Retries up to `max_retries` times with exponential backoff (1s → 2s → 4s).
-pub async fn request_with_retry<F>(
-    build_request: F,
-    max_retries: u32,
-) -> Result<reqwest::Response>
+pub async fn request_with_retry<F>(build_request: F, max_retries: u32) -> Result<reqwest::Response>
 where
     F: Fn() -> reqwest::RequestBuilder,
 {
@@ -345,8 +338,7 @@ where
 
         // Determine wait time
         let wait = if is_rate_limited {
-            parse_rate_limit_wait(resp.headers())
-                .unwrap_or_else(|| backoff_duration(attempt))
+            parse_rate_limit_wait(resp.headers()).unwrap_or_else(|| backoff_duration(attempt))
         } else {
             backoff_duration(attempt)
         };
@@ -545,18 +537,12 @@ mod tests {
 
     #[test]
     fn test_looks_like_sha() {
-        assert!(looks_like_sha(
-            "abcd1234567890abcdef1234567890abcdef1234"
-        ));
-        assert!(looks_like_sha(
-            "0000000000000000000000000000000000000000"
-        ));
+        assert!(looks_like_sha("abcd1234567890abcdef1234567890abcdef1234"));
+        assert!(looks_like_sha("0000000000000000000000000000000000000000"));
         // Too short
         assert!(!looks_like_sha("abc123"));
         // Not hex
-        assert!(!looks_like_sha(
-            "xyzd1234567890abcdef1234567890abcdef1234"
-        ));
+        assert!(!looks_like_sha("xyzd1234567890abcdef1234567890abcdef1234"));
         // Branch name
         assert!(!looks_like_sha("main"));
         assert!(!looks_like_sha("v1.0"));
@@ -564,18 +550,12 @@ mod tests {
 
     #[test]
     fn test_parse_git_version() {
-        assert_eq!(
-            parse_git_version("git version 2.39.2"),
-            Some((2, 39))
-        );
+        assert_eq!(parse_git_version("git version 2.39.2"), Some((2, 39)));
         assert_eq!(
             parse_git_version("git version 2.25.0 (Apple Git-100)"),
             Some((2, 25))
         );
-        assert_eq!(
-            parse_git_version("git version 1.8.3.1"),
-            Some((1, 8))
-        );
+        assert_eq!(parse_git_version("git version 1.8.3.1"), Some((1, 8)));
         assert_eq!(parse_git_version("not a version"), None);
     }
 

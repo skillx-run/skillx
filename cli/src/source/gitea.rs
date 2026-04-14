@@ -39,9 +39,7 @@ impl GiteaSource {
         let auth = std::env::var("GITEA_TOKEN")
             .ok()
             .map(|t| ("Authorization".to_string(), format!("token {t}")));
-        let auth_ref = auth
-            .as_ref()
-            .map(|(k, v)| (k.as_str(), v.as_str()));
+        let auth_ref = auth.as_ref().map(|(k, v)| (k.as_str(), v.as_str()));
         let https_url = format!("https://{host}/{owner}/{repo}.git");
         let ssh_url = format!("git@{host}:{owner}/{repo}.git");
 

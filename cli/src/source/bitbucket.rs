@@ -46,14 +46,11 @@ impl BitbucketSource {
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
         let ref_name = ref_.unwrap_or("HEAD");
-        let tarball_url =
-            format!("https://bitbucket.org/{owner}/{repo}/get/{ref_name}.tar.gz");
+        let tarball_url = format!("https://bitbucket.org/{owner}/{repo}/get/{ref_name}.tar.gz");
         let auth = std::env::var("BITBUCKET_TOKEN")
             .ok()
             .map(|t| ("Authorization".to_string(), format!("Bearer {t}")));
-        let auth_ref = auth
-            .as_ref()
-            .map(|(k, v)| (k.as_str(), v.as_str()));
+        let auth_ref = auth.as_ref().map(|(k, v)| (k.as_str(), v.as_str()));
         let https_url = format!("https://bitbucket.org/{owner}/{repo}.git");
         let ssh_url = format!("git@bitbucket.org:{owner}/{repo}.git");
 
@@ -127,11 +124,9 @@ impl BitbucketSource {
             ctx.owner, ctx.repo, ctx.ref_,
         );
 
-        let resp = super::git_clone::request_with_retry(
-            || ctx.auth_request(ctx.client.get(&url)),
-            3,
-        )
-        .await?;
+        let resp =
+            super::git_clone::request_with_retry(|| ctx.auth_request(ctx.client.get(&url)), 3)
+                .await?;
 
         match resp.status().as_u16() {
             401 => {

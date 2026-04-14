@@ -100,14 +100,11 @@ impl GitHubSource {
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
         let ref_name = ref_.unwrap_or("HEAD");
-        let tarball_url =
-            format!("https://github.com/{owner}/{repo}/archive/{ref_name}.tar.gz");
+        let tarball_url = format!("https://github.com/{owner}/{repo}/archive/{ref_name}.tar.gz");
         let auth = std::env::var("GITHUB_TOKEN")
             .ok()
             .map(|t| ("Authorization".to_string(), format!("Bearer {t}")));
-        let auth_ref = auth
-            .as_ref()
-            .map(|(k, v)| (k.as_str(), v.as_str()));
+        let auth_ref = auth.as_ref().map(|(k, v)| (k.as_str(), v.as_str()));
         let https_url = format!("https://github.com/{owner}/{repo}.git");
         let ssh_url = format!("git@github.com:{owner}/{repo}.git");
 
@@ -268,8 +265,7 @@ impl GitHubSource {
                                 || {
                                     let mut req = client.get(&url);
                                     if let Some(ref t) = token {
-                                        req =
-                                            req.header("Authorization", format!("Bearer {t}"));
+                                        req = req.header("Authorization", format!("Bearer {t}"));
                                     }
                                     req
                                 },
@@ -318,13 +314,8 @@ impl GitHubSource {
                                 None => name.to_string(),
                             };
                             let sub_dest = dest.join(name);
-                            let sub_files = Self::fetch_dir_api(
-                                ctx,
-                                Some(&sub_path),
-                                ref_,
-                                &sub_dest,
-                            )
-                            .await?;
+                            let sub_files =
+                                Self::fetch_dir_api(ctx, Some(&sub_path), ref_, &sub_dest).await?;
                             downloaded_files.extend(sub_files);
                         }
                     }
@@ -340,10 +331,7 @@ impl GitHubSource {
                     let name = body["name"].as_str().unwrap_or("file");
                     let file_path = dest.join(name);
                     std::fs::write(&file_path, &decoded).map_err(|e| {
-                        SkillxError::Source(format!(
-                            "failed to write {}: {e}",
-                            file_path.display()
-                        ))
+                        SkillxError::Source(format!("failed to write {}: {e}", file_path.display()))
                     })?;
                     downloaded_files.push(file_path);
                 }

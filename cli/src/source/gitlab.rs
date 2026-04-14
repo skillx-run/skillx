@@ -25,15 +25,12 @@ impl GitLabSource {
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
         let ref_name = ref_.unwrap_or("HEAD");
-        let tarball_url = format!(
-            "https://{host}/{owner}/{repo}/-/archive/{ref_name}/{repo}-{ref_name}.tar.gz"
-        );
+        let tarball_url =
+            format!("https://{host}/{owner}/{repo}/-/archive/{ref_name}/{repo}-{ref_name}.tar.gz");
         let auth = std::env::var("GITLAB_TOKEN")
             .ok()
             .map(|t| ("PRIVATE-TOKEN".to_string(), t));
-        let auth_ref = auth
-            .as_ref()
-            .map(|(k, v)| (k.as_str(), v.as_str()));
+        let auth_ref = auth.as_ref().map(|(k, v)| (k.as_str(), v.as_str()));
         let https_url = format!("https://{host}/{owner}/{repo}.git");
         let ssh_url = format!("git@{host}:{owner}/{repo}.git");
 

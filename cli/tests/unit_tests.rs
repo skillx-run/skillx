@@ -664,7 +664,11 @@ fn test_cache_write_meta_roundtrip() {
     let skill_dir = cache_dir.join("skill-files");
 
     std::fs::create_dir_all(&skill_dir).unwrap();
-    std::fs::write(skill_dir.join("SKILL.md"), "---\nname: roundtrip\n---\n# Test").unwrap();
+    std::fs::write(
+        skill_dir.join("SKILL.md"),
+        "---\nname: roundtrip\n---\n# Test",
+    )
+    .unwrap();
     std::fs::create_dir_all(skill_dir.join("sub")).unwrap();
     std::fs::write(skill_dir.join("sub/helper.md"), "helper content").unwrap();
 
@@ -737,10 +741,7 @@ async fn test_request_with_retry_on_429() {
 
     // First request returns 429 with Retry-After: 1
     Mock::given(method("GET"))
-        .respond_with(
-            ResponseTemplate::new(429)
-                .insert_header("Retry-After", "1"),
-        )
+        .respond_with(ResponseTemplate::new(429).insert_header("Retry-After", "1"))
         .up_to_n_times(1)
         .mount(&mock_server)
         .await;
@@ -754,12 +755,9 @@ async fn test_request_with_retry_on_429() {
     let url = mock_server.uri();
     let client = reqwest::Client::new();
 
-    let resp = skillx::source::git_clone::request_with_retry(
-        || client.get(&url),
-        3,
-    )
-    .await
-    .unwrap();
+    let resp = skillx::source::git_clone::request_with_retry(|| client.get(&url), 3)
+        .await
+        .unwrap();
 
     assert_eq!(resp.status(), 200);
     assert_eq!(resp.text().await.unwrap(), "ok");
@@ -781,12 +779,9 @@ async fn test_request_with_retry_no_retry_on_404() {
     let url = mock_server.uri();
     let client = reqwest::Client::new();
 
-    let resp = skillx::source::git_clone::request_with_retry(
-        || client.get(&url),
-        3,
-    )
-    .await
-    .unwrap();
+    let resp = skillx::source::git_clone::request_with_retry(|| client.get(&url), 3)
+        .await
+        .unwrap();
 
     assert_eq!(resp.status(), 404);
 }
@@ -800,21 +795,14 @@ async fn test_request_with_retry_max_retries_exceeded() {
 
     // Always return 429
     Mock::given(method("GET"))
-        .respond_with(
-            ResponseTemplate::new(429)
-                .insert_header("Retry-After", "1"),
-        )
+        .respond_with(ResponseTemplate::new(429).insert_header("Retry-After", "1"))
         .mount(&mock_server)
         .await;
 
     let url = mock_server.uri();
     let client = reqwest::Client::new();
 
-    let result = skillx::source::git_clone::request_with_retry(
-        || client.get(&url),
-        2,
-    )
-    .await;
+    let result = skillx::source::git_clone::request_with_retry(|| client.get(&url), 2).await;
 
     assert!(result.is_err());
     let err = format!("{}", result.unwrap_err());
@@ -844,12 +832,9 @@ async fn test_request_with_retry_on_503() {
     let url = mock_server.uri();
     let client = reqwest::Client::new();
 
-    let resp = skillx::source::git_clone::request_with_retry(
-        || client.get(&url),
-        3,
-    )
-    .await
-    .unwrap();
+    let resp = skillx::source::git_clone::request_with_retry(|| client.get(&url), 3)
+        .await
+        .unwrap();
 
     assert_eq!(resp.status(), 200);
 }
