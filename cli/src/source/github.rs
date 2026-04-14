@@ -6,6 +6,15 @@ use crate::ui;
 
 pub struct GitHubSource;
 
+/// Context for GitHub API fetch operations to avoid excessive arguments.
+struct ApiFetchContext<'a> {
+    client: &'a reqwest::Client,
+    token: &'a Option<String>,
+    semaphore: &'a std::sync::Arc<tokio::sync::Semaphore>,
+    owner: &'a str,
+    repo: &'a str,
+}
+
 impl GitHubSource {
     /// Parse `owner/repo/path[@ref]` format.
     pub fn parse(input: &str) -> Result<SkillSource> {
@@ -135,22 +144,31 @@ impl GitHubSource {
         let token = std::env::var("GITHUB_TOKEN").ok();
         let semaphore = std::sync::Arc::new(tokio::sync::Semaphore::new(8));
 
-        Self::fetch_dir_api(&client, &token, &semaphore, owner, repo, path, ref_, dest).await
+        let ctx = ApiFetchContext {
+            client: &client,
+            token: &token,
+            semaphore: &semaphore,
+            owner,
+            repo,
+        };
+        Self::fetch_dir_api(&ctx, path, ref_, dest).await
     }
 
     /// Recursively fetch a directory via Contents API with retry and concurrency limit.
     fn fetch_dir_api<'a>(
-        client: &'a reqwest::Client,
-        token: &'a Option<String>,
-        semaphore: &'a std::sync::Arc<tokio::sync::Semaphore>,
-        owner: &'a str,
-        repo: &'a str,
+        ctx: &'a ApiFetchContext<'a>,
         path: Option<&'a str>,
         ref_: Option<&'a str>,
         dest: &'a Path,
     ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<Vec<PathBuf>>> + Send + 'a>>
     {
         Box::pin(async move {
+            let owner = ctx.owner;
+            let repo = ctx.repo;
+            let client = ctx.client;
+            let token = ctx.token;
+            let semaphore = ctx.semaphore;
+
             // Build the API URL
             let api_path = match path {
                 Some(p) => super::urlencode_path(p),
@@ -287,11 +305,7 @@ impl GitHubSource {
                             };
                             let sub_dest = dest.join(name);
                             let sub_files = Self::fetch_dir_api(
-                                client,
-                                token,
-                                semaphore,
-                                owner,
-                                repo,
+                                ctx,
                                 Some(&sub_path),
                                 ref_,
                                 &sub_dest,

@@ -70,7 +70,7 @@ async fn try_clone(
     let mut args: Vec<&str> = vec!["clone", "--depth", "1"];
 
     // --branch for non-SHA refs
-    let is_sha = ref_.map_or(false, looks_like_sha);
+    let is_sha = ref_.is_some_and(looks_like_sha);
     if let Some(r) = ref_ {
         if !is_sha {
             args.push("--branch");
@@ -189,10 +189,10 @@ async fn ssh_probe(host: &str) -> bool {
 
     // SSH -T to GitHub/GitLab returns exit code 1 but prints a welcome message.
     // Any response (even exit 1) means SSH connectivity works.
-    match tokio::time::timeout(std::time::Duration::from_secs(5), child.wait_with_output()).await {
-        Ok(Ok(_)) => true,
-        _ => false,
-    }
+    matches!(
+        tokio::time::timeout(std::time::Duration::from_secs(5), child.wait_with_output()).await,
+        Ok(Ok(_))
+    )
 }
 
 // ---------------------------------------------------------------------------
@@ -337,7 +337,7 @@ fn parse_rate_limit_wait(headers: &reqwest::header::HeaderMap) -> Option<std::ti
     if let Some(val) = headers.get("x-ratelimit-reset") {
         if let Ok(reset_ts) = val.to_str().unwrap_or("").parse::<i64>() {
             let now = chrono::Utc::now().timestamp();
-            let wait = (reset_ts - now).max(1).min(300);
+            let wait = (reset_ts - now).clamp(1, 300);
             return Some(std::time::Duration::from_secs(wait as u64));
         }
     }
