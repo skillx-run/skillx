@@ -190,7 +190,7 @@ cargo run -- cache ls            # List cache
 - Web docs sidebar includes "Examples" section between Guides and Reference
 - Web site is light-theme only (no dark mode) — ThemeSelect is overridden with empty component in astro.config.mjs
 - `git_clone.rs` — Shared download module: `clone_skill()` (HTTPS first + SSH fallback with 3s probe), `try_fetch_tarball()`, `request_with_retry()`, `copy_dir_excluding_git()`, `copy_dir_contents()`
-- Three-tier fetch strategy for git platforms: archive tarball → git clone → platform API with retry. SourceHut uses two-tier (tarball → clone). Gist/HuggingFace use API-only with retry.
+- Three-tier fetch strategy for git platforms with adaptive ordering: subpath → git sparse clone first (only downloads needed subdir), then tarball, then API; whole repo → tarball first (single fast download), then git clone, then API. SourceHut uses two-tier (tarball → clone) with platform-specific error handling. Gist/HuggingFace use API-only with retry.
 - `request_with_retry()` retries on HTTP 429, 403 with `x-ratelimit-remaining: 0`, and 5xx. Parses `Retry-After` / `x-ratelimit-reset` headers. Exponential backoff (1s→2s→4s). Max 3 retries.
 - Git sparse checkout (`--filter=blob:none --sparse`) requires Git ≥ 2.25; auto-degrades to full `--depth 1` clone. SHA refs detected via 40-char hex and handled with `git fetch + checkout`.
 - `GIT_TERMINAL_PROMPT=0` set on all git commands to prevent interactive prompts. SSH probe uses `BatchMode=yes` + `ConnectTimeout=3`.

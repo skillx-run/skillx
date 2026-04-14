@@ -85,10 +85,13 @@ impl GitHubSource {
         })
     }
 
-    /// Fetch a skill from GitHub using a three-tier strategy:
-    ///   1. Archive tarball (no API rate limits)
-    ///   2. Git clone (HTTPS first, SSH fallback)
-    ///   3. Contents API with retry (last resort)
+    /// Fetch a skill from GitHub using a three-tier strategy.
+    ///
+    /// Tier order adapts to the request:
+    /// - With subpath: git sparse clone first (downloads only the subdir),
+    ///   then tarball, then API
+    /// - Without subpath: tarball first (single fast download), then git
+    ///   clone, then API
     pub async fn fetch(
         owner: &str,
         repo: &str,
@@ -96,7 +99,6 @@ impl GitHubSource {
         ref_: Option<&str>,
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
-        // Tier 1: Archive tarball
         let ref_name = ref_.unwrap_or("HEAD");
         let tarball_url =
             format!("https://github.com/{owner}/{repo}/archive/{ref_name}.tar.gz");
@@ -106,24 +108,36 @@ impl GitHubSource {
         let auth_ref = auth
             .as_ref()
             .map(|(k, v)| (k.as_str(), v.as_str()));
-
-        if let Some(files) =
-            super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
-        {
-            return Ok(files);
-        }
-
-        // Tier 2: Git clone
         let https_url = format!("https://github.com/{owner}/{repo}.git");
         let ssh_url = format!("git@github.com:{owner}/{repo}.git");
 
-        if let Some(files) =
-            super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
-        {
-            return Ok(files);
+        if path.is_some() {
+            // Subpath: git sparse clone first (only downloads needed files)
+            if let Some(files) =
+                super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
+            {
+                return Ok(files);
+            }
+            if let Some(files) =
+                super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
+            {
+                return Ok(files);
+            }
+        } else {
+            // Whole repo: tarball first (single fast download)
+            if let Some(files) =
+                super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
+            {
+                return Ok(files);
+            }
+            if let Some(files) =
+                super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
+            {
+                return Ok(files);
+            }
         }
 
-        // Tier 3: Contents API with retry
+        // Final fallback: Contents API with retry
         ui::info("Falling back to GitHub API...");
         Self::fetch_via_api(owner, repo, path, ref_, dest).await
     }

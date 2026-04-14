@@ -1,10 +1,14 @@
 //! Shared utilities for git-clone-based fetching and archive tarball downloads.
 //!
-//! All git-based platforms (GitHub, GitLab, Bitbucket, Gitea, SourceHut) share
-//! a common three-tier download strategy:
-//!   1. Archive tarball (no API, no git needed)
-//!   2. Git shallow clone (HTTPS first, SSH fallback)
-//!   3. Platform API with retry (last resort)
+//! Most git-based platforms (GitHub, GitLab, Bitbucket, Gitea) use a three-tier
+//! download strategy with adaptive ordering:
+//!   - **With subpath** (e.g. `owner/repo/path/to/skill`): git sparse clone
+//!     first (only downloads the needed subdir), then tarball, then API.
+//!   - **Without subpath** (whole repo): tarball first (single fast download),
+//!     then git clone, then API.
+//!
+//! SourceHut uses a two-tier strategy (tarball → git clone) with its own
+//! error handling for platform-specific token guidance.
 
 use std::path::{Path, PathBuf};
 use std::process::Output;

@@ -35,10 +35,9 @@ impl BitbucketSource {
         crate::source::url::resolve_url(url)
     }
 
-    /// Fetch a skill from Bitbucket using a three-tier strategy:
-    ///   1. Archive tarball (no API rate limits)
-    ///   2. Git clone (HTTPS first, SSH fallback)
-    ///   3. Source API with retry (last resort)
+    /// Fetch a skill from Bitbucket using a three-tier strategy.
+    ///
+    /// Tier order adapts: subpath → git sparse clone first; whole repo → tarball first.
     pub async fn fetch(
         owner: &str,
         repo: &str,
@@ -47,8 +46,6 @@ impl BitbucketSource {
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
         let ref_name = ref_.unwrap_or("HEAD");
-
-        // Tier 1: Archive tarball
         let tarball_url =
             format!("https://bitbucket.org/{owner}/{repo}/get/{ref_name}.tar.gz");
         let auth = std::env::var("BITBUCKET_TOKEN")
@@ -57,24 +54,33 @@ impl BitbucketSource {
         let auth_ref = auth
             .as_ref()
             .map(|(k, v)| (k.as_str(), v.as_str()));
-
-        if let Some(files) =
-            super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
-        {
-            return Ok(files);
-        }
-
-        // Tier 2: Git clone
         let https_url = format!("https://bitbucket.org/{owner}/{repo}.git");
         let ssh_url = format!("git@bitbucket.org:{owner}/{repo}.git");
 
-        if let Some(files) =
-            super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
-        {
-            return Ok(files);
+        if path.is_some() {
+            if let Some(files) =
+                super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
+            {
+                return Ok(files);
+            }
+            if let Some(files) =
+                super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
+            {
+                return Ok(files);
+            }
+        } else {
+            if let Some(files) =
+                super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
+            {
+                return Ok(files);
+            }
+            if let Some(files) =
+                super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
+            {
+                return Ok(files);
+            }
         }
 
-        // Tier 3: Source API with retry
         ui::info("Falling back to Bitbucket API...");
         Self::fetch_via_api(owner, repo, path, ref_, dest).await
     }
