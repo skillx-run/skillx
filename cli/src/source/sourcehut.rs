@@ -2,14 +2,14 @@ use std::path::{Path, PathBuf};
 
 use crate::config::Config;
 use crate::error::{Result, SkillxError};
+use crate::ui;
 
 pub struct SourceHutSource;
 
 impl SourceHutSource {
-    /// Fetch a skill from SourceHut via tarball download.
-    ///
-    /// Uses `https://git.sr.ht/~{owner}/{repo}/archive/{ref}.tar.gz` and
-    /// extracts via the existing archive tar.gz extraction.
+    /// Fetch a skill from SourceHut using a two-tier strategy:
+    ///   1. Tarball download with platform-specific error handling
+    ///   2. Git clone (HTTPS first, SSH fallback)
     pub async fn fetch(
         owner: &str,
         repo: &str,
@@ -18,10 +18,49 @@ impl SourceHutSource {
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
         let ref_name = ref_.unwrap_or("HEAD");
+
+        // Tier 1: Tarball download with precise error handling
+        match Self::fetch_tarball(owner, repo, path, ref_name, dest).await {
+            Ok(files) => return Ok(files),
+            Err(e) => {
+                // Propagate auth/permission/not-found errors directly
+                match &e {
+                    SkillxError::SourceHutApi(_) => return Err(e),
+                    _ => {
+                        ui::warn(&format!("Tarball download failed: {e}"));
+                    }
+                }
+            }
+        }
+
+        // Tier 2: Git clone
+        let https_url = format!("https://git.sr.ht/~{owner}/{repo}");
+        let ssh_url = format!("git@git.sr.ht:~{owner}/{repo}");
+
+        if let Some(files) =
+            super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
+        {
+            return Ok(files);
+        }
+
+        Err(SkillxError::SourceHutApi(format!(
+            "failed to fetch ~{owner}/{repo}. Check the repository and ref, or set SRHT_TOKEN for private repos."
+        )))
+    }
+
+    /// Download and extract tarball with platform-specific error messages.
+    async fn fetch_tarball(
+        owner: &str,
+        repo: &str,
+        path: Option<&str>,
+        ref_name: &str,
+        dest: &Path,
+    ) -> Result<Vec<PathBuf>> {
         let tarball_url = format!("https://git.sr.ht/~{owner}/{repo}/archive/{ref_name}.tar.gz");
 
         let client = reqwest::Client::builder()
-            .user_agent("skillx/0.3")
+            .user_agent("skillx/0.5")
+            .redirect(reqwest::redirect::Policy::limited(10))
             .build()
             .map_err(|e| SkillxError::Network(format!("failed to create HTTP client: {e}")))?;
 
@@ -31,6 +70,8 @@ impl SourceHutSource {
         if let Some(ref t) = token {
             req = req.header("Authorization", format!("Bearer {t}"));
         }
+
+        ui::info(&format!("Downloading archive from {tarball_url}..."));
 
         let resp = req
             .send()
@@ -74,10 +115,8 @@ impl SourceHutSource {
 
             super::archive::ArchiveSource::extract_tar_gz(&bytes, &tmp_dir)?;
 
-            // Find the sub_path within the extracted content
             let source_dir = tmp_dir.join(sub_path);
             if !source_dir.exists() {
-                // Clean up
                 std::fs::remove_dir_all(&tmp_dir).ok();
                 return Err(SkillxError::SourceHutApi(format!(
                     "path '{sub_path}' not found in SourceHut repo ~{owner}/{repo}"
@@ -87,52 +126,13 @@ impl SourceHutSource {
             std::fs::create_dir_all(dest)
                 .map_err(|e| SkillxError::Source(format!("failed to create dest dir: {e}")))?;
 
-            let files = copy_dir_contents(&source_dir, dest)?;
-
-            // Clean up temp dir
+            let files = super::git_clone::copy_dir_contents(&source_dir, dest)?;
             std::fs::remove_dir_all(&tmp_dir).ok();
-
             Ok(files)
         } else {
-            // Extract directly to dest
             std::fs::create_dir_all(dest)
                 .map_err(|e| SkillxError::Source(format!("failed to create dest dir: {e}")))?;
             super::archive::ArchiveSource::extract_tar_gz(&bytes, dest)
         }
     }
-}
-
-/// Recursively copy directory contents, returning list of copied files.
-fn copy_dir_contents(src: &Path, dest: &Path) -> Result<Vec<PathBuf>> {
-    let mut files = Vec::new();
-
-    for entry in std::fs::read_dir(src)
-        .map_err(|e| SkillxError::Source(format!("failed to read dir: {e}")))?
-    {
-        let entry = entry.map_err(|e| SkillxError::Source(format!("failed to read entry: {e}")))?;
-        let file_type = entry
-            .file_type()
-            .map_err(|e| SkillxError::Source(format!("failed to get file type: {e}")))?;
-
-        // Skip symlinks
-        if file_type.is_symlink() {
-            continue;
-        }
-
-        let src_path = entry.path();
-        let dest_path = dest.join(entry.file_name());
-
-        if file_type.is_dir() {
-            std::fs::create_dir_all(&dest_path)
-                .map_err(|e| SkillxError::Source(format!("failed to create dir: {e}")))?;
-            let sub_files = copy_dir_contents(&src_path, &dest_path)?;
-            files.extend(sub_files);
-        } else {
-            std::fs::copy(&src_path, &dest_path)
-                .map_err(|e| SkillxError::Source(format!("failed to copy file: {e}")))?;
-            files.push(dest_path);
-        }
-    }
-
-    Ok(files)
 }

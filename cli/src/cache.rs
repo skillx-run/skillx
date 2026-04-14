@@ -125,6 +125,37 @@ impl CacheManager {
         Ok(entries)
     }
 
+    /// Record cache metadata for files already in place at `cache_dir/skill-files/`.
+    ///
+    /// Unlike `store()`, this does NOT copy files — it only writes `meta.json`.
+    /// Use this when `fetch_fn()` already downloaded files to `cache_dest()`.
+    pub fn write_meta(source: &str, skill_name: Option<&str>) -> Result<()> {
+        let hash = Self::source_hash(source);
+        let cache_dir = Config::cache_dir()?.join(&hash);
+        let skill_dir = cache_dir.join("skill-files");
+
+        if !skill_dir.is_dir() {
+            return Err(SkillxError::Cache(format!(
+                "cannot write cache meta: skill-files directory does not exist at {}",
+                skill_dir.display()
+            )));
+        }
+
+        let config = Config::load().unwrap_or_default();
+        let meta = CacheMeta {
+            source: source.to_string(),
+            cached_at: Utc::now(),
+            ttl_seconds: config.ttl_seconds(),
+            skill_name: skill_name.map(|s| s.to_string()),
+        };
+        let meta_json = serde_json::to_string_pretty(&meta)
+            .map_err(|e| SkillxError::Cache(format!("failed to serialize cache meta: {e}")))?;
+        std::fs::write(cache_dir.join("meta.json"), meta_json)
+            .map_err(|e| SkillxError::Cache(format!("failed to write cache meta: {e}")))?;
+
+        Ok(())
+    }
+
     /// Clean all cache entries.
     pub fn clean() -> Result<usize> {
         let cache_dir = Config::cache_dir()?;

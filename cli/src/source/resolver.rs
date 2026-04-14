@@ -343,6 +343,16 @@ where
     let dest = fetch_fn().await?;
     sp.finish_and_clear();
     ui::success("Downloaded successfully");
+
+    // Write cache metadata so subsequent runs find this cached copy.
+    // fetch_fn already wrote files to cache_dest() = ~/.skillx/cache/{hash}/skill-files/,
+    // so we only need to record meta.json alongside it.
+    if !no_cache {
+        if let Err(e) = CacheManager::write_meta(cache_key, None) {
+            ui::warn(&format!("Failed to write cache metadata: {e}"));
+        }
+    }
+
     Ok(dest)
 }
 

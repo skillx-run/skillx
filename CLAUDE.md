@@ -27,13 +27,14 @@ Key modules:
   - `url.rs` — URL smart recognition engine (20+ platforms)
   - `url_patterns.rs` — Domain-to-source-type mappings (built-in + custom via config.toml)
   - `resolver.rs` — Unified resolve + fetch + cache abstraction (requires `&Config` param). `FetchedSkill` carries `resolved_ref` from source for version tracking
-  - `github.rs` — GitHub Contents API
-  - `gitlab.rs` — GitLab Repository Files API (supports self-hosted)
-  - `bitbucket.rs` — Bitbucket Source API
-  - `gitea.rs` — Gitea/Forgejo/Codeberg Contents API (supports self-hosted)
-  - `gist.rs` — GitHub Gist API
-  - `sourcehut.rs` — SourceHut tarball download + sub-path extraction
-  - `huggingface.rs` — HuggingFace REST API (models/datasets/spaces type inference)
+  - `git_clone.rs` — Shared download utilities: git clone (HTTPS+SSH), archive tarball, `request_with_retry()`, dir copy helpers
+  - `github.rs` — GitHub: three-tier fetch (archive tarball → git clone → Contents API)
+  - `gitlab.rs` — GitLab: three-tier fetch (archive tarball → git clone → Repository Files API, supports self-hosted)
+  - `bitbucket.rs` — Bitbucket: three-tier fetch (archive tarball → git clone → Source API)
+  - `gitea.rs` — Gitea/Forgejo/Codeberg: three-tier fetch (archive tarball → git clone → Contents API, supports self-hosted)
+  - `gist.rs` — GitHub Gist API (with retry)
+  - `sourcehut.rs` — SourceHut: two-tier fetch (archive tarball → git clone)
+  - `huggingface.rs` — HuggingFace REST API (with retry, models/datasets/spaces type inference)
   - `archive.rs` — ZIP/tar.gz download + extraction (with zip-slip protection)
   - `skills_directory.rs` — Skills directory platform HTML parsing (10 platforms)
   - `local.rs` — Local filesystem source
@@ -188,6 +189,13 @@ cargo run -- cache ls            # List cache
 - Run command e2e tests use `--agent universal` (always available, no binary needed) + `write_stdin("\n")` to avoid stdin blocking in CI
 - Web docs sidebar includes "Examples" section between Guides and Reference
 - Web site is light-theme only (no dark mode) — ThemeSelect is overridden with empty component in astro.config.mjs
+- `git_clone.rs` — Shared download module: `clone_skill()` (HTTPS first + SSH fallback with 3s probe), `try_fetch_tarball()`, `request_with_retry()`, `copy_dir_excluding_git()`, `copy_dir_contents()`
+- Three-tier fetch strategy for git platforms with adaptive ordering: subpath → git sparse clone first (only downloads needed subdir), then tarball, then API; whole repo → tarball first (single fast download), then git clone, then API. SourceHut uses two-tier (tarball → clone) with platform-specific error handling. Gist/HuggingFace use API-only with retry.
+- `request_with_retry()` retries on HTTP 429, 403 with `x-ratelimit-remaining: 0`, and 5xx. Parses `Retry-After` / `x-ratelimit-reset` headers. Exponential backoff (1s→2s→4s). Max 3 retries.
+- Git sparse checkout (`--filter=blob:none --sparse`) requires Git ≥ 2.25; auto-degrades to full `--depth 1` clone. SHA refs detected via 40-char hex and handled with `git fetch + checkout`.
+- `GIT_TERMINAL_PROMPT=0` set on all git commands to prevent interactive prompts. SSH probe uses `BatchMode=yes` + `ConnectTimeout=3`.
+- `CacheManager::write_meta()` writes only `meta.json` without file copying (used by `fetch_with_cache()` since fetch_fn already writes to cache_dest)
+- GitHub API fallback uses `tokio::sync::Semaphore` (max 8) for concurrent download throttling
 
 ## Release Process
 

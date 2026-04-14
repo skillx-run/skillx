@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 
 use crate::error::{Result, SkillxError};
 use crate::source::SkillSource;
+use crate::ui;
 
 pub struct GiteaSource;
 
@@ -22,10 +23,9 @@ impl GiteaSource {
         crate::source::url::resolve_url(url)
     }
 
-    /// Fetch a skill from a Gitea/Forgejo/Codeberg instance.
+    /// Fetch a skill from a Gitea/Forgejo/Codeberg instance using a three-tier strategy.
     ///
-    /// API: GET /api/v1/repos/:owner/:repo/contents/:path?ref=
-    /// Returns JSON array with `download_url` for each file.
+    /// Tier order adapts: subpath → git sparse clone first; whole repo → tarball first.
     pub async fn fetch(
         host: &str,
         owner: &str,
@@ -34,8 +34,54 @@ impl GiteaSource {
         ref_: Option<&str>,
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
+        let ref_name = ref_.unwrap_or("HEAD");
+        let tarball_url = format!("https://{host}/{owner}/{repo}/archive/{ref_name}.tar.gz");
+        let auth = std::env::var("GITEA_TOKEN")
+            .ok()
+            .map(|t| ("Authorization".to_string(), format!("token {t}")));
+        let auth_ref = auth.as_ref().map(|(k, v)| (k.as_str(), v.as_str()));
+        let https_url = format!("https://{host}/{owner}/{repo}.git");
+        let ssh_url = format!("git@{host}:{owner}/{repo}.git");
+
+        if path.is_some() {
+            if let Some(files) =
+                super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
+            {
+                return Ok(files);
+            }
+            if let Some(files) =
+                super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
+            {
+                return Ok(files);
+            }
+        } else {
+            if let Some(files) =
+                super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
+            {
+                return Ok(files);
+            }
+            if let Some(files) =
+                super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
+            {
+                return Ok(files);
+            }
+        }
+
+        ui::info("Falling back to Gitea API...");
+        Self::fetch_via_api(host, owner, repo, path, ref_, dest).await
+    }
+
+    /// Fetch via Gitea Contents API (fallback with retry).
+    async fn fetch_via_api(
+        host: &str,
+        owner: &str,
+        repo: &str,
+        path: Option<&str>,
+        ref_: Option<&str>,
+        dest: &Path,
+    ) -> Result<Vec<PathBuf>> {
         let client = reqwest::Client::builder()
-            .user_agent("skillx/0.3")
+            .user_agent("skillx/0.5")
             .build()
             .map_err(|e| SkillxError::Network(format!("failed to create HTTP client: {e}")))?;
 
@@ -68,15 +114,18 @@ impl GiteaSource {
             url.push_str(&format!("?ref={}", super::urlencoding(r)));
         }
 
-        let mut req = ctx.client.get(&url);
-        if let Some(ref t) = ctx.token {
-            req = req.header("Authorization", format!("token {t}"));
-        }
-
-        let resp = req
-            .send()
-            .await
-            .map_err(|e| SkillxError::Network(format!("Gitea API request failed: {e}")))?;
+        let token_clone = ctx.token.clone();
+        let resp = super::git_clone::request_with_retry(
+            || {
+                let mut req = ctx.client.get(&url);
+                if let Some(ref t) = token_clone {
+                    req = req.header("Authorization", format!("token {t}"));
+                }
+                req
+            },
+            3,
+        )
+        .await?;
 
         match resp.status().as_u16() {
             401 => {
@@ -134,13 +183,17 @@ impl GiteaSource {
                 let token = ctx.token.clone();
                 let name = file_path.to_string();
                 Some(async move {
-                    let mut req = client.get(&url);
-                    if let Some(ref t) = token {
-                        req = req.header("Authorization", format!("token {t}"));
-                    }
-                    let resp = req.send().await.map_err(|e| {
-                        SkillxError::Network(format!("download failed for {name}: {e}"))
-                    })?;
+                    let resp = super::git_clone::request_with_retry(
+                        || {
+                            let mut req = client.get(&url);
+                            if let Some(ref t) = token {
+                                req = req.header("Authorization", format!("token {t}"));
+                            }
+                            req
+                        },
+                        3,
+                    )
+                    .await?;
                     if !resp.status().is_success() {
                         return Err(SkillxError::GiteaApi(format!(
                             "download failed for {name}: HTTP {}",

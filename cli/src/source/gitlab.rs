@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 
 use crate::error::{Result, SkillxError};
 use crate::source::SkillSource;
+use crate::ui;
 
 pub struct GitLabSource;
 
@@ -12,10 +13,9 @@ impl GitLabSource {
         crate::source::url::resolve_url(url)
     }
 
-    /// Fetch a skill from a GitLab instance using the Repository Files API.
+    /// Fetch a skill from a GitLab instance using a three-tier strategy.
     ///
-    /// API: GET /api/v4/projects/:id/repository/tree?path=&ref=
-    ///      GET /api/v4/projects/:id/repository/files/:path/raw?ref=
+    /// Tier order adapts: subpath → git sparse clone first; whole repo → tarball first.
     pub async fn fetch(
         host: &str,
         owner: &str,
@@ -24,8 +24,55 @@ impl GitLabSource {
         ref_: Option<&str>,
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
+        let ref_name = ref_.unwrap_or("HEAD");
+        let tarball_url =
+            format!("https://{host}/{owner}/{repo}/-/archive/{ref_name}/{repo}-{ref_name}.tar.gz");
+        let auth = std::env::var("GITLAB_TOKEN")
+            .ok()
+            .map(|t| ("PRIVATE-TOKEN".to_string(), t));
+        let auth_ref = auth.as_ref().map(|(k, v)| (k.as_str(), v.as_str()));
+        let https_url = format!("https://{host}/{owner}/{repo}.git");
+        let ssh_url = format!("git@{host}:{owner}/{repo}.git");
+
+        if path.is_some() {
+            if let Some(files) =
+                super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
+            {
+                return Ok(files);
+            }
+            if let Some(files) =
+                super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
+            {
+                return Ok(files);
+            }
+        } else {
+            if let Some(files) =
+                super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
+            {
+                return Ok(files);
+            }
+            if let Some(files) =
+                super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
+            {
+                return Ok(files);
+            }
+        }
+
+        ui::info("Falling back to GitLab API...");
+        Self::fetch_via_api(host, owner, repo, path, ref_, dest).await
+    }
+
+    /// Fetch via GitLab Repository Files API (fallback with retry).
+    async fn fetch_via_api(
+        host: &str,
+        owner: &str,
+        repo: &str,
+        path: Option<&str>,
+        ref_: Option<&str>,
+        dest: &Path,
+    ) -> Result<Vec<PathBuf>> {
         let client = reqwest::Client::builder()
-            .user_agent("skillx/0.3")
+            .user_agent("skillx/0.5")
             .build()
             .map_err(|e| SkillxError::Network(format!("failed to create HTTP client: {e}")))?;
 
@@ -43,15 +90,18 @@ impl GitLabSource {
             super::urlencoding(ref_param),
         );
 
-        let mut req = client.get(&tree_url);
-        if let Some(ref t) = token {
-            req = req.header("PRIVATE-TOKEN", t.as_str());
-        }
-
-        let resp = req
-            .send()
-            .await
-            .map_err(|e| SkillxError::Network(format!("GitLab API request failed: {e}")))?;
+        let token_clone = token.clone();
+        let resp = super::git_clone::request_with_retry(
+            || {
+                let mut req = client.get(&tree_url);
+                if let Some(ref t) = token_clone {
+                    req = req.header("PRIVATE-TOKEN", t.as_str());
+                }
+                req
+            },
+            3,
+        )
+        .await?;
 
         match resp.status().as_u16() {
             401 => {
@@ -114,13 +164,17 @@ impl GitLabSource {
                 let token = token.clone();
                 let name = file_path.to_string();
                 Some(async move {
-                    let mut req = client.get(&raw_url);
-                    if let Some(ref t) = token {
-                        req = req.header("PRIVATE-TOKEN", t.as_str());
-                    }
-                    let resp = req.send().await.map_err(|e| {
-                        SkillxError::Network(format!("download failed for {name}: {e}"))
-                    })?;
+                    let resp = super::git_clone::request_with_retry(
+                        || {
+                            let mut req = client.get(&raw_url);
+                            if let Some(ref t) = token {
+                                req = req.header("PRIVATE-TOKEN", t.as_str());
+                            }
+                            req
+                        },
+                        3,
+                    )
+                    .await?;
                     if !resp.status().is_success() {
                         return Err(SkillxError::GitLabApi(format!(
                             "download failed for {name}: HTTP {}",
