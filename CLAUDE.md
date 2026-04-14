@@ -115,7 +115,7 @@ SkillValue supports string shorthand (`"source"`) and detailed object (`{ source
 
 ```bash
 cargo build --workspace          # Build all
-cargo test --workspace           # Run all tests (300+)
+cargo test --workspace           # Run all tests (355+)
 cargo build --release            # Release build
 cargo run -- run ./skill "msg"   # Run CLI
 cargo run -- run                 # Run from skillx.toml
@@ -184,6 +184,8 @@ cargo run -- cache ls            # List cache
 - Aider: GenericAdapter auto-adds `--read SKILL.md` in launch when skill_dir has SKILL.md
 - Most agents now natively support SKILL.md in `.<agent>/skills/` directories (Agent Skills standard)
 - Example skills in `examples/skills/` (name-poem, hello-world, code-review, testing-guide, commit-message, dangerous-example)
+- Example skills are used in e2e tests (`e2e_tests.rs`): scan all examples, run command with `--agent universal`, gate blocking, cleanup verification, session archival
+- Run command e2e tests use `--agent universal` (always available, no binary needed) + `write_stdin("\n")` to avoid stdin blocking in CI
 - Web docs sidebar includes "Examples" section between Guides and Reference
 - Web site is light-theme only (no dark mode) — ThemeSelect is overridden with empty component in astro.config.mjs
 
