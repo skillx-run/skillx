@@ -1,15 +1,13 @@
 use std::path::{Path, PathBuf};
 
-use crate::config::Config;
 use crate::error::{Result, SkillxError};
 
 pub struct SourceHutSource;
 
 impl SourceHutSource {
-    /// Fetch a skill from SourceHut via tarball download.
-    ///
-    /// Uses `https://git.sr.ht/~{owner}/{repo}/archive/{ref}.tar.gz` and
-    /// extracts via the existing archive tar.gz extraction.
+    /// Fetch a skill from SourceHut using a two-tier strategy:
+    ///   1. Tarball download (existing approach, most reliable for SourceHut)
+    ///   2. Git clone (HTTPS first, SSH fallback)
     pub async fn fetch(
         owner: &str,
         repo: &str,
@@ -18,121 +16,35 @@ impl SourceHutSource {
         dest: &Path,
     ) -> Result<Vec<PathBuf>> {
         let ref_name = ref_.unwrap_or("HEAD");
+
+        // Tier 1: Tarball download (SourceHut's native mechanism)
         let tarball_url = format!("https://git.sr.ht/~{owner}/{repo}/archive/{ref_name}.tar.gz");
+        let auth = std::env::var("SRHT_TOKEN")
+            .ok()
+            .map(|t| ("Authorization".to_string(), format!("Bearer {t}")));
+        let auth_ref = auth
+            .as_ref()
+            .map(|(k, v)| (k.as_str(), v.as_str()));
 
-        let client = reqwest::Client::builder()
-            .user_agent("skillx/0.3")
-            .build()
-            .map_err(|e| SkillxError::Network(format!("failed to create HTTP client: {e}")))?;
-
-        let token = std::env::var("SRHT_TOKEN").ok();
-
-        let mut req = client.get(&tarball_url);
-        if let Some(ref t) = token {
-            req = req.header("Authorization", format!("Bearer {t}"));
+        if let Some(files) =
+            super::git_clone::try_fetch_tarball(&tarball_url, path, dest, auth_ref).await
+        {
+            return Ok(files);
         }
 
-        let resp = req
-            .send()
-            .await
-            .map_err(|e| SkillxError::Network(format!("SourceHut tarball download failed: {e}")))?;
+        // Tier 2: Git clone
+        let https_url = format!("https://git.sr.ht/~{owner}/{repo}");
+        let ssh_url = format!("git@git.sr.ht:~{owner}/{repo}");
 
-        match resp.status().as_u16() {
-            401 => {
-                return Err(SkillxError::SourceHutApi(
-                    "authentication required. Set SRHT_TOKEN environment variable.".into(),
-                ));
-            }
-            403 => {
-                return Err(SkillxError::SourceHutApi(
-                    "access denied. Repository may be private — set SRHT_TOKEN.".into(),
-                ));
-            }
-            404 => {
-                return Err(SkillxError::SourceHutApi(
-                    "not found. Check the owner, repository, and ref.".into(),
-                ));
-            }
-            s if !(200..300).contains(&s) => {
-                return Err(SkillxError::SourceHutApi(format!(
-                    "SourceHut returned HTTP {s}"
-                )));
-            }
-            _ => {}
+        if let Some(files) =
+            super::git_clone::clone_skill(&https_url, Some(&ssh_url), path, ref_, dest).await
+        {
+            return Ok(files);
         }
 
-        let bytes = resp
-            .bytes()
-            .await
-            .map_err(|e| SkillxError::Network(format!("failed to read SourceHut tarball: {e}")))?;
-
-        if let Some(sub_path) = path {
-            // Extract to temp dir, then copy the target sub-path to dest
-            let tmp_dir = Config::cache_dir()?.join(format!("tmp-{}", uuid::Uuid::new_v4()));
-            std::fs::create_dir_all(&tmp_dir)
-                .map_err(|e| SkillxError::Source(format!("failed to create temp dir: {e}")))?;
-
-            super::archive::ArchiveSource::extract_tar_gz(&bytes, &tmp_dir)?;
-
-            // Find the sub_path within the extracted content
-            let source_dir = tmp_dir.join(sub_path);
-            if !source_dir.exists() {
-                // Clean up
-                std::fs::remove_dir_all(&tmp_dir).ok();
-                return Err(SkillxError::SourceHutApi(format!(
-                    "path '{sub_path}' not found in SourceHut repo ~{owner}/{repo}"
-                )));
-            }
-
-            std::fs::create_dir_all(dest)
-                .map_err(|e| SkillxError::Source(format!("failed to create dest dir: {e}")))?;
-
-            let files = copy_dir_contents(&source_dir, dest)?;
-
-            // Clean up temp dir
-            std::fs::remove_dir_all(&tmp_dir).ok();
-
-            Ok(files)
-        } else {
-            // Extract directly to dest
-            std::fs::create_dir_all(dest)
-                .map_err(|e| SkillxError::Source(format!("failed to create dest dir: {e}")))?;
-            super::archive::ArchiveSource::extract_tar_gz(&bytes, dest)
-        }
+        // Both tiers failed — return an error
+        Err(SkillxError::SourceHutApi(format!(
+            "failed to fetch ~{owner}/{repo}. Check the repository and ref, or set SRHT_TOKEN for private repos."
+        )))
     }
-}
-
-/// Recursively copy directory contents, returning list of copied files.
-fn copy_dir_contents(src: &Path, dest: &Path) -> Result<Vec<PathBuf>> {
-    let mut files = Vec::new();
-
-    for entry in std::fs::read_dir(src)
-        .map_err(|e| SkillxError::Source(format!("failed to read dir: {e}")))?
-    {
-        let entry = entry.map_err(|e| SkillxError::Source(format!("failed to read entry: {e}")))?;
-        let file_type = entry
-            .file_type()
-            .map_err(|e| SkillxError::Source(format!("failed to get file type: {e}")))?;
-
-        // Skip symlinks
-        if file_type.is_symlink() {
-            continue;
-        }
-
-        let src_path = entry.path();
-        let dest_path = dest.join(entry.file_name());
-
-        if file_type.is_dir() {
-            std::fs::create_dir_all(&dest_path)
-                .map_err(|e| SkillxError::Source(format!("failed to create dir: {e}")))?;
-            let sub_files = copy_dir_contents(&src_path, &dest_path)?;
-            files.extend(sub_files);
-        } else {
-            std::fs::copy(&src_path, &dest_path)
-                .map_err(|e| SkillxError::Source(format!("failed to copy file: {e}")))?;
-            files.push(dest_path);
-        }
-    }
-
-    Ok(files)
 }

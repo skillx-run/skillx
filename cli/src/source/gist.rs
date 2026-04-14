@@ -24,12 +24,12 @@ impl GistSource {
         Ok(SkillSource::Gist { id, revision })
     }
 
-    /// Fetch all files from a GitHub Gist.
+    /// Fetch all files from a GitHub Gist (with retry for rate limits).
     ///
     /// API: GET /gists/:id returns JSON with `files` map containing content.
     pub async fn fetch(id: &str, revision: Option<&str>, dest: &Path) -> Result<Vec<PathBuf>> {
         let client = reqwest::Client::builder()
-            .user_agent("skillx/0.3")
+            .user_agent("skillx/0.5")
             .build()
             .map_err(|e| SkillxError::Network(format!("failed to create HTTP client: {e}")))?;
 
@@ -40,15 +40,18 @@ impl GistSource {
             None => format!("https://api.github.com/gists/{id}"),
         };
 
-        let mut req = client.get(&url);
-        if let Some(ref t) = token {
-            req = req.header("Authorization", format!("Bearer {t}"));
-        }
-
-        let resp = req
-            .send()
-            .await
-            .map_err(|e| SkillxError::Network(format!("Gist API request failed: {e}")))?;
+        let token_clone = token.clone();
+        let resp = super::git_clone::request_with_retry(
+            || {
+                let mut req = client.get(&url);
+                if let Some(ref t) = token_clone {
+                    req = req.header("Authorization", format!("Bearer {t}"));
+                }
+                req
+            },
+            3,
+        )
+        .await?;
 
         match resp.status().as_u16() {
             401 => {
@@ -94,13 +97,19 @@ impl GistSource {
                 downloaded.push(dest_path);
             } else if let Some(raw_url) = file_info["raw_url"].as_str() {
                 // Large files don't have inline content; download via raw_url
-                let mut req = client.get(raw_url);
-                if let Some(ref t) = token {
-                    req = req.header("Authorization", format!("Bearer {t}"));
-                }
-                let resp = req.send().await.map_err(|e| {
-                    SkillxError::Network(format!("download failed for {filename}: {e}"))
-                })?;
+                let raw = raw_url.to_string();
+                let token_c = token.clone();
+                let resp = super::git_clone::request_with_retry(
+                    || {
+                        let mut req = client.get(&raw);
+                        if let Some(ref t) = token_c {
+                            req = req.header("Authorization", format!("Bearer {t}"));
+                        }
+                        req
+                    },
+                    3,
+                )
+                .await?;
                 if !resp.status().is_success() {
                     return Err(SkillxError::GistApi(format!(
                         "download failed for {filename}: HTTP {}",

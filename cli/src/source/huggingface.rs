@@ -18,7 +18,7 @@ struct HfFetchContext<'a> {
 pub struct HuggingFaceSource;
 
 impl HuggingFaceSource {
-    /// Fetch a skill from HuggingFace using the REST API.
+    /// Fetch a skill from HuggingFace using the REST API (with retry).
     ///
     /// - List directory: `GET https://huggingface.co/api/{type}/{owner}/{repo}/tree/{rev}/{path}`
     /// - Download file: `GET https://huggingface.co/{owner}/{repo}/resolve/{rev}/{filepath}`
@@ -38,7 +38,7 @@ impl HuggingFaceSource {
         };
 
         let client = reqwest::Client::builder()
-            .user_agent("skillx/0.3")
+            .user_agent("skillx/0.5")
             .build()
             .map_err(|e| SkillxError::Network(format!("failed to create HTTP client: {e}")))?;
 
@@ -83,15 +83,18 @@ impl HuggingFaceSource {
             )
         };
 
-        let mut req = client.get(&list_url);
-        if let Some(t) = token {
-            req = req.header("Authorization", format!("Bearer {t}"));
-        }
-
-        let resp = req
-            .send()
-            .await
-            .map_err(|e| SkillxError::Network(format!("HuggingFace API request failed: {e}")))?;
+        let token_owned = token.map(|t| t.to_string());
+        let resp = super::git_clone::request_with_retry(
+            || {
+                let mut req = client.get(&list_url);
+                if let Some(ref t) = token_owned {
+                    req = req.header("Authorization", format!("Bearer {t}"));
+                }
+                req
+            },
+            3,
+        )
+        .await?;
 
         match resp.status().as_u16() {
             401 => {
@@ -154,15 +157,17 @@ impl HuggingFaceSource {
                 let token = token.map(|t| t.to_string());
 
                 Some(async move {
-                    let mut req = client.get(&download_url);
-                    if let Some(ref t) = token {
-                        req = req.header("Authorization", format!("Bearer {t}"));
-                    }
-                    let resp = req.send().await.map_err(|e| {
-                        SkillxError::Network(format!(
-                            "HuggingFace download failed for {rfilename}: {e}"
-                        ))
-                    })?;
+                    let resp = super::git_clone::request_with_retry(
+                        || {
+                            let mut req = client.get(&download_url);
+                            if let Some(ref t) = token {
+                                req = req.header("Authorization", format!("Bearer {t}"));
+                            }
+                            req
+                        },
+                        3,
+                    )
+                    .await?;
                     if !resp.status().is_success() {
                         return Err(SkillxError::HuggingFaceApi(format!(
                             "HuggingFace download returned HTTP {} for {rfilename}",
