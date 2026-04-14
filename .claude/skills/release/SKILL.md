@@ -29,7 +29,7 @@ When no version is provided, determine the next version from the current version
 |-----------|------|
 | `### Added` or `### Changed` present | **minor** (0.5.0 → 0.6.0) |
 | Only `### Fixed` present | **patch** (0.5.0 → 0.5.1) |
-| `[Unreleased]` section is empty | **abort** — nothing to release |
+| No commits since last tag | **abort** — nothing to release |
 
 Major bumps (e.g., 0.x → 1.0) require explicit version input — they are never auto-inferred.
 
@@ -40,9 +40,29 @@ Present the inferred version to the user and ask for confirmation before proceed
 ### Step 1: Validate
 
 1. Read `cli/Cargo.toml` to get the current version
-2. Read `CHANGELOG.md` to check the `[Unreleased]` section has content
+2. Read `CHANGELOG.md` to check the `[Unreleased]` section
 3. Run `git status` to confirm the working tree is clean (no uncommitted changes)
-4. If any check fails, stop and explain what needs to be fixed
+4. If working tree is dirty, stop and explain what needs to be fixed
+
+### Step 1.5: Auto-generate changelog (if `[Unreleased]` is empty)
+
+If the `## [Unreleased]` section has no content, auto-generate it from git history:
+
+1. Find the latest version tag: `git describe --tags --abbrev=0`
+2. List non-merge commits since that tag: `git log <tag>..HEAD --no-merges --pretty=format:"%h %s"`
+3. If there are no commits since the last tag, **abort** — nothing to release
+4. Categorize each commit into changelog sections based on commit message patterns:
+
+| Commit message starts with | Section |
+|---------------------------|---------|
+| `Add`, `Implement`, `Introduce`, `Support`, `Enable` | `### Added` |
+| `Fix`, `Correct`, `Resolve`, `Repair`, `Patch` | `### Fixed` |
+| `Refactor`, `Rename`, `Redesign`, `Reorganize`, `Move`, `Migrate`, `Adapt`, `Improve`, `Optimize`, `Simplify`, `Update`, `Upgrade` | `### Changed` |
+| Other / ambiguous | Use your best judgment based on the commit diff |
+
+5. For each commit, write a concise, user-facing changelog entry (not the raw commit message). Combine related commits into a single entry when appropriate. Omit internal-only changes (formatting fixes, clippy warnings, CI tweaks, test-only additions) unless they are significant.
+6. Present the **draft changelog** to the user for review. Wait for confirmation or edits before proceeding.
+7. Write the approved changelog entries into `CHANGELOG.md` under `## [Unreleased]`
 
 ### Step 2: Update version files
 
