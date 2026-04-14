@@ -13,6 +13,34 @@ use crate::config::Config;
 use crate::error::{Result, SkillxError};
 use crate::ui;
 
+/// RAII guard that removes a temp directory on drop.
+struct TmpGuard {
+    path: PathBuf,
+    disarmed: bool,
+}
+
+impl TmpGuard {
+    fn new(path: PathBuf) -> Self {
+        Self {
+            path,
+            disarmed: false,
+        }
+    }
+
+    /// Prevent cleanup on drop (call after successful copy to dest).
+    fn disarm(&mut self) {
+        self.disarmed = true;
+    }
+}
+
+impl Drop for TmpGuard {
+    fn drop(&mut self) {
+        if !self.disarmed {
+            std::fs::remove_dir_all(&self.path).ok();
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Git clone
 // ---------------------------------------------------------------------------
@@ -64,6 +92,7 @@ async fn try_clone(
         .ok()?
         .join(format!("tmp-clone-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&tmp_dir).ok()?;
+    let mut guard = TmpGuard::new(tmp_dir.clone());
     let clone_dir = tmp_dir.join("repo");
 
     // Build clone args
@@ -150,7 +179,8 @@ async fn try_clone(
     std::fs::create_dir_all(dest).ok()?;
     let files = copy_dir_excluding_git(&source_dir, dest).ok()?;
 
-    // Clean up temp directory
+    // Success — guard will clean up on drop
+    guard.disarm();
     std::fs::remove_dir_all(&tmp_dir).ok();
 
     Some(files)
@@ -238,18 +268,18 @@ pub async fn try_fetch_tarball(
             .ok()?
             .join(format!("tmp-archive-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&tmp_dir).ok()?;
+        let _guard = TmpGuard::new(tmp_dir.clone());
         super::archive::ArchiveSource::extract_tar_gz(&bytes, &tmp_dir).ok()?;
 
         let source_dir = tmp_dir.join(sub);
         if !source_dir.is_dir() {
             ui::warn(&format!("Subpath '{sub}' not found in archive"));
-            std::fs::remove_dir_all(&tmp_dir).ok();
-            return None;
+            return None; // guard cleans up
         }
 
         std::fs::create_dir_all(dest).ok()?;
         let files = copy_dir_contents(&source_dir, dest).ok()?;
-        std::fs::remove_dir_all(&tmp_dir).ok();
+        // guard cleans up on drop
         Some(files)
     } else {
         std::fs::create_dir_all(dest).ok()?;
