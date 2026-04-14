@@ -617,6 +617,243 @@ fn test_cache_store_and_lookup() {
     std::fs::remove_dir_all(&cache_dir).ok();
 }
 
+#[test]
+fn test_cache_write_meta_creates_meta_json() {
+    // Simulate what fetch_with_cache does: files are already at cache_dest,
+    // write_meta should create meta.json so lookup succeeds.
+    let source_str = format!("test-write-meta-{}", uuid::Uuid::new_v4());
+    let hash = skillx::cache::CacheManager::source_hash(&source_str);
+    let cache_dir = skillx::config::Config::cache_dir().unwrap().join(&hash);
+    let skill_dir = cache_dir.join("skill-files");
+
+    // Create skill-files directory (as fetch_fn would)
+    std::fs::create_dir_all(&skill_dir).unwrap();
+    std::fs::write(skill_dir.join("SKILL.md"), "# Test").unwrap();
+
+    // write_meta should succeed and create meta.json
+    let result = skillx::cache::CacheManager::write_meta(&source_str, Some("test"));
+    assert!(result.is_ok());
+    assert!(cache_dir.join("meta.json").exists());
+
+    // lookup should now find the cached copy
+    let cached = skillx::cache::CacheManager::lookup(&source_str).unwrap();
+    assert!(cached.is_some());
+    assert_eq!(cached.unwrap(), skill_dir);
+
+    // Cleanup
+    std::fs::remove_dir_all(&cache_dir).ok();
+}
+
+#[test]
+fn test_cache_write_meta_without_skill_dir_fails() {
+    let source_str = format!("test-write-meta-nodir-{}", uuid::Uuid::new_v4());
+    // Don't create skill-files directory — write_meta should fail
+    let result = skillx::cache::CacheManager::write_meta(&source_str, None);
+    assert!(result.is_err());
+
+    let err_msg = format!("{}", result.unwrap_err());
+    assert!(err_msg.contains("skill-files directory does not exist"));
+}
+
+#[test]
+fn test_cache_write_meta_roundtrip() {
+    // Full roundtrip: create files → write_meta → lookup → verify
+    let source_str = format!("test-roundtrip-{}", uuid::Uuid::new_v4());
+    let hash = skillx::cache::CacheManager::source_hash(&source_str);
+    let cache_dir = skillx::config::Config::cache_dir().unwrap().join(&hash);
+    let skill_dir = cache_dir.join("skill-files");
+
+    std::fs::create_dir_all(&skill_dir).unwrap();
+    std::fs::write(skill_dir.join("SKILL.md"), "---\nname: roundtrip\n---\n# Test").unwrap();
+    std::fs::create_dir_all(skill_dir.join("sub")).unwrap();
+    std::fs::write(skill_dir.join("sub/helper.md"), "helper content").unwrap();
+
+    // Write meta
+    skillx::cache::CacheManager::write_meta(&source_str, Some("roundtrip")).unwrap();
+
+    // Verify meta.json content
+    let meta_content = std::fs::read_to_string(cache_dir.join("meta.json")).unwrap();
+    let meta: serde_json::Value = serde_json::from_str(&meta_content).unwrap();
+    assert_eq!(meta["source"].as_str().unwrap(), source_str);
+    assert_eq!(meta["skill_name"].as_str().unwrap(), "roundtrip");
+    assert!(meta["ttl_seconds"].as_u64().unwrap() > 0);
+
+    // Lookup should return the skill-files dir
+    let cached = skillx::cache::CacheManager::lookup(&source_str).unwrap();
+    assert!(cached.is_some());
+
+    // Cleanup
+    std::fs::remove_dir_all(&cache_dir).ok();
+}
+
+// ==================== Git Clone Helpers ====================
+
+#[test]
+fn test_git_clone_looks_like_sha() {
+    assert!(skillx::source::git_clone::looks_like_sha(
+        "abcd1234567890abcdef1234567890abcdef1234"
+    ));
+    assert!(!skillx::source::git_clone::looks_like_sha("main"));
+    assert!(!skillx::source::git_clone::looks_like_sha("v1.0.0"));
+    assert!(!skillx::source::git_clone::looks_like_sha("abc123")); // too short
+}
+
+#[test]
+fn test_git_clone_is_git_available() {
+    // CI always has git
+    assert!(skillx::source::git_clone::is_git_available());
+}
+
+#[test]
+fn test_git_clone_copy_dir_excluding_git() {
+    use tempfile::TempDir;
+
+    let tmp = TempDir::new().unwrap();
+    let src = tmp.path().join("src");
+    let dst = tmp.path().join("dst");
+
+    std::fs::create_dir_all(src.join(".git/objects")).unwrap();
+    std::fs::write(src.join(".git/HEAD"), "ref").unwrap();
+    std::fs::write(src.join("SKILL.md"), "# Skill").unwrap();
+    std::fs::create_dir_all(src.join("sub")).unwrap();
+    std::fs::write(src.join("sub/file.txt"), "content").unwrap();
+
+    let files = skillx::source::git_clone::copy_dir_excluding_git(&src, &dst).unwrap();
+
+    assert!(!dst.join(".git").exists());
+    assert!(dst.join("SKILL.md").exists());
+    assert!(dst.join("sub/file.txt").exists());
+    assert_eq!(files.len(), 2);
+}
+
+// ==================== Retry (wiremock) ====================
+
+#[tokio::test]
+async fn test_request_with_retry_on_429() {
+    use wiremock::matchers::method;
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    let mock_server = MockServer::start().await;
+
+    // First request returns 429 with Retry-After: 1
+    Mock::given(method("GET"))
+        .respond_with(
+            ResponseTemplate::new(429)
+                .insert_header("Retry-After", "1"),
+        )
+        .up_to_n_times(1)
+        .mount(&mock_server)
+        .await;
+
+    // Second request succeeds
+    Mock::given(method("GET"))
+        .respond_with(ResponseTemplate::new(200).set_body_string("ok"))
+        .mount(&mock_server)
+        .await;
+
+    let url = mock_server.uri();
+    let client = reqwest::Client::new();
+
+    let resp = skillx::source::git_clone::request_with_retry(
+        || client.get(&url),
+        3,
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(resp.status(), 200);
+    assert_eq!(resp.text().await.unwrap(), "ok");
+}
+
+#[tokio::test]
+async fn test_request_with_retry_no_retry_on_404() {
+    use wiremock::matchers::method;
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    let mock_server = MockServer::start().await;
+
+    Mock::given(method("GET"))
+        .respond_with(ResponseTemplate::new(404))
+        .expect(1) // Should only be called once (no retry)
+        .mount(&mock_server)
+        .await;
+
+    let url = mock_server.uri();
+    let client = reqwest::Client::new();
+
+    let resp = skillx::source::git_clone::request_with_retry(
+        || client.get(&url),
+        3,
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(resp.status(), 404);
+}
+
+#[tokio::test]
+async fn test_request_with_retry_max_retries_exceeded() {
+    use wiremock::matchers::method;
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    let mock_server = MockServer::start().await;
+
+    // Always return 429
+    Mock::given(method("GET"))
+        .respond_with(
+            ResponseTemplate::new(429)
+                .insert_header("Retry-After", "1"),
+        )
+        .mount(&mock_server)
+        .await;
+
+    let url = mock_server.uri();
+    let client = reqwest::Client::new();
+
+    let result = skillx::source::git_clone::request_with_retry(
+        || client.get(&url),
+        2,
+    )
+    .await;
+
+    assert!(result.is_err());
+    let err = format!("{}", result.unwrap_err());
+    assert!(err.contains("rate limit"));
+}
+
+#[tokio::test]
+async fn test_request_with_retry_on_503() {
+    use wiremock::matchers::method;
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    let mock_server = MockServer::start().await;
+
+    // First two requests return 503
+    Mock::given(method("GET"))
+        .respond_with(ResponseTemplate::new(503))
+        .up_to_n_times(2)
+        .mount(&mock_server)
+        .await;
+
+    // Third succeeds
+    Mock::given(method("GET"))
+        .respond_with(ResponseTemplate::new(200).set_body_string("recovered"))
+        .mount(&mock_server)
+        .await;
+
+    let url = mock_server.uri();
+    let client = reqwest::Client::new();
+
+    let resp = skillx::source::git_clone::request_with_retry(
+        || client.get(&url),
+        3,
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(resp.status(), 200);
+}
+
 // ==================== Session & Manifest ====================
 
 #[test]
