@@ -1169,6 +1169,96 @@ fn test_scan_report_default() {
     assert_eq!(report.overall_level(), skillx::scanner::RiskLevel::Pass);
 }
 
+// ==================== Resource Analyzer (RS rules) ====================
+
+#[test]
+fn test_rs001_elf_disguised_as_pdf() {
+    use skillx::scanner::resource_analyzer::ResourceAnalyzer;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("report.pdf");
+    // ELF magic bytes but .pdf extension
+    let mut data = b"\x7fELF\x02\x01\x01\x00".to_vec();
+    data.extend_from_slice(&[0u8; 100]);
+    std::fs::write(&path, &data).unwrap();
+    let report = ResourceAnalyzer::analyze(&path, "references/report.pdf").unwrap();
+    let rs001: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "RS-001")
+        .collect();
+    assert!(
+        !rs001.is_empty(),
+        "RS-001 should detect ELF file disguised as PDF"
+    );
+}
+
+#[test]
+fn test_rs001_unknown_extension_no_finding() {
+    use skillx::scanner::resource_analyzer::ResourceAnalyzer;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("data.xyz");
+    std::fs::write(&path, b"\x7fELF\x02\x01\x01\x00extra data here").unwrap();
+    let report = ResourceAnalyzer::analyze(&path, "references/data.xyz").unwrap();
+    let rs001: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "RS-001")
+        .collect();
+    assert!(
+        rs001.is_empty(),
+        "RS-001 should not fire on unknown extensions (no claimed_types match)"
+    );
+}
+
+#[test]
+fn test_rs002_size_threshold_constant() {
+    assert_eq!(
+        skillx::scanner::rules::RS_002_SIZE_THRESHOLD,
+        50 * 1024 * 1024,
+        "RS-002 threshold should be 50 MB"
+    );
+}
+
+#[test]
+fn test_rs003_executable_in_references() {
+    use skillx::scanner::resource_analyzer::ResourceAnalyzer;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("tool");
+    // ELF binary in references/
+    let mut data = b"\x7fELF\x02\x01\x01\x00".to_vec();
+    data.extend_from_slice(&[0u8; 100]);
+    std::fs::write(&path, &data).unwrap();
+    let report = ResourceAnalyzer::analyze(&path, "references/tool").unwrap();
+    let rs003: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "RS-003")
+        .collect();
+    assert!(
+        !rs003.is_empty(),
+        "RS-003 should detect executable in references/"
+    );
+    assert_eq!(rs003[0].level, skillx::scanner::RiskLevel::Danger);
+}
+
+#[test]
+fn test_rs003_text_in_references_no_finding() {
+    use skillx::scanner::resource_analyzer::ResourceAnalyzer;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("notes.txt");
+    std::fs::write(&path, "Just some notes about the project.\n").unwrap();
+    let report = ResourceAnalyzer::analyze(&path, "references/notes.txt").unwrap();
+    let rs003: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "RS-003")
+        .collect();
+    assert!(
+        rs003.is_empty(),
+        "RS-003 should not fire on text files in references/"
+    );
+}
+
 // ==================== URL encoding ====================
 
 #[test]

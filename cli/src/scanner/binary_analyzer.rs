@@ -66,3 +66,75 @@ impl BinaryAnalyzer {
         Ok(buf)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_elf_magic_bytes() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("binary");
+        // ELF header: \x7fELF + class(64bit) + endian + version + OS/ABI
+        std::fs::write(&path, b"\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+            .unwrap();
+        assert!(BinaryAnalyzer::is_executable(&path).unwrap());
+    }
+
+    #[test]
+    fn test_pe_magic_bytes() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("program.exe");
+        // PE header starts with MZ
+        let mut pe_data = b"MZ".to_vec();
+        pe_data.extend_from_slice(&[0u8; 100]); // Pad with zeros
+        std::fs::write(&path, &pe_data).unwrap();
+        assert!(BinaryAnalyzer::is_executable(&path).unwrap());
+    }
+
+    #[test]
+    fn test_macho_magic_bytes_le() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("macho");
+        // Mach-O 64-bit little-endian
+        let mut data = vec![0xcf, 0xfa, 0xed, 0xfe];
+        data.extend_from_slice(&[0u8; 100]);
+        std::fs::write(&path, &data).unwrap();
+        assert!(BinaryAnalyzer::is_executable(&path).unwrap());
+    }
+
+    #[test]
+    fn test_text_file_not_executable() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("script.sh");
+        std::fs::write(&path, "#!/bin/bash\necho hello world\n").unwrap();
+        assert!(!BinaryAnalyzer::is_executable(&path).unwrap());
+    }
+
+    #[test]
+    fn test_empty_file_not_executable() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("empty");
+        std::fs::write(&path, b"").unwrap();
+        assert!(!BinaryAnalyzer::is_executable(&path).unwrap());
+    }
+
+    #[test]
+    fn test_small_file_under_4_bytes() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("tiny");
+        std::fs::write(&path, b"abc").unwrap();
+        assert!(!BinaryAnalyzer::is_executable(&path).unwrap());
+    }
+
+    #[test]
+    fn test_read_magic_bytes_truncates() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("large");
+        // Write 16KB of data — read_magic_bytes should only return 8KB
+        let data = vec![0x42u8; 16384];
+        std::fs::write(&path, &data).unwrap();
+        let bytes = BinaryAnalyzer::read_magic_bytes(&path).unwrap();
+        assert_eq!(bytes.len(), MAGIC_BYTES_READ_LIMIT);
+    }
+}
