@@ -1626,15 +1626,20 @@ fn test_installed_state_json_format() {
 
 #[test]
 fn test_gate_pass_and_info_auto_pass() {
+    use skillx::gate::GateOptions;
     use skillx::scanner::{Finding, RiskLevel, ScanReport};
     use std::path::Path;
+    let opts = GateOptions {
+        auto_yes: false,
+        headless: false,
+    };
 
     // No report
-    assert!(skillx::gate::gate_scan_result(&None, Path::new("."), false).is_ok());
+    assert!(skillx::gate::gate_scan_result(&None, Path::new("."), &opts).is_ok());
 
     // Pass
     let pass = ScanReport { findings: vec![] };
-    assert!(skillx::gate::gate_scan_result(&Some(pass), Path::new("."), false).is_ok());
+    assert!(skillx::gate::gate_scan_result(&Some(pass), Path::new("."), &opts).is_ok());
 
     // Info
     let info = ScanReport {
@@ -1647,11 +1652,12 @@ fn test_gate_pass_and_info_auto_pass() {
             context: None,
         }],
     };
-    assert!(skillx::gate::gate_scan_result(&Some(info), Path::new("."), false).is_ok());
+    assert!(skillx::gate::gate_scan_result(&Some(info), Path::new("."), &opts).is_ok());
 }
 
 #[test]
 fn test_gate_block_always_refuses() {
+    use skillx::gate::GateOptions;
     use skillx::scanner::{Finding, RiskLevel, ScanReport};
     use std::path::Path;
 
@@ -1665,7 +1671,11 @@ fn test_gate_block_always_refuses() {
             context: None,
         }],
     };
-    let result = skillx::gate::gate_scan_result(&Some(blocked), Path::new("."), true);
+    let opts = GateOptions {
+        auto_yes: true,
+        headless: false,
+    };
+    let result = skillx::gate::gate_scan_result(&Some(blocked), Path::new("."), &opts);
     assert!(result.is_err());
 }
 
@@ -1767,6 +1777,7 @@ fn test_installed_state_future_version_rejected() {
 
 #[test]
 fn test_gate_warn_auto_yes_passes() {
+    use skillx::gate::GateOptions;
     use skillx::scanner::{Finding, RiskLevel, ScanReport};
     use std::path::Path;
 
@@ -1781,7 +1792,11 @@ fn test_gate_warn_auto_yes_passes() {
             context: None,
         }],
     };
-    let result = skillx::gate::gate_scan_result(&Some(report), Path::new("."), true);
+    let opts = GateOptions {
+        auto_yes: true,
+        headless: false,
+    };
+    let result = skillx::gate::gate_scan_result(&Some(report), Path::new("."), &opts);
     assert!(result.is_ok(), "auto_yes should auto-pass WARN level");
 }
 

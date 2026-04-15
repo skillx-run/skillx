@@ -14,24 +14,62 @@ const CONTEXT_LINES_AFTER: usize = 2;
 /// Width of the separator line in detail view.
 const SEPARATOR_WIDTH: usize = 60;
 
+/// Options controlling the scan gate behavior.
+pub struct GateOptions {
+    /// Auto-confirm WARN level risks (equivalent to --yes flag).
+    pub auto_yes: bool,
+    /// Headless mode: no interactive prompts (for CI environments).
+    /// In headless mode, WARN auto-passes and DANGER auto-refuses.
+    pub headless: bool,
+}
+
 /// Gate scan results: auto-pass PASS/INFO, prompt for WARN, require "yes" for DANGER, block BLOCK.
 ///
 /// `skill_dir` is used to display source context for the `detail` command.
 ///
-/// Note: `auto_yes` only applies to WARN level. DANGER always requires explicit "yes"
-/// confirmation to ensure users review dangerous findings before proceeding.
+/// Headless mode is activated by `opts.headless`, or auto-detected via `CI=true`
+/// or `SKILLX_HEADLESS=1` environment variables.
 pub fn gate_scan_result(
     scan_report: &Option<ScanReport>,
     skill_dir: &Path,
-    auto_yes: bool,
+    opts: &GateOptions,
 ) -> anyhow::Result<()> {
+    let effective_headless = opts.headless
+        || std::env::var("CI").is_ok()
+        || std::env::var("SKILLX_HEADLESS").is_ok();
+
+    if effective_headless {
+        return gate_scan_result_headless(scan_report);
+    }
     gate_scan_result_inner(
         scan_report,
         skill_dir,
-        auto_yes,
+        opts.auto_yes,
         &mut std::io::stdin().lock(),
         &mut std::io::stderr(),
     )
+}
+
+/// Headless gate: no interactive prompts.
+/// PASS/INFO/WARN auto-pass; DANGER/BLOCK auto-refuse.
+fn gate_scan_result_headless(scan_report: &Option<ScanReport>) -> anyhow::Result<()> {
+    let report = match scan_report {
+        Some(r) => r,
+        None => return Ok(()),
+    };
+
+    let level = report.overall_level();
+    match level {
+        RiskLevel::Pass | RiskLevel::Info | RiskLevel::Warn => Ok(()),
+        RiskLevel::Danger => {
+            ui::error("DANGER level findings detected. Refused in headless/CI mode.");
+            Err(crate::error::SkillxError::ScanBlocked.into())
+        }
+        RiskLevel::Block => {
+            ui::error("BLOCK level findings detected. Execution refused.");
+            Err(crate::error::SkillxError::ScanBlocked.into())
+        }
+    }
 }
 
 /// Inner implementation with injectable I/O for testability.
@@ -238,18 +276,25 @@ mod tests {
         }
     }
 
+    fn opts(auto_yes: bool) -> GateOptions {
+        GateOptions {
+            auto_yes,
+            headless: false,
+        }
+    }
+
     // ── Existing tests (using public API) ──
 
     #[test]
     fn test_gate_none_report() {
-        let result = gate_scan_result(&None, Path::new("."), false);
+        let result = gate_scan_result(&None, Path::new("."), &opts(false));
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_gate_pass_auto() {
         let report = ScanReport { findings: vec![] };
-        let result = gate_scan_result(&Some(report), Path::new("."), false);
+        let result = gate_scan_result(&Some(report), Path::new("."), &opts(false));
         assert!(result.is_ok());
     }
 
@@ -265,7 +310,7 @@ mod tests {
                 context: None,
             }],
         };
-        let result = gate_scan_result(&Some(report), Path::new("."), false);
+        let result = gate_scan_result(&Some(report), Path::new("."), &opts(false));
         assert!(result.is_ok());
     }
 
@@ -281,7 +326,7 @@ mod tests {
                 context: None,
             }],
         };
-        let result = gate_scan_result(&Some(report), Path::new("."), false);
+        let result = gate_scan_result(&Some(report), Path::new("."), &opts(false));
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert!(err.downcast_ref::<crate::error::SkillxError>().is_some());
@@ -405,5 +450,53 @@ mod tests {
         let output_str = String::from_utf8_lossy(&output);
         assert!(output_str.contains("MD-001"));
         assert!(output_str.contains("Source:"));
+    }
+
+    // ── Headless mode tests ──
+
+    #[test]
+    fn test_gate_headless_warn_auto_passes() {
+        let report = make_warn_report();
+        let result = gate_scan_result_headless(&Some(report));
+        assert!(result.is_ok(), "Headless mode should auto-pass WARN");
+    }
+
+    #[test]
+    fn test_gate_headless_danger_refuses() {
+        let report = ScanReport {
+            findings: vec![Finding {
+                rule_id: "MD-001".to_string(),
+                level: RiskLevel::Danger,
+                file: "SKILL.md".to_string(),
+                line: Some(1),
+                message: "danger finding".to_string(),
+                context: None,
+            }],
+        };
+        let result = gate_scan_result_headless(&Some(report));
+        assert!(result.is_err(), "Headless mode should refuse DANGER");
+    }
+
+    #[test]
+    fn test_gate_headless_block_refuses() {
+        let report = ScanReport {
+            findings: vec![Finding {
+                rule_id: "SC-010".to_string(),
+                level: RiskLevel::Block,
+                file: "evil.sh".to_string(),
+                line: Some(1),
+                message: "blocked".to_string(),
+                context: None,
+            }],
+        };
+        let result = gate_scan_result_headless(&Some(report));
+        assert!(result.is_err(), "Headless mode should refuse BLOCK");
+    }
+
+    #[test]
+    fn test_gate_headless_pass_succeeds() {
+        let report = ScanReport { findings: vec![] };
+        let result = gate_scan_result_headless(&Some(report));
+        assert!(result.is_ok(), "Headless mode should pass PASS");
     }
 }
