@@ -162,10 +162,10 @@ cargo run -- cache ls            # List cache
 - CI: GitHub Actions with `ci.yml` (fmt + clippy + test multi-platform + cargo-deny audit) and `release.yml` (tag → cross-compile → GitHub Release → crates.io → Homebrew tap)
 - `deny.toml` configures cargo-deny for license allow-list and advisory checks
 - Scanner WARN rules skip comment lines (script) and code blocks (markdown) to reduce false positives
-- `install.sh` verifies SHA256 checksums before extraction (graceful degradation if unavailable)
+- `web/public/install.sh` verifies SHA256 checksums before extraction (graceful degradation if unavailable)
 - Homebrew formula template in `Formula/skillx.rb` (SHA256 placeholders replaced by release CI)
 - cargo-binstall supported via `[package.metadata.binstall]` in Cargo.toml
-- `install.sh` — Shell one-liner installer (`curl -fsSL https://skillx.run/install.sh | sh`)
+- `web/public/install.sh` — Shell one-liner installer (`curl -fsSL https://skillx.run/install.sh | sh`)
 - Web docs sidebar in `astro.config.mjs` lists all 10 commands (CLI Reference section lists `cache` not `config`; config.toml docs are in Reference section)
 - `SKILLX_HOME` env var overrides the default `~/.skillx/` base directory (used by integration tests for isolation)
 - GitHub Action at `.github/actions/scan/action.yml` — composite action for CI security scanning with SARIF upload
