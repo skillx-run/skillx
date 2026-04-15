@@ -231,12 +231,24 @@ impl ScanEngine {
                 .to_string_lossy()
                 .to_string();
 
-            // Check if it's a script-like file
+            // Check if it's a script-like file (by extension or shebang)
             let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-            if matches!(
+            let is_script_ext = matches!(
                 ext,
                 "py" | "sh" | "bash" | "js" | "ts" | "rb" | "pl" | "ps1"
-            ) {
+            );
+
+            // Shebang detection for extensionless files
+            let has_shebang = if !is_script_ext && ext.is_empty() {
+                std::fs::read(&path)
+                    .ok()
+                    .map(|bytes| bytes.starts_with(b"#!"))
+                    .unwrap_or(false)
+            } else {
+                false
+            };
+
+            if is_script_ext || has_shebang {
                 let script_report = script_analyzer::ScriptAnalyzer::analyze(&path, &rel_path)?;
                 report.merge(script_report);
             }
@@ -333,6 +345,97 @@ mod tests {
         assert!(
             rs004.is_empty(),
             "RS-004 should not fire on regular files"
+        );
+    }
+
+    // ── Shebang detection ──
+
+    #[test]
+    fn test_extensionless_shebang_scanned() {
+        let dir = tempfile::tempdir().unwrap();
+        let skill_dir = dir.path();
+
+        std::fs::write(skill_dir.join("SKILL.md"), "---\nname: test\n---\n# Test\n").unwrap();
+        // Extensionless file with shebang and dangerous content
+        std::fs::write(skill_dir.join("runner"), "#!/bin/bash\neval(\"exploit\")\n").unwrap();
+
+        let report = ScanEngine::scan(skill_dir).unwrap();
+        let sc002: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-002")
+            .collect();
+        assert!(
+            !sc002.is_empty(),
+            "Extensionless files with shebang should be scanned as scripts"
+        );
+    }
+
+    #[test]
+    fn test_extensionless_no_shebang_skipped() {
+        let dir = tempfile::tempdir().unwrap();
+        let skill_dir = dir.path();
+
+        std::fs::write(skill_dir.join("SKILL.md"), "---\nname: test\n---\n# Test\n").unwrap();
+        // Extensionless file WITHOUT shebang — should not be scanned as script
+        std::fs::write(skill_dir.join("data"), "eval(\"exploit\")\n").unwrap();
+
+        let report = ScanEngine::scan(skill_dir).unwrap();
+        let sc002: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-002")
+            .collect();
+        assert!(
+            sc002.is_empty(),
+            "Extensionless files without shebang should not be scanned as scripts"
+        );
+    }
+
+    // ── RS-005: Script in references/ ──
+
+    #[test]
+    fn test_references_script_detected() {
+        let dir = tempfile::tempdir().unwrap();
+        let skill_dir = dir.path();
+
+        std::fs::write(skill_dir.join("SKILL.md"), "---\nname: test\n---\n# Test\n").unwrap();
+        let refs = skill_dir.join("references");
+        std::fs::create_dir_all(&refs).unwrap();
+        std::fs::write(refs.join("helper.sh"), "#!/bin/bash\necho hello\n").unwrap();
+
+        let report = ScanEngine::scan(skill_dir).unwrap();
+        let rs005: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "RS-005")
+            .collect();
+        assert!(
+            !rs005.is_empty(),
+            "RS-005 should detect script files in references/"
+        );
+        assert_eq!(rs005[0].level, RiskLevel::Warn);
+    }
+
+    #[test]
+    fn test_references_text_no_rs005() {
+        let dir = tempfile::tempdir().unwrap();
+        let skill_dir = dir.path();
+
+        std::fs::write(skill_dir.join("SKILL.md"), "---\nname: test\n---\n# Test\n").unwrap();
+        let refs = skill_dir.join("references");
+        std::fs::create_dir_all(&refs).unwrap();
+        std::fs::write(refs.join("notes.txt"), "Just some notes.\n").unwrap();
+
+        let report = ScanEngine::scan(skill_dir).unwrap();
+        let rs005: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "RS-005")
+            .collect();
+        assert!(
+            rs005.is_empty(),
+            "RS-005 should not fire on plain text files"
         );
     }
 }

@@ -59,9 +59,9 @@ impl ResourceAnalyzer {
         }
 
         // RS-003: Executable in references/ (shared detection)
-        if (rel_path.starts_with("references/") || rel_path.starts_with("references\\"))
-            && BinaryAnalyzer::is_executable(path)?
-        {
+        let in_references =
+            rel_path.starts_with("references/") || rel_path.starts_with("references\\");
+        if in_references && BinaryAnalyzer::is_executable(path)? {
             report.add(Finding {
                 rule_id: "RS-003".to_string(),
                 level: RiskLevel::Danger,
@@ -70,6 +70,23 @@ impl ResourceAnalyzer {
                 line: None,
                 context: None,
             });
+        }
+
+        // RS-005: Script file in references/ (shebang detection)
+        if in_references && !BinaryAnalyzer::is_executable(path)? {
+            if let Ok(bytes) = std::fs::read(path) {
+                if bytes.starts_with(b"#!") {
+                    report.add(Finding {
+                        rule_id: "RS-005".to_string(),
+                        level: RiskLevel::Warn,
+                        message: "script file (shebang detected) in references directory"
+                            .to_string(),
+                        file: rel_path.to_string(),
+                        line: None,
+                        context: None,
+                    });
+                }
+            }
         }
 
         Ok(report)
