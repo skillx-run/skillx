@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-04-16
+
+### Added
+
+- `skillx upgrade` command: detect install method (Homebrew/Cargo/cargo-binstall) and execute upgrade, with manual instructions for unknown methods
+- Background CLI version check after every command with two-tier fallback (GitHub Releases API → crates.io), rate-limited 24h cache, and configurable via `[update]` in config.toml
+- `SKILLX_NO_UPDATE_CHECK` environment variable to disable background version check (useful in CI)
+
+### Fixed
+
+- Move `install.sh` to `web/public/` so it is correctly served at `skillx.run/install.sh`
+
 ## [0.6.0] - 2026-04-15
 
 ### Changed
@@ -169,6 +181,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SARIF 2.1.0 output format for scanner results
 - Text and JSON output formatters
 
+[0.7.0]: https://github.com/skillx-run/skillx/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/skillx-run/skillx/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/skillx-run/skillx/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/skillx-run/skillx/compare/v0.3.2...v0.4.0

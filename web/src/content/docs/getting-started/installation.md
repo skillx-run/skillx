@@ -102,7 +102,7 @@ skillx --version
 You should see output like:
 
 ```
-skillx 0.6.0
+skillx 0.7.0
 ```
 
 Check that an agent is detected:
