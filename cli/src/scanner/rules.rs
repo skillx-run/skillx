@@ -182,6 +182,38 @@ pub const SC_011_PATTERNS: &[&str] = &[
     r#"skillx\s+config"#,
 ];
 
+/// SC-012: Base64 decode execution (DANGER)
+pub const SC_012_PATTERNS: &[&str] = &[
+    r#"\bbase64\s+(-d|--decode)"#,
+    r#"base64\.b64decode"#,
+    r#"\batob\s*\("#,
+    r#"Base64\.(decode|getDecoder)"#,
+    r#"\|\s*base64\b"#,
+];
+
+/// SC-013: Hex-encoded execution (DANGER)
+pub const SC_013_PATTERNS: &[&str] = &[
+    r#"bytes\.fromhex\s*\("#,
+    r#"Buffer\.from\s*\([^)]*['"]hex['"]\)"#,
+    r#"\bxxd\s+-r"#,
+    r#"printf\s+['"]\\x"#,
+];
+
+/// SC-014: String concatenation obfuscation (WARN)
+pub const SC_014_PATTERNS: &[&str] = &[
+    r#"\bchr\s*\(\s*\d+\s*\)"#,
+    r#"String\.fromCharCode\s*\("#,
+    r#"\[\s*char\s*\]\s*\d+"#,
+];
+
+// --- Markdown extension rules ---
+
+/// MD-010: Hidden text / invisible characters (WARN)
+pub const MD_010_PATTERNS: &[&str] = &[
+    r#"<!--[^>]*(?i)(ignore|override|system\s*prompt|new\s+instructions)"#,
+    r#"[\x{200B}\x{200C}\x{200D}\x{FEFF}]"#,
+];
+
 // --- Resource rules (RS-001 ~ RS-003) ---
 
 /// RS-002: Large file threshold in bytes (50 MB)

@@ -176,4 +176,99 @@ mod tests {
             "DANGER rules should still fire on comment lines"
         );
     }
+
+    // ── SC-012: Base64 decode execution ──
+
+    #[test]
+    fn test_sc012_base64_decode_triggers() {
+        let report = analyze_script_content("echo payload | base64 -d | bash\n");
+        let findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-012")
+            .collect();
+        assert!(!findings.is_empty(), "SC-012 should detect base64 -d");
+    }
+
+    #[test]
+    fn test_sc012_python_b64decode_triggers() {
+        let report = analyze_script_content("import base64\nbase64.b64decode(encoded)\n");
+        let findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-012")
+            .collect();
+        assert!(!findings.is_empty(), "SC-012 should detect b64decode");
+    }
+
+    #[test]
+    fn test_sc012_base64_encode_no_trigger() {
+        let report = analyze_script_content("base64 file.txt > encoded.txt\n");
+        let findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-012")
+            .collect();
+        assert!(
+            findings.is_empty(),
+            "SC-012 should not trigger on base64 encode"
+        );
+    }
+
+    // ── SC-013: Hex-encoded execution ──
+
+    #[test]
+    fn test_sc013_fromhex_triggers() {
+        let report = analyze_script_content("data = bytes.fromhex('48656c6c6f')\n");
+        let findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-013")
+            .collect();
+        assert!(!findings.is_empty(), "SC-013 should detect bytes.fromhex");
+    }
+
+    #[test]
+    fn test_sc013_hex_color_no_trigger() {
+        let report = analyze_script_content("hex_color = '#ffffff'\n");
+        let findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-013")
+            .collect();
+        assert!(
+            findings.is_empty(),
+            "SC-013 should not trigger on hex colors"
+        );
+    }
+
+    // ── SC-014: String concatenation obfuscation ──
+
+    #[test]
+    fn test_sc014_fromcharcode_triggers() {
+        let report = analyze_script_content("var cmd = String.fromCharCode(101, 118, 97, 108);\n");
+        let findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-014")
+            .collect();
+        assert!(
+            !findings.is_empty(),
+            "SC-014 should detect String.fromCharCode"
+        );
+    }
+
+    #[test]
+    fn test_sc014_charcodeat_no_trigger() {
+        let report = analyze_script_content("var code = str.charCodeAt(0);\n");
+        let findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-014")
+            .collect();
+        assert!(
+            findings.is_empty(),
+            "SC-014 should not trigger on charCodeAt"
+        );
+    }
 }
