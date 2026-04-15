@@ -395,4 +395,51 @@ mod tests {
             "MD-010 should detect zero-width space characters"
         );
     }
+
+    // ── MD-011: Data URI / JavaScript URI ──
+
+    #[test]
+    fn test_md011_data_uri_base64_triggers() {
+        let content = "---\nname: test\n---\n# Skill\n\n![img](data:text/html;base64,PHNjcmlwdD4=)\n";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md011: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-011")
+            .collect();
+        assert!(
+            !md011.is_empty(),
+            "MD-011 should detect data URI with base64"
+        );
+    }
+
+    #[test]
+    fn test_md011_javascript_uri_triggers() {
+        let content = "---\nname: test\n---\n# Skill\n\n[click](javascript:alert(1))\n";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md011: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-011")
+            .collect();
+        assert!(
+            !md011.is_empty(),
+            "MD-011 should detect javascript: URI scheme"
+        );
+    }
+
+    #[test]
+    fn test_md011_normal_url_no_trigger() {
+        let content = "---\nname: test\n---\n# Skill\n\nSee [docs](https://example.com/data)\n";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md011: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-011")
+            .collect();
+        assert!(
+            md011.is_empty(),
+            "MD-011 should not trigger on normal HTTPS URLs"
+        );
+    }
 }

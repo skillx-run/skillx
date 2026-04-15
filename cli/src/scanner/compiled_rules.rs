@@ -68,6 +68,12 @@ pub static MD_RULES: LazyLock<Vec<CompiledRule>> = LazyLock::new(|| {
             level: RiskLevel::Warn,
             description: "hidden text or invisible characters",
         },
+        CompiledRule {
+            id: "MD-011",
+            patterns: compile_patterns(rules::MD_011_PATTERNS),
+            level: RiskLevel::Warn,
+            description: "data URI or JavaScript URI scheme",
+        },
     ]
 });
 
@@ -152,6 +158,12 @@ pub static SC_RULES: LazyLock<Vec<CompiledRule>> = LazyLock::new(|| {
             patterns: compile_patterns(rules::SC_014_PATTERNS),
             level: RiskLevel::Warn,
             description: "string concatenation obfuscation",
+        },
+        CompiledRule {
+            id: "SC-015",
+            patterns: compile_patterns(rules::SC_015_PATTERNS),
+            level: RiskLevel::Danger,
+            description: "environment variable exfiltration",
         },
     ]
 });

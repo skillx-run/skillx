@@ -214,6 +214,21 @@ pub const MD_010_PATTERNS: &[&str] = &[
     r#"[\x{200B}\x{200C}\x{200D}\x{FEFF}]"#,
 ];
 
+/// SC-015: Environment variable exfiltration (DANGER)
+pub const SC_015_PATTERNS: &[&str] = &[
+    r#"\bprintenv\b"#,
+    r#"\bos\.environ\b"#,
+    r#"\bprocess\.env\b"#,
+    r#"ENV\.fetch\b"#,
+];
+
+/// MD-011: Data URI / JavaScript URI in markdown (WARN)
+pub const MD_011_PATTERNS: &[&str] = &[
+    r#"data:text/html;base64,"#,
+    r#"data:application/javascript;base64,"#,
+    r#"\bjavascript:"#,
+];
+
 // --- Resource rules (RS-001 ~ RS-003) ---
 
 /// RS-002: Large file threshold in bytes (50 MB)
