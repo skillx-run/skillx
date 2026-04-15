@@ -62,13 +62,15 @@ Key modules:
 - `types.rs` — Shared types (Scope enum)
 - `error.rs` — SkillxError (thiserror) + Result alias
 - `ui.rs` — Terminal output helpers (console + indicatif)
-- `commands/` — Command implementations (10 commands, anyhow::Result)
+- `update_check.rs` — CLI self-upgrade check (GitHub Releases API, rate-limited cache, install method detection)
+- `commands/` — Command implementations (11 commands, anyhow::Result)
   - `run.rs` — Ephemeral run (fetch → scan → inject → launch → cleanup, the primary usage mode)
   - `install.rs` — Persistent install (opt-in, explicit sources or from skillx.toml)
   - `uninstall.rs` — Remove installed skills (per-agent partial or full)
   - `list.rs` — List installed skills (table/JSON, --outdated check)
   - `update.rs` — Update installed skills (SHA256 diff, --dry-run)
   - `init.rs` — Initialize skillx.toml (empty or --from-installed)
+  - `upgrade.rs` — Check for and upgrade skillx itself (auto-detect install method, shell out to brew/cargo)
   - `scan.rs`, `agents.rs`, `info.rs`, `cache.rs`
 
 ### Error Strategy
@@ -133,6 +135,7 @@ cargo run -- agents              # List agents
 cargo run -- agents --all        # List all 32 agents
 cargo run -- info ./skill        # Show info
 cargo run -- cache ls            # List cache
+cargo run -- upgrade             # Check for CLI updates
 ```
 
 ## Conventions
@@ -168,6 +171,10 @@ cargo run -- cache ls            # List cache
 - `web/public/install.sh` — Shell one-liner installer (`curl -fsSL https://skillx.run/install.sh | sh`)
 - Web docs sidebar in `astro.config.mjs` lists all 10 commands (CLI Reference section lists `cache` not `config`; config.toml docs are in Reference section)
 - `SKILLX_HOME` env var overrides the default `~/.skillx/` base directory (used by integration tests for isolation)
+- `SKILLX_NO_UPDATE_CHECK` env var disables background CLI update check (useful in CI)
+- Background upgrade check runs after every command (except `upgrade`), silently fails on error, never affects exit code
+- `update_check.rs` uses `semver` crate for version comparison, `~/.skillx/update-check.json` for rate-limited caching (default 24h), configurable via `[update]` in config.toml
+- Version check uses two-tier fallback: GitHub Releases API (primary, supports `GITHUB_TOKEN`) → crates.io API (fallback, independent infrastructure)
 - GitHub Action at `.github/actions/scan/action.yml` — composite action for CI security scanning with SARIF upload
 - `install` and `update` commands fetch skills concurrently (scan/gate remain sequential for interactive confirmation)
 - `--print` / `-p` flag on `skillx run` enables non-interactive mode (agent processes prompt and exits)
@@ -231,5 +238,6 @@ git push origin main --follow-tags
 ├── installed.json   # Persistent install state (skills, injections, SHA256)
 ├── cache/           # Cached skills (TTL-based)
 ├── active/          # Active run sessions
+├── update-check.json  # Last CLI update check result (version, timestamp)
 └── history/         # Archived session manifests
 ```

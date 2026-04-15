@@ -8,6 +8,7 @@ pub mod run;
 pub mod scan;
 pub mod uninstall;
 pub mod update;
+pub mod upgrade;
 
 use clap::{Parser, Subcommand};
 
@@ -54,4 +55,7 @@ pub enum Commands {
 
     /// Manage local cache
     Cache(cache::CacheArgs),
+
+    /// Check for and upgrade skillx itself
+    Upgrade(upgrade::UpgradeArgs),
 }

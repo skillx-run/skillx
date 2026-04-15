@@ -10,3 +10,4 @@ pub mod session;
 pub mod source;
 pub mod types;
 pub mod ui;
+pub mod update_check;

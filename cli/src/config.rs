@@ -11,6 +11,7 @@ pub struct Config {
     pub scan: ScanConfig,
     pub agent: AgentConfig,
     pub history: HistoryConfig,
+    pub update: UpdateConfig,
     pub url_patterns: Vec<CustomUrlPattern>,
     pub custom_agents: Vec<CustomAgentConfig>,
 }
@@ -81,6 +82,24 @@ pub struct AgentDefaults {
 pub struct HistoryConfig {
     /// Max history entries to keep
     pub max_entries: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct UpdateConfig {
+    /// Whether to check for CLI updates. Default: true
+    pub check: bool,
+    /// Check interval (e.g., "24h", "7d"). Default: "24h"
+    pub interval: String,
+}
+
+impl Default for UpdateConfig {
+    fn default() -> Self {
+        UpdateConfig {
+            check: true,
+            interval: "24h".to_string(),
+        }
+    }
 }
 
 impl Default for CacheConfig {
@@ -180,6 +199,11 @@ impl Config {
     /// Parse TTL string (e.g., "24h", "7d") into seconds.
     pub fn ttl_seconds(&self) -> u64 {
         parse_duration_secs(&self.cache.ttl).unwrap_or(86400)
+    }
+
+    /// Parse update check interval into seconds.
+    pub fn update_check_interval_secs(&self) -> u64 {
+        parse_duration_secs(&self.update.interval).unwrap_or(86400)
     }
 }
 
@@ -287,6 +311,35 @@ lifecycle = "file_inject_and_wait"
     }
 
     #[test]
+    fn test_update_config_defaults() {
+        let config: Config = toml::from_str("").unwrap();
+        assert!(config.update.check);
+        assert_eq!(config.update.interval, "24h");
+    }
+
+    #[test]
+    fn test_update_config_custom() {
+        let toml_str = r#"
+[update]
+check = false
+interval = "7d"
+"#;
+        let config: Config = toml::from_str(toml_str).unwrap();
+        assert!(!config.update.check);
+        assert_eq!(config.update.interval, "7d");
+    }
+
+    #[test]
+    fn test_update_check_interval_secs() {
+        let mut config = Config::default();
+        assert_eq!(config.update_check_interval_secs(), 86400); // 24h
+        config.update.interval = "7d".to_string();
+        assert_eq!(config.update_check_interval_secs(), 604800); // 7d
+        config.update.interval = "1h".to_string();
+        assert_eq!(config.update_check_interval_secs(), 3600); // 1h
+    }
+
+    #[test]
     fn test_full_config_with_all_sections() {
         let toml_str = r#"
 [cache]
@@ -301,6 +354,10 @@ scope = "project"
 
 [history]
 max_entries = 100
+
+[update]
+check = false
+interval = "12h"
 
 [[url_patterns]]
 domain = "git.example.com"
@@ -319,6 +376,8 @@ lifecycle = "managed_process"
             Some("claude-code")
         );
         assert_eq!(config.history.max_entries, 100);
+        assert!(!config.update.check);
+        assert_eq!(config.update.interval, "12h");
         assert_eq!(config.url_patterns.len(), 1);
         assert_eq!(config.custom_agents.len(), 1);
     }

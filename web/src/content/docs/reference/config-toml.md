@@ -28,6 +28,10 @@ scope = "global"
 [history]
 max_entries = 50
 
+[update]
+check = true
+interval = "24h"
+
 # Custom URL-to-source mappings (optional)
 # [[url_patterns]]
 # domain = "git.example.com"
@@ -160,6 +164,32 @@ max_entries = 50
 
 Archived sessions are stored in `~/.skillx/history/`. When the count exceeds `max_entries`, the oldest entries are removed.
 
+### [update]
+
+Controls the background CLI update check behavior.
+
+```toml
+[update]
+check = true
+interval = "24h"
+```
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `check` | bool | `true` | Whether to check for new skillx versions in the background |
+| `interval` | string | `"24h"` | How often to query GitHub for new releases |
+
+The `interval` field accepts the same [duration strings](#duration-strings) as `cache.ttl`.
+
+When a newer version is detected, a notification is printed after the command completes:
+
+```
+ℹ A new version of skillx is available: v0.6.0 → v0.7.0
+  Run `skillx upgrade` to update.
+```
+
+To disable background checks entirely, set `check = false` or use the `SKILLX_NO_UPDATE_CHECK=1` environment variable.
+
 ### [[url_patterns]]
 
 Map custom domains to source types. Useful for self-hosted Git instances.
@@ -217,6 +247,7 @@ Custom agents use the same `GenericAdapter` as Tier 3 built-in agents.
 ```
 ~/.skillx/
 ├── config.toml          # This configuration file
+├── update-check.json    # Last CLI update check result
 ├── cache/               # Cached remote skills
 │   ├── <hash-1>/
 │   │   └── skill-files/

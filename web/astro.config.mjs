@@ -42,6 +42,7 @@ export default defineConfig({
             { label: 'agents', slug: 'cli/agents' },
             { label: 'info', slug: 'cli/info' },
             { label: 'cache', slug: 'cli/cache' },
+            { label: 'upgrade', slug: 'cli/upgrade' },
           ],
         },
         {
