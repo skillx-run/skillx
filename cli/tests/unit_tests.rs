@@ -1124,7 +1124,11 @@ fn test_compiled_rules_cover_all_md_rules() {
     use skillx::scanner::compiled_rules::MD_RULES;
     use skillx::scanner::RiskLevel;
     let rules = &*MD_RULES;
-    assert_eq!(rules.len(), 8, "should have MD-001 through MD-006 + MD-010 + MD-011");
+    assert_eq!(
+        rules.len(),
+        8,
+        "should have MD-001 through MD-006 + MD-010 + MD-011"
+    );
     assert_eq!(rules[0].id, "MD-001");
     assert_eq!(rules[0].level, RiskLevel::Danger);
     assert_eq!(rules[5].id, "MD-006");

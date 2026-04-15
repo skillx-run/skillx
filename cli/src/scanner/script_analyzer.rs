@@ -282,10 +282,7 @@ mod tests {
             .iter()
             .filter(|f| f.rule_id == "SC-015")
             .collect();
-        assert!(
-            !findings.is_empty(),
-            "SC-015 should detect os.environ"
-        );
+        assert!(!findings.is_empty(), "SC-015 should detect os.environ");
     }
 
     #[test]
@@ -296,10 +293,7 @@ mod tests {
             .iter()
             .filter(|f| f.rule_id == "SC-015")
             .collect();
-        assert!(
-            !findings.is_empty(),
-            "SC-015 should detect process.env"
-        );
+        assert!(!findings.is_empty(), "SC-015 should detect process.env");
     }
 
     #[test]
@@ -310,9 +304,6 @@ mod tests {
             .iter()
             .filter(|f| f.rule_id == "SC-015")
             .collect();
-        assert!(
-            !findings.is_empty(),
-            "SC-015 should detect printenv"
-        );
+        assert!(!findings.is_empty(), "SC-015 should detect printenv");
     }
 }

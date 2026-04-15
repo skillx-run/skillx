@@ -159,9 +159,8 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
         // --fail-on: check scan level against threshold before interactive gate
         if let Some(ref threshold) = args.fail_on {
             if let Some(ref report) = scan_report {
-                let level: skillx::scanner::RiskLevel = threshold
-                    .parse()
-                    .map_err(|e: String| anyhow::anyhow!(e))?;
+                let level: skillx::scanner::RiskLevel =
+                    threshold.parse().map_err(|e: String| anyhow::anyhow!(e))?;
                 if report.overall_level() >= level {
                     ui::error(&format!(
                         "Scan level {} meets --fail-on threshold {}",

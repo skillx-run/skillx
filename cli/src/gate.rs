@@ -34,9 +34,8 @@ pub fn gate_scan_result(
     skill_dir: &Path,
     opts: &GateOptions,
 ) -> anyhow::Result<()> {
-    let effective_headless = opts.headless
-        || std::env::var("CI").is_ok()
-        || std::env::var("SKILLX_HEADLESS").is_ok();
+    let effective_headless =
+        opts.headless || std::env::var("CI").is_ok() || std::env::var("SKILLX_HEADLESS").is_ok();
 
     if effective_headless {
         return gate_scan_result_headless(scan_report);
@@ -151,8 +150,7 @@ pub(crate) fn gate_scan_result_inner(
                                 match std::fs::read_to_string(&file_path) {
                                     Ok(content) => {
                                         let lines: Vec<&str> = content.lines().collect();
-                                        let start =
-                                            (ln - 1).saturating_sub(CONTEXT_LINES_BEFORE);
+                                        let start = (ln - 1).saturating_sub(CONTEXT_LINES_BEFORE);
                                         let end = (ln + CONTEXT_LINES_AFTER).min(lines.len());
                                         writeln!(output, "\n  Source:")?;
                                         for (i, l) in lines[start..end].iter().enumerate() {
@@ -402,13 +400,8 @@ mod tests {
         let report = make_danger_report(dir.path());
         let mut input = Cursor::new(b"yes\n" as &[u8]);
         let mut output = Vec::new();
-        let result = gate_scan_result_inner(
-            &Some(report),
-            dir.path(),
-            false,
-            &mut input,
-            &mut output,
-        );
+        let result =
+            gate_scan_result_inner(&Some(report), dir.path(), false, &mut input, &mut output);
         assert!(result.is_ok());
     }
 
@@ -418,13 +411,8 @@ mod tests {
         let report = make_danger_report(dir.path());
         let mut input = Cursor::new(b"no\n" as &[u8]);
         let mut output = Vec::new();
-        let result = gate_scan_result_inner(
-            &Some(report),
-            dir.path(),
-            false,
-            &mut input,
-            &mut output,
-        );
+        let result =
+            gate_scan_result_inner(&Some(report), dir.path(), false, &mut input, &mut output);
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert!(err
@@ -438,13 +426,8 @@ mod tests {
         let report = make_danger_report(dir.path());
         let mut input = Cursor::new(b"detail 1\nyes\n" as &[u8]);
         let mut output = Vec::new();
-        let result = gate_scan_result_inner(
-            &Some(report),
-            dir.path(),
-            false,
-            &mut input,
-            &mut output,
-        );
+        let result =
+            gate_scan_result_inner(&Some(report), dir.path(), false, &mut input, &mut output);
         assert!(result.is_ok());
         // Verify the detail output contains rule info
         let output_str = String::from_utf8_lossy(&output);

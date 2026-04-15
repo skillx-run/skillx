@@ -266,6 +266,32 @@ skillx scan --format json ./my-skill | jq -e '.findings | map(select(.level == "
 | Release | `warn` | Strict enforcement for published skills |
 | Public registry | `info` | Maximum strictness for community skills |
 
+## Headless Mode
+
+When using `skillx run` (not just `scan`) in CI, the interactive scan gate prompts need to be disabled. Use `--headless` mode:
+
+```bash
+skillx run --headless --fail-on warn ./skill "prompt" --agent universal -p
+```
+
+In headless mode:
+- **PASS/INFO/WARN** → auto-pass (no prompt)
+- **DANGER/BLOCK** → auto-refuse with non-zero exit code
+
+### Auto-Detection
+
+The `CI=true` environment variable is auto-detected — most CI systems (GitHub Actions, GitLab CI, CircleCI, etc.) set this automatically. You can also set `SKILLX_HEADLESS=1` explicitly.
+
+### Config Default
+
+To make headless mode the default for a team:
+
+```toml
+# ~/.skillx/config.toml
+[scan]
+headless = true
+```
+
 ## Tips
 
 - **Cache the skillx binary** to avoid rebuilding on every CI run

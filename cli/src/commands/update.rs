@@ -214,7 +214,14 @@ pub async fn execute(args: UpdateArgs) -> anyhow::Result<()> {
         candidate.scan_level = if !args.skip_scan {
             let report = ScanEngine::scan(&candidate.dir)?;
             eprint!("{}", TextFormatter::format(&report));
-            if let Err(e) = gate_scan_result(&Some(report.clone()), &candidate.dir, &GateOptions { auto_yes: args.yes, headless: false }) {
+            if let Err(e) = gate_scan_result(
+                &Some(report.clone()),
+                &candidate.dir,
+                &GateOptions {
+                    auto_yes: args.yes,
+                    headless: false,
+                },
+            ) {
                 // Save progress before propagating scan gate error
                 if updated_count > 0 {
                     installed.save().ok();

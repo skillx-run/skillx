@@ -342,10 +342,7 @@ mod tests {
             .iter()
             .filter(|f| f.rule_id == "RS-004")
             .collect();
-        assert!(
-            rs004.is_empty(),
-            "RS-004 should not fire on regular files"
-        );
+        assert!(rs004.is_empty(), "RS-004 should not fire on regular files");
     }
 
     // ── Shebang detection ──

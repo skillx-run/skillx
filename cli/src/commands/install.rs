@@ -129,7 +129,14 @@ pub async fn execute(args: InstallArgs) -> anyhow::Result<()> {
             ui::step(&format!("Scanning {}...", fetched.name));
             let report = ScanEngine::scan(&fetched.dir)?;
             eprint!("{}", TextFormatter::format(&report));
-            gate_scan_result(&Some(report.clone()), &fetched.dir, &GateOptions { auto_yes: args.yes, headless: false })?;
+            gate_scan_result(
+                &Some(report.clone()),
+                &fetched.dir,
+                &GateOptions {
+                    auto_yes: args.yes,
+                    headless: false,
+                },
+            )?;
             let findings_count = report.findings.len();
             if findings_count == 0 {
                 ui::success("Security scan passed");
@@ -378,7 +385,14 @@ async fn install_from_toml(
         let scan_level = if !skip_scan {
             let report = ScanEngine::scan(&fetched.dir)?;
             eprint!("{}", TextFormatter::format(&report));
-            gate_scan_result(&Some(report.clone()), &fetched.dir, &GateOptions { auto_yes: args.yes, headless: false })?;
+            gate_scan_result(
+                &Some(report.clone()),
+                &fetched.dir,
+                &GateOptions {
+                    auto_yes: args.yes,
+                    headless: false,
+                },
+            )?;
             format!("{}", report.overall_level())
         } else {
             "skipped".to_string()

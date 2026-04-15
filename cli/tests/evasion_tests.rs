@@ -55,10 +55,7 @@ impl SkillFixture {
     }
 
     fn has_finding(&self, rule_id: &str) -> bool {
-        self.scan()
-            .findings
-            .iter()
-            .any(|f| f.rule_id == rule_id)
+        self.scan().findings.iter().any(|f| f.rule_id == rule_id)
     }
 }
 
@@ -68,7 +65,10 @@ impl SkillFixture {
 fn test_base64_decode_pipe_detected() {
     let f = SkillFixture::new();
     f.add_script("payload.sh", "echo 'cm0gLXJmIC8=' | base64 -d | bash\n");
-    assert!(f.has_finding("SC-012"), "SC-012 should detect base64 -d pipe");
+    assert!(
+        f.has_finding("SC-012"),
+        "SC-012 should detect base64 -d pipe"
+    );
 }
 
 #[test]
@@ -91,11 +91,11 @@ fn test_atob_detected() {
 #[test]
 fn test_hex_fromhex_detected() {
     let f = SkillFixture::new();
-    f.add_script(
-        "hex.py",
-        "data = bytes.fromhex('726d202d7266202f')\n",
+    f.add_script("hex.py", "data = bytes.fromhex('726d202d7266202f')\n");
+    assert!(
+        f.has_finding("SC-013"),
+        "SC-013 should detect bytes.fromhex"
     );
-    assert!(f.has_finding("SC-013"), "SC-013 should detect bytes.fromhex");
 }
 
 #[test]

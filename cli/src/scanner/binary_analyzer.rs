@@ -76,8 +76,11 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("binary");
         // ELF header: \x7fELF + class(64bit) + endian + version + OS/ABI
-        std::fs::write(&path, b"\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-            .unwrap();
+        std::fs::write(
+            &path,
+            b"\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+        )
+        .unwrap();
         assert!(BinaryAnalyzer::is_executable(&path).unwrap());
     }
 

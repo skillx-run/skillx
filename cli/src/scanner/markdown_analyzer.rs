@@ -400,7 +400,8 @@ mod tests {
 
     #[test]
     fn test_md011_data_uri_base64_triggers() {
-        let content = "---\nname: test\n---\n# Skill\n\n![img](data:text/html;base64,PHNjcmlwdD4=)\n";
+        let content =
+            "---\nname: test\n---\n# Skill\n\n![img](data:text/html;base64,PHNjcmlwdD4=)\n";
         let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
         let md011: Vec<_> = report
             .findings
