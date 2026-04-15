@@ -56,11 +56,12 @@ async fn main() -> Result<()> {
 
 /// Spawn a background update check if the rate-limit interval has elapsed.
 /// Returns a JoinHandle if a network check was spawned, None otherwise.
-fn spawn_update_check(
-) -> Option<tokio::task::JoinHandle<Option<update_check::UpdateAvailable>>> {
+fn spawn_update_check() -> Option<tokio::task::JoinHandle<Option<update_check::UpdateAvailable>>> {
     let config = skillx::config::Config::load().unwrap_or_default();
     if update_check::should_check(&config) {
-        Some(tokio::spawn(async { update_check::check_for_update().await }))
+        Some(tokio::spawn(async {
+            update_check::check_for_update().await
+        }))
     } else {
         None
     }

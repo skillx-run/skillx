@@ -3,10 +3,8 @@ use std::time::Duration;
 use clap::Args;
 use console::style;
 
-use skillx::update_check::{
-    self, InstallMethod, UpdateCheckCache,
-};
 use skillx::ui;
+use skillx::update_check::{self, InstallMethod, UpdateCheckCache};
 
 #[derive(Args, Debug)]
 pub struct UpgradeArgs {}
@@ -45,9 +43,7 @@ pub async fn execute(_args: UpgradeArgs) -> anyhow::Result<()> {
         InstallMethod::CargoBinstall => {
             run_upgrade("cargo-binstall", "cargo", &["binstall", "skillx", "-y"]).await
         }
-        InstallMethod::Cargo => {
-            run_upgrade("Cargo", "cargo", &["install", "skillx"]).await
-        }
+        InstallMethod::Cargo => run_upgrade("Cargo", "cargo", &["install", "skillx"]).await,
         InstallMethod::Unknown => {
             ui::warn("Cannot auto-upgrade: unable to determine how skillx was installed.");
             eprintln!();
@@ -78,6 +74,9 @@ async fn run_upgrade(via: &str, cmd: &str, args: &[&str]) -> anyhow::Result<()> 
         ui::success(&format!("Successfully upgraded via {via}."));
         Ok(())
     } else {
-        anyhow::bail!("upgrade via {via} failed (exit code: {})", status.code().unwrap_or(-1));
+        anyhow::bail!(
+            "upgrade via {via} failed (exit code: {})",
+            status.code().unwrap_or(-1)
+        );
     }
 }

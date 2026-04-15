@@ -189,9 +189,7 @@ async fn fetch_from_crates_io(client: &reqwest::Client) -> Result<String> {
     body["crate"]["max_version"]
         .as_str()
         .map(|s| s.to_string())
-        .ok_or_else(|| {
-            SkillxError::Network("missing max_version in crates.io response".into())
-        })
+        .ok_or_else(|| SkillxError::Network("missing max_version in crates.io response".into()))
 }
 
 /// Compare two semver version strings. Returns true if `latest` > `current`.
@@ -332,11 +330,14 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let _guard = setup_env(&tmp);
 
-        write_cache_to(tmp.path(), &UpdateCheckCache {
-            last_checked: Utc::now(),
-            latest_version: "0.6.0".to_string(),
-            current_version: env!("CARGO_PKG_VERSION").to_string(),
-        });
+        write_cache_to(
+            tmp.path(),
+            &UpdateCheckCache {
+                last_checked: Utc::now(),
+                latest_version: "0.6.0".to_string(),
+                current_version: env!("CARGO_PKG_VERSION").to_string(),
+            },
+        );
 
         let config = Config::default(); // 24h interval
         assert!(!should_check(&config));
@@ -347,11 +348,14 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let _guard = setup_env(&tmp);
 
-        write_cache_to(tmp.path(), &UpdateCheckCache {
-            last_checked: Utc::now() - chrono::Duration::hours(25),
-            latest_version: "0.6.0".to_string(),
-            current_version: env!("CARGO_PKG_VERSION").to_string(),
-        });
+        write_cache_to(
+            tmp.path(),
+            &UpdateCheckCache {
+                last_checked: Utc::now() - chrono::Duration::hours(25),
+                latest_version: "0.6.0".to_string(),
+                current_version: env!("CARGO_PKG_VERSION").to_string(),
+            },
+        );
 
         let config = Config::default(); // 24h interval
         assert!(should_check(&config));
@@ -362,11 +366,14 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let _guard = setup_env(&tmp);
 
-        write_cache_to(tmp.path(), &UpdateCheckCache {
-            last_checked: Utc::now(),
-            latest_version: "0.6.0".to_string(),
-            current_version: "0.0.1".to_string(), // different from actual
-        });
+        write_cache_to(
+            tmp.path(),
+            &UpdateCheckCache {
+                last_checked: Utc::now(),
+                latest_version: "0.6.0".to_string(),
+                current_version: "0.0.1".to_string(), // different from actual
+            },
+        );
 
         let config = Config::default();
         assert!(should_check(&config));
@@ -377,11 +384,14 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let _guard = setup_env(&tmp);
 
-        write_cache_to(tmp.path(), &UpdateCheckCache {
-            last_checked: Utc::now(),
-            latest_version: "99.0.0".to_string(), // definitely newer
-            current_version: env!("CARGO_PKG_VERSION").to_string(),
-        });
+        write_cache_to(
+            tmp.path(),
+            &UpdateCheckCache {
+                last_checked: Utc::now(),
+                latest_version: "99.0.0".to_string(), // definitely newer
+                current_version: env!("CARGO_PKG_VERSION").to_string(),
+            },
+        );
 
         let result = cached_update_available();
         assert!(result.is_some());
@@ -395,11 +405,14 @@ mod tests {
         let _guard = setup_env(&tmp);
 
         let current = env!("CARGO_PKG_VERSION");
-        write_cache_to(tmp.path(), &UpdateCheckCache {
-            last_checked: Utc::now(),
-            latest_version: current.to_string(),
-            current_version: current.to_string(),
-        });
+        write_cache_to(
+            tmp.path(),
+            &UpdateCheckCache {
+                last_checked: Utc::now(),
+                latest_version: current.to_string(),
+                current_version: current.to_string(),
+            },
+        );
 
         assert!(cached_update_available().is_none());
     }
@@ -418,11 +431,14 @@ mod tests {
         let _guard = setup_env(&tmp);
         std::env::set_var("SKILLX_NO_UPDATE_CHECK", "1");
 
-        write_cache_to(tmp.path(), &UpdateCheckCache {
-            last_checked: Utc::now(),
-            latest_version: "99.0.0".to_string(),
-            current_version: env!("CARGO_PKG_VERSION").to_string(),
-        });
+        write_cache_to(
+            tmp.path(),
+            &UpdateCheckCache {
+                last_checked: Utc::now(),
+                latest_version: "99.0.0".to_string(),
+                current_version: env!("CARGO_PKG_VERSION").to_string(),
+            },
+        );
 
         // Even with a newer version in cache, env var disables notification
         assert!(cached_update_available().is_none());
@@ -437,11 +453,14 @@ mod tests {
         let config_path = tmp.path().join("config.toml");
         std::fs::write(&config_path, "[update]\ncheck = false\n").unwrap();
 
-        write_cache_to(tmp.path(), &UpdateCheckCache {
-            last_checked: Utc::now(),
-            latest_version: "99.0.0".to_string(),
-            current_version: env!("CARGO_PKG_VERSION").to_string(),
-        });
+        write_cache_to(
+            tmp.path(),
+            &UpdateCheckCache {
+                last_checked: Utc::now(),
+                latest_version: "99.0.0".to_string(),
+                current_version: env!("CARGO_PKG_VERSION").to_string(),
+            },
+        );
 
         // Even with a newer version in cache, config disables notification
         assert!(cached_update_available().is_none());
@@ -540,9 +559,7 @@ mod tests {
     #[test]
     fn test_detect_homebrew_usr_local() {
         assert_eq!(
-            detect_install_method_from_path(Path::new(
-                "/usr/local/Cellar/skillx/0.6.0/bin/skillx"
-            )),
+            detect_install_method_from_path(Path::new("/usr/local/Cellar/skillx/0.6.0/bin/skillx")),
             InstallMethod::Homebrew
         );
     }
@@ -551,11 +568,8 @@ mod tests {
     fn test_detect_cargo() {
         // Note: this test may detect CargoBinstall if cargo-binstall is installed on the test machine.
         // We test the path matching, not the which::which fallback.
-        let method =
-            detect_install_method_from_path(Path::new("/home/user/.cargo/bin/skillx"));
-        assert!(
-            method == InstallMethod::Cargo || method == InstallMethod::CargoBinstall
-        );
+        let method = detect_install_method_from_path(Path::new("/home/user/.cargo/bin/skillx"));
+        assert!(method == InstallMethod::Cargo || method == InstallMethod::CargoBinstall);
     }
 
     #[test]
