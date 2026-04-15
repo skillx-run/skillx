@@ -4,6 +4,7 @@ use crate::error::Result;
 
 use super::binary_analyzer::BinaryAnalyzer;
 use super::compiled_rules::SC_RULES;
+use super::normalize;
 use super::{Finding, RiskLevel, ScanReport};
 
 /// Check if a line is a single-line comment (shell/python #, JS/TS //, SQL/Lua --).
@@ -49,14 +50,18 @@ impl ScriptAnalyzer {
             }
         };
 
+        // Normalize content: join shell continuation lines and prepare for matching
+        let logical_lines = normalize::join_continuation_lines(&content);
+
         // SC-002 through SC-011: Pre-compiled pattern matching
         for rule in SC_RULES.iter() {
             for re in &rule.patterns {
-                for (line_num, line) in content.lines().enumerate() {
-                    if re.is_match(line) {
+                for ll in &logical_lines {
+                    let normalized = normalize::normalize_whitespace(&ll.text);
+                    if re.is_match(&normalized) {
                         // Skip WARN-level matches on comment lines to reduce false positives.
                         // DANGER/BLOCK level rules still fire on comments (worth reviewing).
-                        if rule.level == RiskLevel::Warn && is_comment_line(line) {
+                        if rule.level == RiskLevel::Warn && is_comment_line(&ll.text) {
                             continue;
                         }
                         report.add(Finding {
@@ -64,8 +69,8 @@ impl ScriptAnalyzer {
                             level: rule.level,
                             message: format!("{}: {}", rule.description, re.as_str()),
                             file: rel_path.to_string(),
-                            line: Some(line_num + 1),
-                            context: Some(line.trim().to_string()),
+                            line: Some(ll.start_line + 1),
+                            context: Some(ll.original_text.trim().to_string()),
                         });
                         break;
                     }

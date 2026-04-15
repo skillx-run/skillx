@@ -1,4 +1,5 @@
 use super::compiled_rules::MD_RULES;
+use super::normalize;
 use super::{Finding, RiskLevel, ScanReport};
 
 pub struct MarkdownAnalyzer;
@@ -8,7 +9,7 @@ impl MarkdownAnalyzer {
     pub fn analyze(content: &str, filename: &str) -> ScanReport {
         let mut report = ScanReport::new();
 
-        // Pre-compute which lines are inside fenced code blocks (``` ... ```)
+        // Pre-compute which original lines are inside fenced code blocks (``` ... ```)
         let mut in_code_block = false;
         let code_block_lines: Vec<bool> = content
             .lines()
@@ -23,15 +24,23 @@ impl MarkdownAnalyzer {
             })
             .collect();
 
+        // Normalize: join continuation lines for evasion detection
+        let logical_lines = normalize::join_continuation_lines(content);
+
         for rule in MD_RULES.iter() {
             for re in &rule.patterns {
-                for (line_num, line) in content.lines().enumerate() {
-                    if re.is_match(line) {
+                for ll in &logical_lines {
+                    let normalized = normalize::normalize_whitespace(&ll.text);
+                    if re.is_match(&normalized) {
+                        // Check code-block status using the first original line
+                        let in_block = code_block_lines
+                            .get(ll.start_line)
+                            .copied()
+                            .unwrap_or(false);
+
                         // Skip WARN-level matches inside code blocks to reduce false positives.
                         // DANGER/BLOCK level rules still fire inside code blocks (worth reviewing).
-                        if rule.level == RiskLevel::Warn
-                            && code_block_lines.get(line_num).copied().unwrap_or(false)
-                        {
+                        if rule.level == RiskLevel::Warn && in_block {
                             continue;
                         }
                         report.add(Finding {
@@ -39,8 +48,8 @@ impl MarkdownAnalyzer {
                             level: rule.level,
                             message: format!("{}: {}", rule.description, re.as_str()),
                             file: filename.to_string(),
-                            line: Some(line_num + 1),
-                            context: Some(line.trim().to_string()),
+                            line: Some(ll.start_line + 1),
+                            context: Some(ll.original_text.trim().to_string()),
                         });
                         break; // One finding per pattern per file
                     }
