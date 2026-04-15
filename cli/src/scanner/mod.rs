@@ -139,13 +139,32 @@ impl ScanEngine {
             let entry = entry
                 .map_err(|e| crate::error::SkillxError::Scan(format!("dir entry error: {e}")))?;
             let path = entry.path();
+            let file_type = entry.file_type().map_err(|e| {
+                crate::error::SkillxError::Scan(format!("failed to get file type: {e}"))
+            })?;
             let rel_path = path
                 .strip_prefix(skill_dir)
                 .unwrap_or(&path)
                 .to_string_lossy()
                 .to_string();
 
-            if path.is_dir() {
+            // RS-004: Symlink detection — check BEFORE is_dir/is_file to prevent traversal
+            if file_type.is_symlink() {
+                let target = std::fs::read_link(&path)
+                    .map(|t| t.to_string_lossy().to_string())
+                    .unwrap_or_else(|_| "unknown".to_string());
+                report.add(Finding {
+                    rule_id: "RS-004".to_string(),
+                    level: RiskLevel::Danger,
+                    message: format!("symlink detected pointing to: {target}"),
+                    file: rel_path,
+                    line: None,
+                    context: None,
+                });
+                continue; // Do NOT follow symlinks
+            }
+
+            if file_type.is_dir() {
                 Self::scan_directory(&path, skill_dir, report, is_scripts)?;
                 continue;
             }
@@ -172,7 +191,32 @@ impl ScanEngine {
             let entry = entry
                 .map_err(|e| crate::error::SkillxError::Scan(format!("dir entry error: {e}")))?;
             let path = entry.path();
-            if path.is_dir() {
+            let file_type = entry.file_type().map_err(|e| {
+                crate::error::SkillxError::Scan(format!("failed to get file type: {e}"))
+            })?;
+
+            // RS-004: Symlink detection
+            if file_type.is_symlink() {
+                let rel_path = path
+                    .strip_prefix(skill_dir)
+                    .unwrap_or(&path)
+                    .to_string_lossy()
+                    .to_string();
+                let target = std::fs::read_link(&path)
+                    .map(|t| t.to_string_lossy().to_string())
+                    .unwrap_or_else(|_| "unknown".to_string());
+                report.add(Finding {
+                    rule_id: "RS-004".to_string(),
+                    level: RiskLevel::Danger,
+                    message: format!("symlink detected pointing to: {target}"),
+                    file: rel_path,
+                    line: None,
+                    context: None,
+                });
+                continue;
+            }
+
+            if file_type.is_dir() {
                 continue;
             }
             let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
@@ -198,5 +242,96 @@ impl ScanEngine {
         }
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[cfg(unix)]
+    #[test]
+    fn test_symlink_to_file_detected() {
+        let dir = tempfile::tempdir().unwrap();
+        let skill_dir = dir.path();
+
+        // Create minimal SKILL.md
+        std::fs::write(skill_dir.join("SKILL.md"), "---\nname: test\n---\n# Test\n").unwrap();
+
+        // Create scripts/ with a symlink
+        let scripts = skill_dir.join("scripts");
+        std::fs::create_dir_all(&scripts).unwrap();
+        std::os::unix::fs::symlink("/etc/passwd", scripts.join("secret")).unwrap();
+
+        let report = ScanEngine::scan(skill_dir).unwrap();
+        let rs004: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "RS-004")
+            .collect();
+        assert!(
+            !rs004.is_empty(),
+            "RS-004 should detect symlinks in scripts/"
+        );
+        assert_eq!(rs004[0].level, RiskLevel::Danger);
+        assert!(rs004[0].message.contains("/etc/passwd"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_symlink_dir_not_traversed() {
+        let dir = tempfile::tempdir().unwrap();
+        let skill_dir = dir.path();
+
+        std::fs::write(skill_dir.join("SKILL.md"), "---\nname: test\n---\n# Test\n").unwrap();
+
+        // Create a symlink directory pointing to /etc
+        let scripts = skill_dir.join("scripts");
+        std::fs::create_dir_all(&scripts).unwrap();
+        std::os::unix::fs::symlink("/etc", scripts.join("etc_link")).unwrap();
+
+        let report = ScanEngine::scan(skill_dir).unwrap();
+        let rs004: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "RS-004")
+            .collect();
+        assert!(
+            !rs004.is_empty(),
+            "RS-004 should detect symlink directories"
+        );
+
+        // Verify no findings from files inside /etc (symlink was NOT followed)
+        let etc_findings: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.file.contains("etc_link/"))
+            .collect();
+        assert!(
+            etc_findings.is_empty(),
+            "Scanner should not traverse into symlinked directories"
+        );
+    }
+
+    #[test]
+    fn test_regular_file_no_rs004() {
+        let dir = tempfile::tempdir().unwrap();
+        let skill_dir = dir.path();
+
+        std::fs::write(skill_dir.join("SKILL.md"), "---\nname: test\n---\n# Test\n").unwrap();
+        let scripts = skill_dir.join("scripts");
+        std::fs::create_dir_all(&scripts).unwrap();
+        std::fs::write(scripts.join("safe.sh"), "#!/bin/bash\necho hello\n").unwrap();
+
+        let report = ScanEngine::scan(skill_dir).unwrap();
+        let rs004: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "RS-004")
+            .collect();
+        assert!(
+            rs004.is_empty(),
+            "RS-004 should not fire on regular files"
+        );
     }
 }

@@ -13,6 +13,22 @@ impl ResourceAnalyzer {
     pub fn analyze(path: &Path, rel_path: &str) -> Result<ScanReport> {
         let mut report = ScanReport::new();
 
+        // RS-004: Symlink detection (defense in depth — also checked in scan_directory)
+        if path.is_symlink() {
+            let target = std::fs::read_link(path)
+                .map(|t| t.to_string_lossy().to_string())
+                .unwrap_or_else(|_| "unknown".to_string());
+            report.add(Finding {
+                rule_id: "RS-004".to_string(),
+                level: RiskLevel::Danger,
+                message: format!("symlink detected pointing to: {target}"),
+                file: rel_path.to_string(),
+                line: None,
+                context: None,
+            });
+            return Ok(report); // Don't follow or analyze symlink target
+        }
+
         let metadata = std::fs::metadata(path)
             .map_err(|e| SkillxError::Scan(format!("failed to read metadata: {e}")))?;
 
