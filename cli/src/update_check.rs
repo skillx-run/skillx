@@ -87,7 +87,15 @@ pub fn should_check(config: &Config) -> bool {
 /// Check if a cached result indicates an available update, without making an API call.
 ///
 /// Used for showing notifications on every run even when the API check interval hasn't elapsed.
+/// Respects the same disable flags as `should_check()`.
 pub fn cached_update_available() -> Option<UpdateAvailable> {
+    if std::env::var("SKILLX_NO_UPDATE_CHECK").is_ok() {
+        return None;
+    }
+    let config = Config::load().ok()?;
+    if !config.update.check {
+        return None;
+    }
     let cache = load_cache()?;
     let current = env!("CARGO_PKG_VERSION");
     if is_newer(current, &cache.latest_version) {
@@ -401,6 +409,41 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let _guard = setup_env(&tmp);
 
+        assert!(cached_update_available().is_none());
+    }
+
+    #[test]
+    fn test_cached_update_available_respects_env_var() {
+        let tmp = tempfile::tempdir().unwrap();
+        let _guard = setup_env(&tmp);
+        std::env::set_var("SKILLX_NO_UPDATE_CHECK", "1");
+
+        write_cache_to(tmp.path(), &UpdateCheckCache {
+            last_checked: Utc::now(),
+            latest_version: "99.0.0".to_string(),
+            current_version: env!("CARGO_PKG_VERSION").to_string(),
+        });
+
+        // Even with a newer version in cache, env var disables notification
+        assert!(cached_update_available().is_none());
+    }
+
+    #[test]
+    fn test_cached_update_available_respects_config() {
+        let tmp = tempfile::tempdir().unwrap();
+        let _guard = setup_env(&tmp);
+
+        // Write a config with check = false
+        let config_path = tmp.path().join("config.toml");
+        std::fs::write(&config_path, "[update]\ncheck = false\n").unwrap();
+
+        write_cache_to(tmp.path(), &UpdateCheckCache {
+            last_checked: Utc::now(),
+            latest_version: "99.0.0".to_string(),
+            current_version: env!("CARGO_PKG_VERSION").to_string(),
+        });
+
+        // Even with a newer version in cache, config disables notification
         assert!(cached_update_available().is_none());
     }
 
