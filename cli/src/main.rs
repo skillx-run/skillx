@@ -4,6 +4,7 @@ use clap::Parser;
 mod commands;
 
 use commands::{Cli, Commands};
+use skillx::config::Config;
 use skillx::update_check;
 
 #[tokio::main]
@@ -11,12 +12,15 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     // Ensure base dirs exist
-    let _ = skillx::config::Config::ensure_dirs();
+    let _ = Config::ensure_dirs();
+
+    // Load config once — shared by both update check spawn and the cached fallback.
+    let config = Config::load().unwrap_or_default();
 
     // Spawn background update check (non-blocking, skip for `upgrade` command)
     let is_upgrade = matches!(cli.command, Commands::Upgrade(_));
     let update_handle = if !is_upgrade {
-        spawn_update_check()
+        spawn_update_check(&config)
     } else {
         None
     };
@@ -45,23 +49,28 @@ async fn main() -> Result<()> {
         }
 
         skillx::ui::error(&format!("{e:#}"));
-        print_update_notification(update_handle).await;
+        // Suppress the "upgrade available" banner for the upgrade command itself —
+        // it already reports its own upgrade status and a redundant banner is noisy.
+        if !is_upgrade {
+            print_update_notification(update_handle, &config).await;
+        }
         std::process::exit(1);
     }
 
-    print_update_notification(update_handle).await;
+    if !is_upgrade {
+        print_update_notification(update_handle, &config).await;
+    }
 
     Ok(())
 }
 
 /// Spawn a background update check if the rate-limit interval has elapsed.
 /// Returns a JoinHandle if a network check was spawned, None otherwise.
-fn spawn_update_check() -> Option<tokio::task::JoinHandle<Option<update_check::UpdateAvailable>>> {
-    let config = skillx::config::Config::load().unwrap_or_default();
-    if update_check::should_check(&config) {
-        Some(tokio::spawn(async {
-            update_check::check_for_update().await
-        }))
+fn spawn_update_check(
+    config: &Config,
+) -> Option<tokio::task::JoinHandle<Option<update_check::UpdateAvailable>>> {
+    if update_check::should_check(config) {
+        Some(tokio::spawn(update_check::check_for_update()))
     } else {
         None
     }
@@ -71,16 +80,22 @@ fn spawn_update_check() -> Option<tokio::task::JoinHandle<Option<update_check::U
 /// Never panics or errors — all failures are silently swallowed.
 async fn print_update_notification(
     handle: Option<tokio::task::JoinHandle<Option<update_check::UpdateAvailable>>>,
+    config: &Config,
 ) {
-    let update = if let Some(handle) = handle {
-        // Background task was spawned — wait up to 3 seconds for result
-        match tokio::time::timeout(std::time::Duration::from_secs(3), handle).await {
+    let update = if let Some(mut handle) = handle {
+        // Background task was spawned — wait up to 3 seconds for result, then abort.
+        match tokio::time::timeout(std::time::Duration::from_secs(3), &mut handle).await {
             Ok(Ok(result)) => result,
-            _ => None, // timeout, join error, or no update
+            Ok(Err(_)) => None, // join error
+            Err(_) => {
+                // Cancel the still-running task so it doesn't outlive `main`.
+                handle.abort();
+                None
+            }
         }
     } else {
         // No background task — check cache for a known newer version
-        update_check::cached_update_available()
+        update_check::cached_update_available(config)
     };
 
     if let Some(update) = update {

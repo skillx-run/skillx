@@ -155,6 +155,7 @@ cargo run -- upgrade             # Check for CLI updates
 - `skillx.toml` uses `[skills]` table format (not `[[skills]]` array)
 - SkillSource has 10 variants: Local, GitHub, GitLab, Bitbucket, Gitea, Gist, SourceHut, HuggingFace, Archive, SkillsDirectory
 - FetchedSkill carries resolved_ref from source for version tracking in installed state
+- `InstallMethod` has 5 variants: `Homebrew`, `Cargo`, `CargoBinstall`, `InstallScript` (binary under `~/.local/bin/`, upgraded via `curl -fsSL https://skillx.run/install.sh | sh`), `Unknown`
 - Agent version detection: `detect_binary_version()` runs `<binary> --version` and parses semver; `extract_vscode_extension_version()` parses from dir name. Both gracefully degrade to `None` on failure.
 - SkillMetadata includes `license: Option<String>` field (parsed from frontmatter)
 - MD-007 scanner rule: INFO level, triggers when frontmatter exists but has no `license` field (structural check in markdown_analyzer, not regex)
@@ -174,8 +175,12 @@ cargo run -- upgrade             # Check for CLI updates
 - `SKILLX_HOME` env var overrides the default `~/.skillx/` base directory (used by integration tests for isolation)
 - `SKILLX_NO_UPDATE_CHECK` env var disables background CLI update check (useful in CI)
 - Background upgrade check runs after every command (except `upgrade`), silently fails on error, never affects exit code
+- The `upgrade` command also suppresses the cached "upgrade available" banner at exit — it already reports its own upgrade status and a redundant banner is noisy
 - `update_check.rs` uses `semver` crate for version comparison, `~/.skillx/update-check.json` for rate-limited caching (default 24h), configurable via `[update]` in config.toml
 - Version check uses two-tier fallback: GitHub Releases API (primary, supports `GITHUB_TOKEN`) → crates.io API (fallback, independent infrastructure)
+- `update_check::cached_update_available(&Config)` takes config explicitly (no internal `Config::load()`); main loads config once and reuses for spawn + fallback
+- Background update task is `abort()`ed when the 3s post-command join timeout fires, so it never outlives `main`
+- On fetch failure, `check_for_update` writes a cache entry via `save_failed_attempt()` — advances `last_checked` to apply the rate limit while preserving any prior `latest_version`, so a transient outage doesn't trigger an API request on every command
 - GitHub Action at `.github/actions/scan/action.yml` — composite action for CI security scanning with SARIF upload
 - `install` and `update` commands fetch skills concurrently (scan/gate remain sequential for interactive confirmation)
 - `--print` / `-p` flag on `skillx run` enables non-interactive mode (agent processes prompt and exits)
