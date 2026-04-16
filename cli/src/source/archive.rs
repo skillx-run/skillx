@@ -157,12 +157,21 @@ impl ArchiveSource {
         let mut file_count = 0usize;
         let mut total_size: u64 = 0;
 
-        // First pass: collect entries to detect single root
+        // First pass: collect entries to detect single root.
+        // Filter out pax header entries (e.g. `pax_global_header`) which are
+        // metadata entries injected by `git archive` and should not affect
+        // single-root detection.
         let temp_decoder = flate2::read::GzDecoder::new(std::io::Cursor::new(data));
         let mut temp_archive = Archive::new(temp_decoder);
         let mut paths: Vec<PathBuf> = Vec::new();
         if let Ok(entries) = temp_archive.entries() {
             for entry in entries.flatten() {
+                let entry_type = entry.header().entry_type();
+                if entry_type == tar::EntryType::XGlobalHeader
+                    || entry_type == tar::EntryType::XHeader
+                {
+                    continue;
+                }
                 if let Ok(p) = entry.path() {
                     paths.push(p.to_path_buf());
                 }
@@ -176,6 +185,14 @@ impl ArchiveSource {
         {
             let mut entry = entry
                 .map_err(|e| SkillxError::Archive(format!("failed to read tar entry: {e}")))?;
+
+            // Skip pax header entries — they are tar metadata, not real files
+            let entry_type = entry.header().entry_type();
+            if entry_type == tar::EntryType::XGlobalHeader
+                || entry_type == tar::EntryType::XHeader
+            {
+                continue;
+            }
 
             file_count += 1;
             if file_count > MAX_FILE_COUNT {
@@ -209,7 +226,6 @@ impl ArchiveSource {
             }
 
             // Reject symlinks and hardlinks — they can be used for path traversal
-            let entry_type = entry.header().entry_type();
             if entry_type.is_symlink() || entry_type.is_hard_link() {
                 return Err(SkillxError::Archive(format!(
                     "archive contains a symlink or hardlink: {path_str} — rejected for security"
@@ -350,5 +366,75 @@ mod tests {
     fn test_detect_single_root_tar_empty() {
         let paths: Vec<PathBuf> = vec![];
         assert_eq!(detect_single_root_tar(&paths), None);
+    }
+
+    /// Verify that `extract_tar_gz` correctly strips the single root directory
+    /// from tarballs that include a `pax_global_header` entry (as produced by
+    /// `git archive` / GitHub / GitLab tarballs).
+    #[test]
+    fn test_extract_tar_gz_strips_pax_header_root() {
+        use flate2::write::GzEncoder;
+        use flate2::Compression;
+
+        // Build an in-memory tar.gz with a pax_global_header entry followed
+        // by files under a single root directory — mimicking GitHub tarballs.
+        let mut builder = tar::Builder::new(Vec::new());
+
+        // Add a pax_global_header entry
+        let mut header = tar::Header::new_ustar();
+        header.set_entry_type(tar::EntryType::XGlobalHeader);
+        header.set_size(0);
+        header.set_cksum();
+        builder
+            .append_data(&mut header, "pax_global_header", std::io::empty())
+            .unwrap();
+
+        // Add files under a single root directory
+        let mut header = tar::Header::new_ustar();
+        header.set_entry_type(tar::EntryType::Directory);
+        header.set_size(0);
+        header.set_mode(0o755);
+        header.set_cksum();
+        builder
+            .append_data(&mut header, "myrepo-abc123/", std::io::empty())
+            .unwrap();
+
+        let skill_content = b"# My Skill\nHello world";
+        let mut header = tar::Header::new_ustar();
+        header.set_entry_type(tar::EntryType::Regular);
+        header.set_size(skill_content.len() as u64);
+        header.set_mode(0o644);
+        header.set_cksum();
+        builder
+            .append_data(
+                &mut header,
+                "myrepo-abc123/SKILL.md",
+                &skill_content[..],
+            )
+            .unwrap();
+
+        let tar_data = builder.into_inner().unwrap();
+
+        // Compress
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::fast());
+        std::io::Write::write_all(&mut encoder, &tar_data).unwrap();
+        let gz_data = encoder.finish().unwrap();
+
+        // Extract to a temp dir (auto-cleaned on drop)
+        let tmp = tempfile::tempdir().unwrap();
+        let result = ArchiveSource::extract_tar_gz(&gz_data, tmp.path());
+        let files = result.expect("extraction should succeed");
+
+        // SKILL.md should be directly in dest, NOT under myrepo-abc123/
+        assert!(
+            tmp.path().join("SKILL.md").exists(),
+            "SKILL.md should be at root"
+        );
+        assert!(
+            !tmp.path().join("myrepo-abc123").exists(),
+            "single root dir should be stripped"
+        );
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0], tmp.path().join("SKILL.md"));
     }
 }
