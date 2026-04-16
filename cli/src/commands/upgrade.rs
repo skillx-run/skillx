@@ -44,6 +44,14 @@ pub async fn execute(_args: UpgradeArgs) -> anyhow::Result<()> {
             run_upgrade("cargo-binstall", "cargo", &["binstall", "skillx", "-y"]).await
         }
         InstallMethod::Cargo => run_upgrade("Cargo", "cargo", &["install", "skillx"]).await,
+        InstallMethod::InstallScript => {
+            run_upgrade(
+                "install.sh",
+                "sh",
+                &["-c", "curl -fsSL https://skillx.run/install.sh | sh"],
+            )
+            .await
+        }
         InstallMethod::Unknown => {
             ui::warn("Cannot auto-upgrade: unable to determine how skillx was installed.");
             eprintln!();

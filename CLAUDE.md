@@ -155,6 +155,7 @@ cargo run -- upgrade             # Check for CLI updates
 - `skillx.toml` uses `[skills]` table format (not `[[skills]]` array)
 - SkillSource has 10 variants: Local, GitHub, GitLab, Bitbucket, Gitea, Gist, SourceHut, HuggingFace, Archive, SkillsDirectory
 - FetchedSkill carries resolved_ref from source for version tracking in installed state
+- `InstallMethod` has 5 variants: `Homebrew`, `Cargo`, `CargoBinstall`, `InstallScript` (binary under `~/.local/bin/`, upgraded via `curl -fsSL https://skillx.run/install.sh | sh`), `Unknown`
 - Agent version detection: `detect_binary_version()` runs `<binary> --version` and parses semver; `extract_vscode_extension_version()` parses from dir name. Both gracefully degrade to `None` on failure.
 - SkillMetadata includes `license: Option<String>` field (parsed from frontmatter)
 - MD-007 scanner rule: INFO level, triggers when frontmatter exists but has no `license` field (structural check in markdown_analyzer, not regex)

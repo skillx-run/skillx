@@ -33,6 +33,9 @@ pub enum InstallMethod {
     Homebrew,
     Cargo,
     CargoBinstall,
+    /// Installed via `curl -fsSL https://skillx.run/install.sh | sh` — binary
+    /// lives under `~/.local/bin/`. Upgrade by re-running the same one-liner.
+    InstallScript,
     Unknown,
 }
 
@@ -232,6 +235,11 @@ pub fn detect_install_method_from_path(path: &Path) -> InstallMethod {
             return InstallMethod::CargoBinstall;
         }
         return InstallMethod::Cargo;
+    }
+
+    // install.sh one-liner places the binary at ~/.local/bin/skillx
+    if path_str.contains("/.local/bin/") {
+        return InstallMethod::InstallScript;
     }
 
     InstallMethod::Unknown
@@ -676,6 +684,22 @@ mod tests {
         // We test the path matching, not the which::which fallback.
         let method = detect_install_method_from_path(Path::new("/home/user/.cargo/bin/skillx"));
         assert!(method == InstallMethod::Cargo || method == InstallMethod::CargoBinstall);
+    }
+
+    #[test]
+    fn test_detect_install_script_macos() {
+        assert_eq!(
+            detect_install_method_from_path(Path::new("/Users/alice/.local/bin/skillx")),
+            InstallMethod::InstallScript
+        );
+    }
+
+    #[test]
+    fn test_detect_install_script_linux() {
+        assert_eq!(
+            detect_install_method_from_path(Path::new("/home/bob/.local/bin/skillx")),
+            InstallMethod::InstallScript
+        );
     }
 
     #[test]
