@@ -13,6 +13,22 @@ impl ResourceAnalyzer {
     pub fn analyze(path: &Path, rel_path: &str) -> Result<ScanReport> {
         let mut report = ScanReport::new();
 
+        // RS-004: Symlink detection (defense in depth — also checked in scan_directory)
+        if path.is_symlink() {
+            let target = std::fs::read_link(path)
+                .map(|t| t.to_string_lossy().to_string())
+                .unwrap_or_else(|_| "unknown".to_string());
+            report.add(Finding {
+                rule_id: "RS-004".to_string(),
+                level: RiskLevel::Danger,
+                message: format!("symlink detected pointing to: {target}"),
+                file: rel_path.to_string(),
+                line: None,
+                context: None,
+            });
+            return Ok(report); // Don't follow or analyze symlink target
+        }
+
         let metadata = std::fs::metadata(path)
             .map_err(|e| SkillxError::Scan(format!("failed to read metadata: {e}")))?;
 
@@ -42,18 +58,37 @@ impl ResourceAnalyzer {
             });
         }
 
-        // RS-003: Executable in references/ (shared detection)
-        if (rel_path.starts_with("references/") || rel_path.starts_with("references\\"))
-            && BinaryAnalyzer::is_executable(path)?
-        {
-            report.add(Finding {
-                rule_id: "RS-003".to_string(),
-                level: RiskLevel::Danger,
-                message: "executable file in references directory".to_string(),
-                file: rel_path.to_string(),
-                line: None,
-                context: None,
-            });
+        // RS-003 / RS-005: checks specific to references/ directory
+        let in_references =
+            rel_path.starts_with("references/") || rel_path.starts_with("references\\");
+        if in_references {
+            let is_exec = BinaryAnalyzer::is_executable(path)?;
+            if is_exec {
+                // RS-003: Executable in references/
+                report.add(Finding {
+                    rule_id: "RS-003".to_string(),
+                    level: RiskLevel::Danger,
+                    message: "executable file in references directory".to_string(),
+                    file: rel_path.to_string(),
+                    line: None,
+                    context: None,
+                });
+            } else {
+                // RS-005: Script file in references/ (shebang detection)
+                // Only read the first few bytes — no need to load entire file
+                let magic = BinaryAnalyzer::read_magic_bytes(path)?;
+                if magic.starts_with(b"#!") {
+                    report.add(Finding {
+                        rule_id: "RS-005".to_string(),
+                        level: RiskLevel::Warn,
+                        message: "script file (shebang detected) in references directory"
+                            .to_string(),
+                        file: rel_path.to_string(),
+                        line: None,
+                        context: None,
+                    });
+                }
+            }
         }
 
         Ok(report)

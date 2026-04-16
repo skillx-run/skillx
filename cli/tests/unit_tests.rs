@@ -1124,7 +1124,11 @@ fn test_compiled_rules_cover_all_md_rules() {
     use skillx::scanner::compiled_rules::MD_RULES;
     use skillx::scanner::RiskLevel;
     let rules = &*MD_RULES;
-    assert_eq!(rules.len(), 6, "should have MD-001 through MD-006");
+    assert_eq!(
+        rules.len(),
+        8,
+        "should have MD-001 through MD-006 + MD-010 + MD-011"
+    );
     assert_eq!(rules[0].id, "MD-001");
     assert_eq!(rules[0].level, RiskLevel::Danger);
     assert_eq!(rules[5].id, "MD-006");
@@ -1148,7 +1152,7 @@ fn test_compiled_rules_cover_all_sc_rules() {
     use skillx::scanner::compiled_rules::SC_RULES;
     use skillx::scanner::RiskLevel;
     let rules = &*SC_RULES;
-    assert_eq!(rules.len(), 10, "should have SC-002 through SC-011");
+    assert_eq!(rules.len(), 14, "should have SC-002 through SC-015");
     assert_eq!(rules[0].id, "SC-002");
     assert_eq!(rules[0].level, RiskLevel::Danger);
     assert_eq!(rules[9].id, "SC-011");
@@ -1167,6 +1171,96 @@ fn test_scan_report_default() {
     let report = skillx::scanner::ScanReport::default();
     assert!(report.findings.is_empty());
     assert_eq!(report.overall_level(), skillx::scanner::RiskLevel::Pass);
+}
+
+// ==================== Resource Analyzer (RS rules) ====================
+
+#[test]
+fn test_rs001_elf_disguised_as_pdf() {
+    use skillx::scanner::resource_analyzer::ResourceAnalyzer;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("report.pdf");
+    // ELF magic bytes but .pdf extension
+    let mut data = b"\x7fELF\x02\x01\x01\x00".to_vec();
+    data.extend_from_slice(&[0u8; 100]);
+    std::fs::write(&path, &data).unwrap();
+    let report = ResourceAnalyzer::analyze(&path, "references/report.pdf").unwrap();
+    let rs001: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "RS-001")
+        .collect();
+    assert!(
+        !rs001.is_empty(),
+        "RS-001 should detect ELF file disguised as PDF"
+    );
+}
+
+#[test]
+fn test_rs001_unknown_extension_no_finding() {
+    use skillx::scanner::resource_analyzer::ResourceAnalyzer;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("data.xyz");
+    std::fs::write(&path, b"\x7fELF\x02\x01\x01\x00extra data here").unwrap();
+    let report = ResourceAnalyzer::analyze(&path, "references/data.xyz").unwrap();
+    let rs001: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "RS-001")
+        .collect();
+    assert!(
+        rs001.is_empty(),
+        "RS-001 should not fire on unknown extensions (no claimed_types match)"
+    );
+}
+
+#[test]
+fn test_rs002_size_threshold_constant() {
+    assert_eq!(
+        skillx::scanner::rules::RS_002_SIZE_THRESHOLD,
+        50 * 1024 * 1024,
+        "RS-002 threshold should be 50 MB"
+    );
+}
+
+#[test]
+fn test_rs003_executable_in_references() {
+    use skillx::scanner::resource_analyzer::ResourceAnalyzer;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("tool");
+    // ELF binary in references/
+    let mut data = b"\x7fELF\x02\x01\x01\x00".to_vec();
+    data.extend_from_slice(&[0u8; 100]);
+    std::fs::write(&path, &data).unwrap();
+    let report = ResourceAnalyzer::analyze(&path, "references/tool").unwrap();
+    let rs003: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "RS-003")
+        .collect();
+    assert!(
+        !rs003.is_empty(),
+        "RS-003 should detect executable in references/"
+    );
+    assert_eq!(rs003[0].level, skillx::scanner::RiskLevel::Danger);
+}
+
+#[test]
+fn test_rs003_text_in_references_no_finding() {
+    use skillx::scanner::resource_analyzer::ResourceAnalyzer;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("notes.txt");
+    std::fs::write(&path, "Just some notes about the project.\n").unwrap();
+    let report = ResourceAnalyzer::analyze(&path, "references/notes.txt").unwrap();
+    let rs003: Vec<_> = report
+        .findings
+        .iter()
+        .filter(|f| f.rule_id == "RS-003")
+        .collect();
+    assert!(
+        rs003.is_empty(),
+        "RS-003 should not fire on text files in references/"
+    );
 }
 
 // ==================== URL encoding ====================
@@ -1536,15 +1630,20 @@ fn test_installed_state_json_format() {
 
 #[test]
 fn test_gate_pass_and_info_auto_pass() {
+    use skillx::gate::GateOptions;
     use skillx::scanner::{Finding, RiskLevel, ScanReport};
     use std::path::Path;
+    let opts = GateOptions {
+        auto_yes: false,
+        headless: false,
+    };
 
     // No report
-    assert!(skillx::gate::gate_scan_result(&None, Path::new("."), false).is_ok());
+    assert!(skillx::gate::gate_scan_result(&None, Path::new("."), &opts).is_ok());
 
     // Pass
     let pass = ScanReport { findings: vec![] };
-    assert!(skillx::gate::gate_scan_result(&Some(pass), Path::new("."), false).is_ok());
+    assert!(skillx::gate::gate_scan_result(&Some(pass), Path::new("."), &opts).is_ok());
 
     // Info
     let info = ScanReport {
@@ -1557,11 +1656,12 @@ fn test_gate_pass_and_info_auto_pass() {
             context: None,
         }],
     };
-    assert!(skillx::gate::gate_scan_result(&Some(info), Path::new("."), false).is_ok());
+    assert!(skillx::gate::gate_scan_result(&Some(info), Path::new("."), &opts).is_ok());
 }
 
 #[test]
 fn test_gate_block_always_refuses() {
+    use skillx::gate::GateOptions;
     use skillx::scanner::{Finding, RiskLevel, ScanReport};
     use std::path::Path;
 
@@ -1575,7 +1675,11 @@ fn test_gate_block_always_refuses() {
             context: None,
         }],
     };
-    let result = skillx::gate::gate_scan_result(&Some(blocked), Path::new("."), true);
+    let opts = GateOptions {
+        auto_yes: true,
+        headless: false,
+    };
+    let result = skillx::gate::gate_scan_result(&Some(blocked), Path::new("."), &opts);
     assert!(result.is_err());
 }
 
@@ -1677,6 +1781,7 @@ fn test_installed_state_future_version_rejected() {
 
 #[test]
 fn test_gate_warn_auto_yes_passes() {
+    use skillx::gate::GateOptions;
     use skillx::scanner::{Finding, RiskLevel, ScanReport};
     use std::path::Path;
 
@@ -1691,7 +1796,11 @@ fn test_gate_warn_auto_yes_passes() {
             context: None,
         }],
     };
-    let result = skillx::gate::gate_scan_result(&Some(report), Path::new("."), true);
+    let opts = GateOptions {
+        auto_yes: true,
+        headless: false,
+    };
+    let result = skillx::gate::gate_scan_result(&Some(report), Path::new("."), &opts);
     assert!(result.is_ok(), "auto_yes should auto-pass WARN level");
 }
 

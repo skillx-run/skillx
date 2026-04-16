@@ -19,11 +19,22 @@ skillx's security model is **scan before inject**. Every skill is analyzed befor
 
 ### 1. Automated Scanning
 
-The built-in scanner runs 23 rules across three categories:
+The built-in scanner runs 30 rules across three categories:
 
-- **Markdown Analyzer** (MD-001 ~ MD-009) — checks SKILL.md for prompt injection, sensitive directory references, external URLs, destructive operations, system modification, security bypass, and missing metadata (license, name, description)
-- **Script Analyzer** (SC-001 ~ SC-011) — checks scripts for binaries, dynamic execution, recursive delete, credential access, shell config modification, network requests, writes outside skill directory, privilege escalation, setuid/setgid, self-replication, and skillx path modification
-- **Resource Analyzer** (RS-001 ~ RS-003) — checks reference files for disguised extensions, oversized files, and executables
+- **Markdown Analyzer** (MD-001 ~ MD-011) — checks SKILL.md for prompt injection, sensitive directory references, external URLs, destructive operations, system modification, security bypass, hidden text / invisible characters, data URI / JS URI injection, and missing metadata (license, name, description)
+- **Script Analyzer** (SC-001 ~ SC-015) — checks scripts for binaries, dynamic execution, recursive delete, credential access, shell config modification, network requests, writes outside skill directory, privilege escalation, setuid/setgid, self-replication, skillx path modification, base64/hex decode execution, string obfuscation, and environment variable exfiltration
+- **Resource Analyzer** (RS-001 ~ RS-005) — checks reference files for disguised extensions, oversized files, executables, symlinks, and scripts (via shebang detection)
+
+### 1.5 Anti-Evasion
+
+The scanner includes defenses against common bypass techniques:
+
+- **Continuation-line joining** — shell backslash continuations (e.g., `cur\` + `l url`) are joined before pattern matching
+- **Whitespace normalization** — extra spaces around dangerous keywords (e.g., `eval  (`) are collapsed
+- **Obfuscation detection** — base64 decoding, hex encoding, string concatenation (chr/fromCharCode)
+- **Hidden text detection** — zero-width Unicode characters and injection hidden in HTML comments
+- **Symlink protection** — symbolic links are detected and never followed (prevents directory traversal)
+- **Shebang analysis** — extensionless files with shebangs are scanned as scripts
 
 ### 2. Risk Gating
 

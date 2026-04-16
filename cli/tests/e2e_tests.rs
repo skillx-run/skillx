@@ -428,24 +428,36 @@ fn test_run_danger_rejected_by_user() {
     let home = TempDir::new().unwrap();
     let project = TempDir::new().unwrap();
 
-    // dangerous-example triggers DANGER level; gate prompts for "yes" confirmation.
-    // Sending "no" causes graceful cancellation (exit 0, not failure).
-    skillx_with_home(&home)
-        .args([
-            "run",
-            &example_skill("dangerous-example"),
-            "test prompt",
-            "--agent",
-            "universal",
-            "--scope",
-            "project",
-        ])
-        .current_dir(project.path())
-        .write_stdin("no\n")
-        .timeout(Duration::from_secs(30))
-        .assert()
-        .success()
-        .stderr(predicates::str::contains("DANGER").and(predicates::str::contains("Cancelled")));
+    // dangerous-example triggers DANGER level.
+    // In CI (CI=true is set), headless mode auto-refuses DANGER with exit 1.
+    // Outside CI, the interactive gate would prompt for "yes" confirmation.
+    let is_ci = std::env::var("CI").is_ok();
+
+    let mut cmd = skillx_with_home(&home);
+    cmd.args([
+        "run",
+        &example_skill("dangerous-example"),
+        "test prompt",
+        "--agent",
+        "universal",
+        "--scope",
+        "project",
+    ])
+    .current_dir(project.path())
+    .write_stdin("no\n")
+    .timeout(Duration::from_secs(30));
+
+    if is_ci {
+        // Headless mode: DANGER auto-refused, exit 1
+        cmd.assert()
+            .failure()
+            .stderr(predicates::str::contains("DANGER").and(predicates::str::contains("headless")));
+    } else {
+        // Interactive mode: user types "no", graceful cancellation (exit 0)
+        cmd.assert().success().stderr(
+            predicates::str::contains("DANGER").and(predicates::str::contains("Cancelled")),
+        );
+    }
 }
 
 #[test]

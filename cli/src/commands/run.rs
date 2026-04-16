@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use skillx::agent::registry::AgentRegistry;
 use skillx::agent::{LaunchConfig, LifecycleMode};
 use skillx::config::{self, Config};
-use skillx::gate::gate_scan_result;
+use skillx::gate::{gate_scan_result, GateOptions};
 use skillx::installed::InstalledState;
 use skillx::project_config::ProjectConfig;
 use skillx::scanner::report::TextFormatter;
@@ -61,6 +61,14 @@ pub struct RunArgs {
     /// Auto-approve mode: pass permission-skip flags to the agent
     #[arg(long = "auto-approve", alias = "auto")]
     pub auto_approve: bool,
+
+    /// Headless mode: no interactive prompts (for CI)
+    #[arg(long)]
+    pub headless: bool,
+
+    /// Fail threshold for scan results (e.g., "warn", "danger")
+    #[arg(long)]
+    pub fail_on: Option<String>,
 
     /// Non-interactive mode: agent processes prompt and exits
     #[arg(short = 'p', long = "print")]
@@ -148,8 +156,32 @@ pub async fn execute(args: RunArgs) -> anyhow::Result<()> {
             None
         };
 
+        // --fail-on: check scan level against threshold before interactive gate
+        if let Some(ref threshold) = args.fail_on {
+            if let Some(ref report) = scan_report {
+                let level: skillx::scanner::RiskLevel =
+                    threshold.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+                if report.overall_level() >= level {
+                    ui::error(&format!(
+                        "Scan level {} meets --fail-on threshold {}",
+                        report.overall_level(),
+                        level
+                    ));
+                    return Err(skillx::error::SkillxError::ScanBlocked.into());
+                }
+            }
+        }
+
         // Gate — check every skill, not just the first
-        gate_scan_result(&scan_report, &skill_dir, args.yes)?;
+        let headless = args.headless || config.scan.headless;
+        gate_scan_result(
+            &scan_report,
+            &skill_dir,
+            &GateOptions {
+                auto_yes: args.yes,
+                headless,
+            },
+        )?;
 
         resolved_skills.push(ResolvedEntry {
             dir: skill_dir,

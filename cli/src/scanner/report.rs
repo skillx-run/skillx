@@ -24,7 +24,7 @@ impl TextFormatter {
 
         // Group by level (highest first)
         let mut sorted = report.findings.clone();
-        sorted.sort_by(|a, b| b.level.cmp(&a.level));
+        sorted.sort_by_key(|f| std::cmp::Reverse(f.level));
 
         for (i, finding) in sorted.iter().enumerate() {
             output.push_str(&Self::format_finding(i + 1, finding));

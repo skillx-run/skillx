@@ -4,7 +4,7 @@
 
 **Core value props (in priority order):**
 1. **No install needed** — `skillx run` is ephemeral by default: fetch, use, auto-clean. Nothing permanently added to the project.
-2. **Security first** — 23 rules scan every skill before injection. Dangerous patterns are blocked.
+2. **Security first** — 30 rules scan every skill before injection. Dangerous patterns are blocked.
 3. **One command** — Full lifecycle (fetch → scan → inject → run → clean) in a single CLI call.
 
 `skillx install` exists for persistent use cases but is opt-in, not the default.
@@ -39,9 +39,10 @@ Key modules:
   - `skills_directory.rs` — Skills directory platform HTML parsing (10 platforms)
   - `local.rs` — Local filesystem source
 - `scanner/` — Security scanning with 5 risk levels (Pass/Info/Warn/Danger/Block)
-  - `markdown_analyzer.rs` — MD-001~006 (prompt injection, sensitive dirs, etc.) + MD-007 (license), MD-008 (name), MD-009 (description) structural checks
-  - `script_analyzer.rs` — SC-001~011 (binary detection, eval, rm -rf, etc.)
-  - `resource_analyzer.rs` — RS-001~003 (disguised files, large files, executable in refs)
+  - `markdown_analyzer.rs` — MD-001~006 (prompt injection, sensitive dirs, etc.) + MD-007~009 (structural) + MD-010 (hidden text) + MD-011 (data URI)
+  - `script_analyzer.rs` — SC-001~015 (binary detection, eval, rm -rf, base64/hex decode, env exfil, etc.)
+  - `resource_analyzer.rs` — RS-001~005 (disguised files, large files, executable in refs, symlinks, scripts in refs)
+  - `normalize.rs` — Shell continuation-line joining + keyword whitespace normalization (anti-evasion)
   - `rules.rs` — All regex patterns (use `r#"..."#` format for Rust 2021 compat)
   - `report.rs` — Text, JSON, and SARIF 2.1.0 output formatters
 - `agent/` — Agent detection & adapters (AgentAdapter trait with async_trait)
@@ -84,7 +85,7 @@ Key modules:
 1. Load Config + ProjectConfig (skillx.toml)
 2. Resolve source(s) — CLI arg or skillx.toml `[skills]`
 3. Scan each skill (unless --skip-scan)
-4. Gate via `gate::gate_scan_result()` (PASS/INFO auto-pass, WARN Y/n, DANGER `yes`+`detail N`, BLOCK refuse)
+4. Gate via `gate::gate_scan_result(&GateOptions)` (PASS/INFO auto-pass, WARN Y/n, DANGER `yes`+`detail N`, BLOCK refuse; headless mode auto-refuses DANGER)
 5. Detect Agent (CLI --agent > skillx.toml agent.preferred > config preferred > auto-detect)
 6. Check installed state — skip inject/cleanup if already installed
 7. Inject all skills (copy files + SHA256 + manifest)
@@ -204,6 +205,17 @@ cargo run -- upgrade             # Check for CLI updates
 - `GIT_TERMINAL_PROMPT=0` set on all git commands to prevent interactive prompts. SSH probe uses `BatchMode=yes` + `ConnectTimeout=3`.
 - `CacheManager::write_meta()` writes only `meta.json` without file copying (used by `fetch_with_cache()` since fetch_fn already writes to cache_dest)
 - GitHub API fallback uses `tokio::sync::Semaphore` (max 8) for concurrent download throttling
+- Scanner has 30 rules total: MD-001~011, SC-001~015, RS-001~005
+- `normalize.rs` provides shell continuation-line joining (`join_continuation_lines`) and keyword whitespace normalization (`normalize_whitespace`) for anti-evasion detection
+- RS-004 symlink detection uses `entry.file_type().is_symlink()` — never follows symlinks; checked in `scan_directory`, `scan_root_files`, and `resource_analyzer`
+- RS-005 script-in-references detection uses shebang (`#!`) check on non-binary files in `references/`
+- Extensionless root files with shebang (`#!`) are scanned as scripts (shebang detection in `scan_root_files`)
+- `GateOptions { auto_yes, headless }` struct replaces bare `auto_yes: bool` in gate API
+- `gate_scan_result_inner` is `pub(crate)` with injectable `BufRead`+`Write` for testability
+- `--headless` flag + `CI=true` / `SKILLX_HEADLESS=1` env vars disable interactive gate prompts
+- `--fail-on` flag on `run` command checks scan level before interactive gate
+- MD-010 zero-width chars use `\x{HHHH}` regex syntax (not `\p{Cf}` — regex crate limitation)
+- `scan.headless` in config.toml sets default headless mode
 
 ## Release Process
 

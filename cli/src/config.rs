@@ -60,6 +60,9 @@ pub struct CacheConfig {
 pub struct ScanConfig {
     /// Default --fail-on threshold
     pub default_fail_on: String,
+    /// Default headless mode (no interactive prompts)
+    #[serde(default)]
+    pub headless: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -115,6 +118,7 @@ impl Default for ScanConfig {
     fn default() -> Self {
         ScanConfig {
             default_fail_on: "danger".to_string(),
+            headless: false,
         }
     }
 }

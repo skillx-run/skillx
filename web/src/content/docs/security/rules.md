@@ -1,11 +1,11 @@
 ---
 title: Security Rules
-description: Complete reference for all scanner rules — MD-001 through MD-009, SC-001 through SC-011, RS-001 through RS-003.
+description: Complete reference for all scanner rules — MD-001 through MD-011, SC-001 through SC-015, RS-001 through RS-005.
 ---
 
 ## Overview
 
-The skillx scanner has 23 rules organized into three categories:
+The skillx scanner has 30 rules organized into three categories:
 
 - **MD** (Markdown) — rules applied to `SKILL.md`
 - **SC** (Script) — rules applied to files in `scripts/` and script-like files at root
@@ -113,6 +113,27 @@ Detects SKILL.md files with YAML frontmatter that do not declare a `description`
 **Detection method:** Structural analysis of YAML frontmatter (not regex).
 
 **Why it matters:** A description helps users understand what a skill does before using it.
+
+### MD-010: Hidden Text / Invisible Characters (WARN)
+
+Detects hidden content that may be invisible to users but interpreted by agents.
+
+**Patterns detected:**
+- HTML comments containing injection keywords (`<!-- ignore previous instructions -->`)
+- Zero-width Unicode characters (U+200B, U+200C, U+200D, U+FEFF)
+
+**Why it matters:** Attackers can embed invisible instructions in seemingly benign markdown that agents may still process.
+
+### MD-011: Data URI / JavaScript URI (WARN)
+
+Detects potentially dangerous URI schemes in markdown content.
+
+**Patterns detected:**
+- `data:text/html;base64,...`
+- `data:application/javascript;base64,...`
+- `javascript:` URI scheme
+
+**Why it matters:** Data URIs with base64 encoding can embed executable content, and `javascript:` URIs are a classic XSS vector.
 
 ## Script Rules
 
@@ -229,6 +250,49 @@ Detects attempts to modify skillx's own configuration and cache.
 
 **Why it matters:** A skill should never modify the tool that runs it.
 
+### SC-012: Base64 Decode Execution (DANGER)
+
+Detects base64 decoding patterns commonly used to obfuscate malicious payloads.
+
+**Patterns detected:**
+- `base64 -d`, `base64 --decode`
+- `base64.b64decode`, `atob()`
+- `Base64.decode`, `Base64.getDecoder`
+- Piping to/from base64
+
+**Why it matters:** Encoding commands in base64 is a common evasion technique to bypass text-based security scanners.
+
+### SC-013: Hex-Encoded Execution (DANGER)
+
+Detects hex decoding patterns that could conceal malicious payloads.
+
+**Patterns detected:**
+- `bytes.fromhex()`, `Buffer.from(..., 'hex')`
+- `xxd -r`, `printf '\x...'`
+
+**Why it matters:** Hex encoding is another obfuscation technique to hide malicious commands.
+
+### SC-014: String Concatenation Obfuscation (WARN)
+
+Detects character-by-character string construction that may hide dangerous operations.
+
+**Patterns detected:**
+- `chr()` (Python/PHP)
+- `String.fromCharCode()` (JavaScript)
+- `[char]N` (PowerShell)
+
+**Why it matters:** Building strings character-by-character can bypass keyword-based detection of dangerous commands.
+
+### SC-015: Environment Variable Exfiltration (DANGER)
+
+Detects attempts to dump or access all environment variables, which may contain secrets.
+
+**Patterns detected:**
+- `printenv`, `os.environ` (Python)
+- `process.env` (Node.js), `ENV.fetch` (Ruby)
+
+**Why it matters:** Environment variables often contain API keys, tokens, and other secrets that should not be exfiltrated.
+
 ## Resource Rules
 
 Applied to files in the `references/` directory.
@@ -249,6 +313,22 @@ Detects files larger than 50 MB.
 
 Detects executable files in the `references/` directory, which should only contain documents and data.
 
+### RS-004: Symlink Detection (DANGER)
+
+Detects symbolic links in the skill directory that may point to sensitive files or directories outside the skill.
+
+**Detection method:** File type check via `entry.file_type().is_symlink()` — symlinks are never followed.
+
+**Why it matters:** A malicious skill could use symlinks to access `/etc/passwd`, `~/.ssh/`, or other sensitive locations. The scanner detects and blocks symlink traversal.
+
+### RS-005: Script in References (WARN)
+
+Detects script files (by shebang line) in the `references/` directory, where only data/document files are expected.
+
+**Detection method:** Checks for `#!` at the start of non-binary files in `references/`.
+
+**Why it matters:** The `references/` directory should contain documentation and data, not executable scripts.
+
 ## Quick Reference Table
 
 | Rule | Level | Category | Description |
@@ -262,6 +342,8 @@ Detects executable files in the `references/` directory, which should only conta
 | MD-007 | INFO | Markdown | Missing license declaration |
 | MD-008 | INFO | Markdown | Missing name declaration |
 | MD-009 | INFO | Markdown | Missing description declaration |
+| MD-010 | WARN | Markdown | Hidden text / invisible characters |
+| MD-011 | WARN | Markdown | Data URI / JavaScript URI |
 | SC-001 | DANGER | Script | Embedded binary |
 | SC-002 | DANGER | Script | Dynamic execution |
 | SC-003 | DANGER | Script | Recursive delete |
@@ -273,6 +355,12 @@ Detects executable files in the `references/` directory, which should only conta
 | SC-009 | DANGER | Script | Setuid/setgid |
 | SC-010 | BLOCK | Script | Self-replication |
 | SC-011 | BLOCK | Script | Modify skillx paths |
+| SC-012 | DANGER | Script | Base64 decode execution |
+| SC-013 | DANGER | Script | Hex-encoded execution |
+| SC-014 | WARN | Script | String concatenation obfuscation |
+| SC-015 | DANGER | Script | Environment variable exfiltration |
 | RS-001 | WARN | Resource | Disguised file extension |
 | RS-002 | INFO | Resource | Oversized file (> 50 MB) |
 | RS-003 | DANGER | Resource | Executable in references |
+| RS-004 | DANGER | Resource | Symlink detection |
+| RS-005 | WARN | Resource | Script in references |
