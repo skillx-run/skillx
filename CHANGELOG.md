@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-04-17
+
+### Fixed
+
+- `skillx upgrade` now auto-upgrades binaries installed via `install.sh` (previously classified as Unknown, falling back to manual reinstall instructions)
+- Record failed version-check attempts via rate-limited cache to prevent retry storms on transient upstream outages
+- Abort the background update-check task when the 3s post-command join timeout fires, so it never outlives `main`
+- Suppress the cached "upgrade available" banner after `skillx upgrade` — it already reports its own upgrade status
+
+### Changed
+
+- `update_check::cached_update_available()` now takes `&Config` explicitly; `main` loads config once and reuses it for both the spawn and fallback paths
+
 ## [0.8.0] - 2026-04-17
 
 ### Added
@@ -202,6 +215,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SARIF 2.1.0 output format for scanner results
 - Text and JSON output formatters
 
+[0.8.1]: https://github.com/skillx-run/skillx/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/skillx-run/skillx/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/skillx-run/skillx/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/skillx-run/skillx/compare/v0.5.0...v0.6.0
