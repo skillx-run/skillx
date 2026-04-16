@@ -212,7 +212,7 @@ cargo run -- upgrade             # Check for CLI updates
 - Extensionless root files with shebang (`#!`) are scanned as scripts (shebang detection in `scan_root_files`)
 - `GateOptions { auto_yes, headless }` struct replaces bare `auto_yes: bool` in gate API
 - `gate_scan_result_inner` is `pub(crate)` with injectable `BufRead`+`Write` for testability
-- `--headless` flag + `CI=true` / `SKILLX_HEADLESS=1` env vars disable interactive gate prompts
+- `--headless` flag + `SKILLX_HEADLESS=1` env var disable interactive gate prompts (no `CI=true` auto-detect — too aggressive)
 - `--fail-on` flag on `run` command checks scan level before interactive gate
 - MD-010 zero-width chars use `\x{HHHH}` regex syntax (not `\p{Cf}` — regex crate limitation)
 - `scan.headless` in config.toml sets default headless mode

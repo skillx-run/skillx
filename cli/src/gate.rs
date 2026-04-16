@@ -27,15 +27,14 @@ pub struct GateOptions {
 ///
 /// `skill_dir` is used to display source context for the `detail` command.
 ///
-/// Headless mode is activated by `opts.headless`, or auto-detected via `CI=true`
-/// or `SKILLX_HEADLESS=1` environment variables.
+/// Headless mode is activated by `opts.headless` or the `SKILLX_HEADLESS` environment variable.
+/// Use `--headless` flag or `SKILLX_HEADLESS=1` in CI pipelines.
 pub fn gate_scan_result(
     scan_report: &Option<ScanReport>,
     skill_dir: &Path,
     opts: &GateOptions,
 ) -> anyhow::Result<()> {
-    let effective_headless =
-        opts.headless || std::env::var("CI").is_ok() || std::env::var("SKILLX_HEADLESS").is_ok();
+    let effective_headless = opts.headless || std::env::var("SKILLX_HEADLESS").is_ok();
 
     if effective_headless {
         return gate_scan_result_headless(scan_report);
