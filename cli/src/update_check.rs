@@ -12,6 +12,9 @@ use crate::error::{Result, SkillxError};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateCheckCache {
     pub last_checked: DateTime<Utc>,
+    /// Latest upstream version without `v` prefix. An empty string indicates no
+    /// successful fetch yet (e.g., after `save_failed_attempt`); readers must
+    /// rely on `is_newer` whose semver parse gracefully degrades to "no update".
     pub latest_version: String,
     pub current_version: String,
 }
@@ -88,11 +91,10 @@ pub fn should_check(config: &Config) -> bool {
 ///
 /// Used for showing notifications on every run even when the API check interval hasn't elapsed.
 /// Respects the same disable flags as `should_check()`.
-pub fn cached_update_available() -> Option<UpdateAvailable> {
+pub fn cached_update_available(config: &Config) -> Option<UpdateAvailable> {
     if std::env::var("SKILLX_NO_UPDATE_CHECK").is_ok() {
         return None;
     }
-    let config = Config::load().ok()?;
     if !config.update.check {
         return None;
     }
@@ -235,10 +237,30 @@ pub fn detect_install_method_from_path(path: &Path) -> InstallMethod {
     InstallMethod::Unknown
 }
 
+/// Record a failed fetch attempt — advances `last_checked` so the rate limit
+/// applies and we don't hammer the API on every command, while preserving the
+/// previously known `latest_version` so any cached "update available" state
+/// continues to notify the user.
+fn save_failed_attempt() {
+    let current = env!("CARGO_PKG_VERSION");
+    let prior_latest = load_cache().map(|c| c.latest_version).unwrap_or_default();
+    save_cache(&UpdateCheckCache {
+        last_checked: Utc::now(),
+        latest_version: prior_latest,
+        current_version: current.to_string(),
+    });
+}
+
 /// Perform the full background check: fetch, compare, cache, return update info if available.
 pub async fn check_for_update() -> Option<UpdateAvailable> {
     let current = env!("CARGO_PKG_VERSION");
-    let latest = fetch_latest_version(Duration::from_secs(3)).await.ok()?;
+    let latest = match fetch_latest_version(Duration::from_secs(3)).await {
+        Ok(v) => v,
+        Err(_) => {
+            save_failed_attempt();
+            return None;
+        }
+    };
 
     // Save cache regardless of whether update is available
     save_cache(&UpdateCheckCache {
@@ -393,7 +415,8 @@ mod tests {
             },
         );
 
-        let result = cached_update_available();
+        let config = Config::default();
+        let result = cached_update_available(&config);
         assert!(result.is_some());
         let update = result.unwrap();
         assert_eq!(update.latest, "99.0.0");
@@ -414,7 +437,8 @@ mod tests {
             },
         );
 
-        assert!(cached_update_available().is_none());
+        let config = Config::default();
+        assert!(cached_update_available(&config).is_none());
     }
 
     #[test]
@@ -422,7 +446,8 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let _guard = setup_env(&tmp);
 
-        assert!(cached_update_available().is_none());
+        let config = Config::default();
+        assert!(cached_update_available(&config).is_none());
     }
 
     #[test]
@@ -441,17 +466,14 @@ mod tests {
         );
 
         // Even with a newer version in cache, env var disables notification
-        assert!(cached_update_available().is_none());
+        let config = Config::default();
+        assert!(cached_update_available(&config).is_none());
     }
 
     #[test]
     fn test_cached_update_available_respects_config() {
         let tmp = tempfile::tempdir().unwrap();
         let _guard = setup_env(&tmp);
-
-        // Write a config with check = false
-        let config_path = tmp.path().join("config.toml");
-        std::fs::write(&config_path, "[update]\ncheck = false\n").unwrap();
 
         write_cache_to(
             tmp.path(),
@@ -462,8 +484,92 @@ mod tests {
             },
         );
 
-        // Even with a newer version in cache, config disables notification
-        assert!(cached_update_available().is_none());
+        // Even with a newer version in cache, disabling check in config silences it
+        let mut config = Config::default();
+        config.update.check = false;
+        assert!(cached_update_available(&config).is_none());
+    }
+
+    #[test]
+    fn test_cached_update_available_ignores_failed_attempt() {
+        let tmp = tempfile::tempdir().unwrap();
+        let _guard = setup_env(&tmp);
+
+        // A failed attempt with no prior known latest_version stores empty string.
+        write_cache_to(
+            tmp.path(),
+            &UpdateCheckCache {
+                last_checked: Utc::now(),
+                latest_version: "".to_string(),
+                current_version: env!("CARGO_PKG_VERSION").to_string(),
+            },
+        );
+
+        let config = Config::default();
+        // Empty version fails semver parse → is_newer returns false → no notification.
+        assert!(cached_update_available(&config).is_none());
+    }
+
+    #[test]
+    fn test_save_failed_attempt_preserves_prior_latest() {
+        let tmp = tempfile::tempdir().unwrap();
+        let _guard = setup_env(&tmp);
+
+        // Seed with a successful prior check from 25 hours ago
+        write_cache_to(
+            tmp.path(),
+            &UpdateCheckCache {
+                last_checked: Utc::now() - chrono::Duration::hours(25),
+                latest_version: "99.0.0".to_string(),
+                current_version: env!("CARGO_PKG_VERSION").to_string(),
+            },
+        );
+
+        save_failed_attempt();
+
+        let loaded = load_cache().unwrap();
+        // Prior latest_version is preserved so cached notification still fires
+        assert_eq!(loaded.latest_version, "99.0.0");
+        // last_checked has advanced to ~now (generous tolerance for slow CI)
+        let elapsed = Utc::now()
+            .signed_duration_since(loaded.last_checked)
+            .num_seconds();
+        assert!(
+            elapsed.abs() < 60,
+            "elapsed since failed attempt: {elapsed}"
+        );
+    }
+
+    #[test]
+    fn test_save_failed_attempt_no_prior_cache() {
+        let tmp = tempfile::tempdir().unwrap();
+        let _guard = setup_env(&tmp);
+
+        save_failed_attempt();
+
+        let loaded = load_cache().unwrap();
+        assert_eq!(loaded.latest_version, ""); // no prior known version
+        assert_eq!(loaded.current_version, env!("CARGO_PKG_VERSION"));
+    }
+
+    #[test]
+    fn test_should_check_respects_failed_attempt_rate_limit() {
+        let tmp = tempfile::tempdir().unwrap();
+        let _guard = setup_env(&tmp);
+
+        // Simulate a recent failed attempt (empty latest_version, recent last_checked).
+        write_cache_to(
+            tmp.path(),
+            &UpdateCheckCache {
+                last_checked: Utc::now(),
+                latest_version: "".to_string(),
+                current_version: env!("CARGO_PKG_VERSION").to_string(),
+            },
+        );
+
+        let config = Config::default();
+        // Rate limit applies even after a failed attempt — no retry storm.
+        assert!(!should_check(&config));
     }
 
     #[test]
