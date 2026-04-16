@@ -6,8 +6,8 @@ skillx is a security-focused tool that scans and gates agent skills before execu
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.7.x   | Yes                |
-| < 0.7   | No                 |
+| 0.8.x   | Yes                |
+| < 0.8   | No                 |
 
 Only the latest release receives security updates. We recommend always running the most recent version.
 

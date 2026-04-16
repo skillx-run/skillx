@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-04-17
+
+### Added
+
+- 7 new scanner rules bringing total to 30: SC-012 (base64/hex decode), SC-013 (string concatenation obfuscation), SC-014 (Unicode escape abuse), SC-015 (env var exfiltration), MD-010 (hidden zero-width characters), MD-011 (data/JavaScript URI), RS-005 (scripts in references directory)
+- RS-004 symlink detection: scanner identifies and reports symlinks without following them
+- Anti-evasion normalization layer: shell continuation-line joining and keyword whitespace normalization to detect obfuscated patterns
+- Shebang detection for extensionless root files (scanned as scripts when `#!` is present)
+- `--headless` flag and `CI=true` / `SKILLX_HEADLESS=1` env vars to disable interactive gate prompts
+- `--fail-on` flag on `run` command to enforce minimum scan level threshold
+
+### Fixed
+
+- Fix tarball extraction failing on archives containing `pax_global_header` entries
+- Fix symlink traversal security issue in scanner directory walking
+
+### Changed
+
+- Refactor gate API with `GateOptions` struct for cleaner headless and auto-approve control
+- Optimize scanner performance: cache executable checks, efficient magic-byte reads for shebang detection, pre-compute normalization per line
+
 ## [0.7.0] - 2026-04-16
 
 ### Added
@@ -181,6 +202,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SARIF 2.1.0 output format for scanner results
 - Text and JSON output formatters
 
+[0.8.0]: https://github.com/skillx-run/skillx/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/skillx-run/skillx/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/skillx-run/skillx/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/skillx-run/skillx/compare/v0.4.0...v0.5.0
