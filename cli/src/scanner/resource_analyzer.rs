@@ -58,24 +58,26 @@ impl ResourceAnalyzer {
             });
         }
 
-        // RS-003: Executable in references/ (shared detection)
+        // RS-003 / RS-005: checks specific to references/ directory
         let in_references =
             rel_path.starts_with("references/") || rel_path.starts_with("references\\");
-        if in_references && BinaryAnalyzer::is_executable(path)? {
-            report.add(Finding {
-                rule_id: "RS-003".to_string(),
-                level: RiskLevel::Danger,
-                message: "executable file in references directory".to_string(),
-                file: rel_path.to_string(),
-                line: None,
-                context: None,
-            });
-        }
-
-        // RS-005: Script file in references/ (shebang detection)
-        if in_references && !BinaryAnalyzer::is_executable(path)? {
-            if let Ok(bytes) = std::fs::read(path) {
-                if bytes.starts_with(b"#!") {
+        if in_references {
+            let is_exec = BinaryAnalyzer::is_executable(path)?;
+            if is_exec {
+                // RS-003: Executable in references/
+                report.add(Finding {
+                    rule_id: "RS-003".to_string(),
+                    level: RiskLevel::Danger,
+                    message: "executable file in references directory".to_string(),
+                    file: rel_path.to_string(),
+                    line: None,
+                    context: None,
+                });
+            } else {
+                // RS-005: Script file in references/ (shebang detection)
+                // Only read the first few bytes — no need to load entire file
+                let magic = BinaryAnalyzer::read_magic_bytes(path)?;
+                if magic.starts_with(b"#!") {
                     report.add(Finding {
                         rule_id: "RS-005".to_string(),
                         level: RiskLevel::Warn,

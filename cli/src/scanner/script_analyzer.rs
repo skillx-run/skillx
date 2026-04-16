@@ -50,15 +50,18 @@ impl ScriptAnalyzer {
             }
         };
 
-        // Normalize content: join shell continuation lines and prepare for matching
+        // Normalize content: join shell continuation lines and pre-compute whitespace normalization
         let logical_lines = normalize::join_continuation_lines(&content);
+        let normalized_texts: Vec<String> = logical_lines
+            .iter()
+            .map(|ll| normalize::normalize_whitespace(&ll.text))
+            .collect();
 
-        // SC-002 through SC-011: Pre-compiled pattern matching
+        // SC-002 through SC-015: Pre-compiled pattern matching
         for rule in SC_RULES.iter() {
             for re in &rule.patterns {
-                for ll in &logical_lines {
-                    let normalized = normalize::normalize_whitespace(&ll.text);
-                    if re.is_match(&normalized) {
+                for (idx, ll) in logical_lines.iter().enumerate() {
+                    if re.is_match(&normalized_texts[idx]) {
                         // Skip WARN-level matches on comment lines to reduce false positives.
                         // DANGER/BLOCK level rules still fire on comments (worth reviewing).
                         if rule.level == RiskLevel::Warn && is_comment_line(&ll.text) {

@@ -24,14 +24,17 @@ impl MarkdownAnalyzer {
             })
             .collect();
 
-        // Normalize: join continuation lines for evasion detection
+        // Normalize: join continuation lines and pre-compute whitespace normalization
         let logical_lines = normalize::join_continuation_lines(content);
+        let normalized_texts: Vec<String> = logical_lines
+            .iter()
+            .map(|ll| normalize::normalize_whitespace(&ll.text))
+            .collect();
 
         for rule in MD_RULES.iter() {
             for re in &rule.patterns {
-                for ll in &logical_lines {
-                    let normalized = normalize::normalize_whitespace(&ll.text);
-                    if re.is_match(&normalized) {
+                for (idx, ll) in logical_lines.iter().enumerate() {
+                    if re.is_match(&normalized_texts[idx]) {
                         // Check code-block status using the first original line
                         let in_block = code_block_lines
                             .get(ll.start_line)

@@ -36,10 +36,12 @@ impl SkillFixture {
         std::fs::write(scripts.join(name), content).unwrap();
     }
 
+    #[allow(dead_code)]
     fn add_root_file(&self, name: &str, content: &str) {
         std::fs::write(self.dir.path().join(name), content).unwrap();
     }
 
+    #[allow(dead_code)]
     fn add_reference(&self, name: &str, content: &[u8]) {
         let refs = self.dir.path().join("references");
         std::fs::create_dir_all(&refs).unwrap();

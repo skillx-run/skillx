@@ -239,8 +239,9 @@ impl ScanEngine {
             );
 
             // Shebang detection for extensionless files
+            // Only read first few bytes — no need to load entire file
             let has_shebang = if !is_script_ext && ext.is_empty() {
-                std::fs::read(&path)
+                binary_analyzer::BinaryAnalyzer::read_magic_bytes(&path)
                     .ok()
                     .map(|bytes| bytes.starts_with(b"#!"))
                     .unwrap_or(false)
