@@ -188,8 +188,7 @@ impl ArchiveSource {
 
             // Skip pax header entries — they are tar metadata, not real files
             let entry_type = entry.header().entry_type();
-            if entry_type == tar::EntryType::XGlobalHeader
-                || entry_type == tar::EntryType::XHeader
+            if entry_type == tar::EntryType::XGlobalHeader || entry_type == tar::EntryType::XHeader
             {
                 continue;
             }
@@ -406,11 +405,7 @@ mod tests {
         header.set_mode(0o644);
         header.set_cksum();
         builder
-            .append_data(
-                &mut header,
-                "myrepo-abc123/SKILL.md",
-                &skill_content[..],
-            )
+            .append_data(&mut header, "myrepo-abc123/SKILL.md", &skill_content[..])
             .unwrap();
 
         let tar_data = builder.into_inner().unwrap();
