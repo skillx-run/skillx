@@ -115,7 +115,7 @@ pub(crate) fn gate_scan_result_inner(
             )?;
 
             let mut sorted_findings = report.findings.clone();
-            sorted_findings.sort_by(|a, b| b.level.cmp(&a.level));
+            sorted_findings.sort_by_key(|f| std::cmp::Reverse(f.level));
 
             loop {
                 write!(output, "{} ", style(">").dim())?;
