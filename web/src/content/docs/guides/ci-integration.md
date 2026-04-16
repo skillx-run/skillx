@@ -278,14 +278,9 @@ In headless mode:
 - **PASS/INFO/WARN** → auto-pass (no prompt)
 - **DANGER/BLOCK** → auto-refuse with non-zero exit code
 
-### Environment Variable
+### Auto-Detection
 
-Set `SKILLX_HEADLESS=1` in your CI pipeline to enable headless mode without the `--headless` flag:
-
-```yaml
-env:
-  SKILLX_HEADLESS: 1
-```
+The `CI=true` environment variable is auto-detected — most CI systems (GitHub Actions, GitLab CI, CircleCI, etc.) set this automatically. You can also set `SKILLX_HEADLESS=1` explicitly.
 
 ### Config Default
 
