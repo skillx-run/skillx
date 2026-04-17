@@ -130,6 +130,39 @@ const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
     margin-top: 1rem;
   }
 
+  .action-row a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.9rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--landing-border-strong);
+    border-radius: 999px;
+    background: var(--landing-text);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      background-color 0.18s ease,
+      color 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .action-row a:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 32px rgba(17, 17, 17, 0.14);
+  }
+
+  .action-row .neo-btn-secondary {
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--landing-text);
+    border-color: var(--landing-border);
+  }
+
   @media (max-width: 900px) {
     .final-cta-shell {
       grid-template-columns: 1fr;
@@ -149,6 +182,10 @@ const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
 
     .copy-label {
       align-self: flex-start;
+    }
+
+    .action-row a {
+      width: 100%;
     }
   }
 </style>
