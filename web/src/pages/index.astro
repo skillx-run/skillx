@@ -15,6 +15,20 @@ import HomeFinalCta from '../components/home/home-final-cta.astro';
     <HomeMechanismTrust />
     <HomeFinalCta />
   </main>
+  <footer class="landing-footer">
+    <div class="landing-container footer-shell">
+      <div class="footer-brand">
+        <p class="footer-logo">skillx</p>
+        <p class="footer-copy">Make skills easier to try and easier to adopt.</p>
+      </div>
+
+      <nav class="footer-nav" aria-label="Footer links">
+        <a href="/getting-started/installation/">Install</a>
+        <a href="/getting-started/">Docs</a>
+        <a href="https://github.com/skillx-run/skillx">GitHub</a>
+      </nav>
+    </div>
+  </footer>
 </Base>
 
 <style is:global>
@@ -28,5 +42,61 @@ import HomeFinalCta from '../components/home/home-final-cta.astro';
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
+  }
+
+  .landing-footer {
+    padding: 2rem 0 3rem;
+  }
+
+  .footer-shell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--landing-border);
+  }
+
+  .footer-brand {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .footer-logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .footer-copy {
+    color: var(--landing-muted);
+    max-width: 32rem;
+  }
+
+  .footer-nav {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-nav a {
+    color: var(--landing-text);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .footer-nav a:hover {
+    color: var(--landing-accent-strong);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  @media (max-width: 720px) {
+    .footer-shell {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 </style>

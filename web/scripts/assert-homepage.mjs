@@ -21,6 +21,12 @@ const checks = [
   '18+ sources',
   '5 risk levels',
   'scan before inject',
+  'data-home-section="final-cta"',
+  'Run your first skill in under a minute.',
+  'curl -fsSL https://skillx.run/install.sh | sh',
+  '/getting-started/installation/',
+  'https://github.com/skillx-run/skillx',
+  'Make skills easier to try and easier to adopt.',
 ];
 
 let cursor = 0;
@@ -33,4 +39,4 @@ for (const check of checks) {
   cursor = index + check.length;
 }
 
-console.log('Homepage smoke checks passed (4 checks).');
+console.log(`Homepage smoke checks passed (${checks.length} checks).`);
