@@ -1,16 +1,13 @@
 ---
 ---
-<nav>
-  <div class="nav-inner">
-    <a href="/" class="brand">
-      <span class="logo">skillx</span>
+<nav class="site-nav" aria-label="Primary">
+  <div class="landing-container nav-inner">
+    <a href="/" class="brand" aria-label="skillx home">
+      <span class="brand-mark">skillx</span>
     </a>
     <div class="nav-links">
       <a href="/getting-started/">Docs</a>
-      <a href="/blog">Blog</a>
-      <a href="https://x.com/SkillxRun" class="icon-link" aria-label="X (Twitter)">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-      </a>
+      <a href="/blog/">Blog</a>
       <a href="https://github.com/skillx-run/skillx" class="gh-link">
         GitHub
       </a>
@@ -19,82 +16,71 @@
 </nav>
 
 <style>
-  nav {
+  .site-nav {
     position: sticky;
     top: 0;
-    z-index: 100;
-    background: #fffbf2;
-    border-bottom: 2px solid #1a1a1a;
+    z-index: 40;
+    background: rgba(246, 242, 234, 0.78);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--landing-border);
   }
 
   .nav-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0.75rem 2rem;
+    min-height: 4.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
   }
 
   .brand {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--landing-border);
+    border-radius: 999px;
+    background: var(--landing-surface);
+    box-shadow: var(--landing-shadow);
     text-decoration: none;
   }
 
-  .logo {
+  .brand-mark {
     font-family: 'JetBrains Mono', monospace;
-    font-weight: 800;
-    font-size: 1.5rem;
-    color: #1a1a1a;
-    text-shadow: 2px 2px 0px #6366f1;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    color: var(--landing-text);
   }
 
   .nav-links {
     display: flex;
-    gap: 1.5rem;
+    gap: 0.5rem;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .nav-links a {
-    color: #1a1a1a;
-    text-decoration: none;
-    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.65rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    color: var(--landing-muted);
+    font-size: 0.95rem;
     font-weight: 600;
-    transition: transform 0.1s;
+    text-decoration: none;
+    transition:
+      color 0.18s ease,
+      border-color 0.18s ease,
+      background-color 0.18s ease,
+      transform 0.18s ease;
   }
 
   .nav-links a:hover {
-    color: #6366f1;
+    color: var(--landing-text);
+    border-color: var(--landing-border);
+    background: var(--landing-surface);
     transform: translateY(-1px);
-  }
-
-  .icon-link {
-    display: flex;
-    align-items: center;
-    padding: 0.4rem;
-    border: 2px solid #1a1a1a;
-    border-radius: 4px;
-    background: white;
-    box-shadow: 3px 3px 0px #1a1a1a;
-  }
-
-  .icon-link:hover {
-    transform: translate(1px, 1px) !important;
-    box-shadow: 2px 2px 0px #1a1a1a;
-    background: #f5f5f5;
-  }
-
-  .gh-link {
-    padding: 0.4rem 1rem;
-    border: 2px solid #1a1a1a;
-    border-radius: 4px;
-    background: white;
-    box-shadow: 3px 3px 0px #1a1a1a;
-    font-size: 0.9rem !important;
-  }
-
-  .gh-link:hover {
-    transform: translate(1px, 1px);
-    box-shadow: 2px 2px 0px #1a1a1a;
-    background: #f5f5f5;
   }
 </style>
