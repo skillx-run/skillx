@@ -1,5 +1,185 @@
-<section data-home-section="mechanism-trust">
-  <div class="container">
-    <h2>Mechanism Trust</h2>
+---
+const steps = [
+  {
+    name: 'resolve',
+    description: 'Resolve the source and pinpoint the exact skill before anything is touched.',
+  },
+  {
+    name: 'scan',
+    description: 'Scan the skill against security rules and risk levels before injection.',
+  },
+  {
+    name: 'inject',
+    description: 'Inject only the temporary files that are needed for the session.',
+  },
+  {
+    name: 'run',
+    description: 'Run the agent with the skill in place and keep the session bounded.',
+  },
+  {
+    name: 'clean',
+    description: 'Clean the workspace, cache, and session artifacts after the run ends.',
+  },
+];
+
+const proofCards = [
+  {
+    title: '30 rules',
+    body: 'The scanner uses thirty rules to catch prompt injection, destructive actions, and escape paths.',
+  },
+  {
+    title: '32+ agents',
+    body: 'The homepage proof strip shows support for 32+ agents across the current ecosystem.',
+  },
+  {
+    title: '18+ sources',
+    body: 'skillx can resolve skills from 18+ sources, giving teams flexibility without changing the workflow.',
+  },
+  {
+    title: '5 risk levels',
+    body: 'Findings are organized across five risk levels so scan before inject stays strict without being opaque.',
+  },
+];
+---
+
+<section data-home-section="mechanism-trust" class="landing-section mechanism-trust-section">
+  <div class="landing-container mechanism-trust-grid">
+    <div class="mechanism-trust-copy">
+      <p class="eyebrow">Mechanism trust</p>
+      <h2>Trust is a workflow, not a promise.</h2>
+      <p class="lede">
+        skillx shows the chain of custody from resolve to clean so users can verify what happens
+        before, during, and after a session.
+      </p>
+    </div>
+
+    <div class="mechanism-flow" aria-label="Mechanism steps">
+      {steps.map((step, index) => (
+        <article class="step-card">
+          <p class="step-index">0{index + 1}</p>
+          <h3>{step.name}</h3>
+          <p>{step.description}</p>
+        </article>
+      ))}
+    </div>
+
+    <div class="proof-grid" aria-label="Trust proof cards">
+      {proofCards.map((proof) => (
+        <article class="proof-card">
+          <h3>{proof.title}</h3>
+          <p>{proof.body}</p>
+        </article>
+      ))}
+    </div>
   </div>
 </section>
+
+<style>
+  .mechanism-trust-section {
+    padding-top: 0;
+  }
+
+  .mechanism-trust-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .mechanism-trust-copy {
+    max-width: 38rem;
+  }
+
+  .eyebrow {
+    margin-bottom: 0.9rem;
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    max-width: 14ch;
+  }
+
+  .lede {
+    margin-top: 1rem;
+    max-width: 40ch;
+    color: var(--landing-muted);
+    font-size: 1.06rem;
+  }
+
+  .mechanism-flow {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .step-card,
+  .proof-card {
+    border: 1px solid var(--landing-border);
+    border-radius: var(--landing-radius-lg);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 247, 240, 0.96));
+    box-shadow: var(--landing-shadow);
+  }
+
+  .step-card {
+    padding: 1.2rem;
+    min-height: 11.5rem;
+  }
+
+  .step-index {
+    display: inline-flex;
+    margin-bottom: 0.9rem;
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .step-card h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    text-transform: lowercase;
+  }
+
+  .step-card p,
+  .proof-card p {
+    color: var(--landing-muted);
+  }
+
+  .proof-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .proof-card {
+    padding: 1.2rem;
+  }
+
+  .proof-card h3 {
+    margin-bottom: 0.7rem;
+    font-size: 1.18rem;
+  }
+
+  @media (max-width: 1080px) {
+    .mechanism-flow {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .proof-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .mechanism-flow,
+    .proof-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

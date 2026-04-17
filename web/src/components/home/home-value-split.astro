@@ -1,5 +1,143 @@
-<section data-home-section="value-split">
-  <div class="container">
-    <h2>Value Split</h2>
+---
+const valueCards = [
+  {
+    eyebrow: 'No manual install',
+    title: 'For Skill Users',
+    body:
+      'Skip manual install and cleanup. skillx fetches the skill, scans it, injects it temporarily, runs it, and removes it when the session ends.',
+  },
+  {
+    eyebrow: 'Distribution that feels lighter',
+    title: 'For Skill Developers',
+    body:
+      'Share a link and reduce adoption friction. Users can try your skill immediately without copying files into a permanent directory.',
+  },
+];
+---
+
+<section data-home-section="value-split" class="landing-section value-split-section">
+  <div class="landing-container value-split-grid">
+    <div class="value-split-copy">
+      <p class="eyebrow">Why skillx</p>
+      <h2>One lifecycle, two sides of value.</h2>
+      <p class="lede">
+        skillx helps people who want to use a skill now and people who want to publish one without
+        making adoption heavier than it needs to be.
+      </p>
+    </div>
+
+    <div class="value-split-cards" aria-label="Value split cards">
+      {valueCards.map((card) => (
+        <article class="value-card">
+          <p class="card-eyebrow">{card.eyebrow}</p>
+          <h3>{card.title}</h3>
+          <p>{card.body}</p>
+        </article>
+      ))}
+    </div>
   </div>
 </section>
+
+<style>
+  .value-split-section {
+    padding-top: 0;
+  }
+
+  .value-split-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
+  }
+
+  .value-split-copy {
+    position: sticky;
+    top: 1.5rem;
+    max-width: 30rem;
+  }
+
+  .eyebrow {
+    margin-bottom: 0.9rem;
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    max-width: 11ch;
+  }
+
+  .lede {
+    margin-top: 1rem;
+    max-width: 34ch;
+    color: var(--landing-muted);
+    font-size: 1.06rem;
+  }
+
+  .value-split-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .value-card {
+    padding: 1.4rem 1.35rem 1.45rem;
+    border: 1px solid var(--landing-border);
+    border-radius: var(--landing-radius-lg);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 247, 240, 0.96));
+    box-shadow: var(--landing-shadow);
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .value-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--landing-border-strong);
+  }
+
+  .card-eyebrow {
+    display: inline-flex;
+    margin-bottom: 0.85rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    background: var(--landing-accent-soft);
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .value-card h3 {
+    font-size: 1.45rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .value-card p {
+    color: var(--landing-muted);
+  }
+
+  @media (max-width: 900px) {
+    .value-split-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .value-split-copy {
+      position: static;
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .value-split-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
