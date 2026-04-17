@@ -7,7 +7,8 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "check:homepage": "node scripts/assert-homepage.mjs"
   },
   "dependencies": {
     "astro": "5.5.5",

@@ -1,124 +1,32 @@
 ---
 import Base from '../layouts/base.astro';
 import Nav from '../components/nav.astro';
-import Hero from '../components/hero.astro';
-import Install from '../components/install.astro';
-import Features from '../components/features.astro';
-import Lifecycle from '../components/lifecycle.astro';
-import Ecosystem from '../components/ecosystem.astro';
-import CtaFooter from '../components/cta-footer.astro';
+import HomeHero from '../components/home/home-hero.astro';
+import HomeValueSplit from '../components/home/home-value-split.astro';
+import HomeMechanismTrust from '../components/home/home-mechanism-trust.astro';
+import HomeFinalCta from '../components/home/home-final-cta.astro';
 ---
 
-<Base title="skillx — npx for Agent Skills">
+<Base title="skillx — Run any agent skill in one command">
   <Nav />
   <main>
-    <Hero />
-    <Install />
-    <Features />
-    <Lifecycle />
-    <Ecosystem />
-    <CtaFooter />
-
-    <footer>
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-brand">
-            <span class="logo">skillx</span>
-            <p>npx for Agent Skills</p>
-          </div>
-          <div class="footer-links">
-            <a href="https://github.com/skillx-run/skillx">GitHub</a>
-            <a href="https://x.com/SkillxRun" class="footer-icon-link" aria-label="X (Twitter)">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            </a>
-            <a href="/getting-started/">Documentation</a>
-            <a href="/blog">Blog</a>
-          </div>
-          <div class="footer-legal">
-            <p>Code: Apache-2.0 &middot; Docs: CC-BY-4.0</p>
-          </div>
-        </div>
-      </div>
-    </footer>
+    <HomeHero />
+    <HomeValueSplit />
+    <HomeMechanismTrust />
+    <HomeFinalCta />
   </main>
 </Base>
 
-<style>
+<style is:global>
   main {
-    background: #fffbf2;
-    color: #1a1a1a;
-    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 
   .container {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
-  }
-
-  footer {
-    border-top: 2px solid #1a1a1a;
-    padding: 3rem 0;
-    background: #fdf6e3;
-  }
-
-  .footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 2rem;
-  }
-
-  .footer-brand .logo {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 1.3rem;
-    color: #6366f1;
-  }
-
-  .footer-brand p {
-    color: #666;
-    margin: 0.25rem 0 0;
-    font-size: 0.9rem;
-  }
-
-  .footer-links {
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  .footer-links a {
-    color: #1a1a1a;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-  }
-
-  .footer-links a:hover {
-    color: #6366f1;
-    text-decoration: underline;
-  }
-
-  .footer-icon-link {
-    display: flex;
-    align-items: center;
-  }
-
-  .footer-icon-link:hover {
-    text-decoration: none !important;
-  }
-
-  .footer-legal p {
-    color: #666;
-    font-size: 0.8rem;
-    margin: 0;
-  }
-
-  @media (max-width: 768px) {
-    .footer-content {
-      flex-direction: column;
-      text-align: center;
-    }
   }
 </style>
