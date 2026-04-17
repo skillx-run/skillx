@@ -33,3 +33,6 @@ Thumbs.db
 
 # skillx runtime injected skills
 .agents/
+
+# local git worktrees
+.worktrees/
