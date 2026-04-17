@@ -1,9 +1,10 @@
 ---
 interface Props {
   title: string;
+  description?: string;
 }
 
-const { title } = Astro.props;
+const { title, description } = Astro.props;
 ---
 
 <!doctype html>
@@ -11,9 +12,9 @@ const { title } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Run any agent skill in one command. Make skills easier to try, easier to trust, and easier to adopt with skillx." />
+    {description && <meta name="description" content={description} />}
     <meta property="og:title" content={title} />
-    <meta property="og:description" content="Run any agent skill in one command. Make skills easier to try, easier to trust, and easier to adopt with skillx." />
+    {description && <meta property="og:description" content={description} />}
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://skillx.run" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,22 +29,6 @@ const { title } = Astro.props;
 </html>
 
 <style is:global>
-  :root {
-    --landing-bg: #f6f2ea;
-    --landing-surface: rgba(255, 255, 255, 0.74);
-    --landing-surface-strong: #ffffff;
-    --landing-text: #111111;
-    --landing-muted: rgba(17, 17, 17, 0.68);
-    --landing-border: rgba(17, 17, 17, 0.12);
-    --landing-border-strong: rgba(17, 17, 17, 0.18);
-    --landing-accent: #355cff;
-    --landing-accent-soft: rgba(53, 92, 255, 0.12);
-    --landing-accent-strong: #243fc2;
-    --landing-shadow: 0 24px 80px rgba(17, 17, 17, 0.08);
-    --landing-radius-lg: 20px;
-    --landing-radius-xl: 28px;
-  }
-
   * {
     margin: 0;
     padding: 0;
@@ -52,16 +37,11 @@ const { title } = Astro.props;
 
   html {
     scroll-behavior: smooth;
-    background: var(--landing-bg);
   }
 
   body {
     font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background:
-      radial-gradient(circle at top left, rgba(53, 92, 255, 0.08), transparent 28%),
-      radial-gradient(circle at top right, rgba(255, 184, 108, 0.1), transparent 24%),
-      var(--landing-bg);
-    color: var(--landing-text);
+    color: #111111;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -84,14 +64,5 @@ const { title } = Astro.props;
 
   nav a {
     text-decoration: none;
-  }
-
-  .landing-container {
-    width: min(1120px, calc(100% - 2rem));
-    margin-inline: auto;
-  }
-
-  .landing-section {
-    padding-block: clamp(3rem, 6vw, 6rem);
   }
 </style>

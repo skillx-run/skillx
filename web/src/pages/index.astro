@@ -7,7 +7,10 @@ import HomeMechanismTrust from '../components/home/home-mechanism-trust.astro';
 import HomeFinalCta from '../components/home/home-final-cta.astro';
 ---
 
-<Base title="skillx — Run any agent skill in one command">
+<Base
+  title="skillx — Run any agent skill in one command"
+  description="Run any agent skill in one command. Make skills easier to try, easier to trust, and easier to adopt with skillx."
+>
   <Nav />
   <main>
     <HomeHero />
@@ -32,6 +35,34 @@ import HomeFinalCta from '../components/home/home-final-cta.astro';
 </Base>
 
 <style is:global>
+  :root {
+    --landing-bg: #f6f2ea;
+    --landing-surface: rgba(255, 255, 255, 0.74);
+    --landing-surface-strong: #ffffff;
+    --landing-text: #111111;
+    --landing-muted: rgba(17, 17, 17, 0.68);
+    --landing-border: rgba(17, 17, 17, 0.12);
+    --landing-border-strong: rgba(17, 17, 17, 0.18);
+    --landing-accent: #355cff;
+    --landing-accent-soft: rgba(53, 92, 255, 0.12);
+    --landing-accent-strong: #243fc2;
+    --landing-shadow: 0 24px 80px rgba(17, 17, 17, 0.08);
+    --landing-radius-lg: 20px;
+    --landing-radius-xl: 28px;
+  }
+
+  html {
+    background: var(--landing-bg);
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(53, 92, 255, 0.08), transparent 28%),
+      radial-gradient(circle at top right, rgba(255, 184, 108, 0.1), transparent 24%),
+      var(--landing-bg);
+    color: var(--landing-text);
+  }
+
   main {
     display: flex;
     flex-direction: column;
@@ -42,6 +73,15 @@ import HomeFinalCta from '../components/home/home-final-cta.astro';
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
+  }
+
+  .landing-container {
+    width: min(1120px, calc(100% - 2rem));
+    margin-inline: auto;
+  }
+
+  .landing-section {
+    padding-block: clamp(3rem, 6vw, 6rem);
   }
 
   .landing-footer {

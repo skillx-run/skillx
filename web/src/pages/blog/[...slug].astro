@@ -15,7 +15,10 @@ const { post } = Astro.props;
 const { Content } = await render(post);
 ---
 
-<Base title={`${post.data.title} — skillx`}>
+<Base
+  title={`${post.data.title} — skillx`}
+  description={post.data.description}
+>
   <Nav />
   <main>
     <article class="container">

@@ -15,9 +15,10 @@ const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
 
     <div class="install-panel">
       <p class="command-label">Install command</p>
-      <div class="install-bar">
+      <button class="install-bar copy-command" type="button" data-command={installCommand}>
         <code>{installCommand}</code>
-      </div>
+        <span class="copy-label">Copy</span>
+      </button>
       <div class="action-row">
         <a href="/getting-started/installation/" class="neo-btn">Install skillx</a>
         <a href="https://github.com/skillx-run/skillx" class="neo-btn neo-btn-secondary">
@@ -86,18 +87,40 @@ const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
   }
 
   .install-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    width: 100%;
     padding: 1rem 1.1rem;
     border: 1px solid var(--landing-border-strong);
     border-radius: 16px;
     background: #fff;
+    text-align: left;
+    cursor: pointer;
+    appearance: none;
+    font: inherit;
+    color: inherit;
   }
 
   .install-bar code {
-    display: block;
+    flex: 1;
     color: var(--landing-text);
     font-size: 0.98rem;
     line-height: 1.5;
     word-break: break-all;
+  }
+
+  .copy-label {
+    flex-shrink: 0;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: var(--landing-accent-soft);
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .action-row {
@@ -116,4 +139,39 @@ const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
       max-width: none;
     }
   }
+
+  @media (max-width: 640px) {
+    .install-bar {
+      padding: 0.9rem 1rem;
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .copy-label {
+      align-self: flex-start;
+    }
+  }
 </style>
+
+<script>
+  const buttons = document.querySelectorAll('.copy-command');
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      const command = button.getAttribute('data-command') || '';
+
+      try {
+        await navigator.clipboard.writeText(command);
+        button.dataset.copied = 'true';
+        const label = button.querySelector('.copy-label');
+        if (label) label.textContent = 'Copied';
+        window.setTimeout(() => {
+          delete button.dataset.copied;
+          if (label) label.textContent = 'Copy';
+        }, 1400);
+      } catch {
+        window.prompt('Copy this command', command);
+      }
+    });
+  });
+</script>
