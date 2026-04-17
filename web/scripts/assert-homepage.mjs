@@ -5,9 +5,14 @@ const html = readFileSync(resolve('dist/index.html'), 'utf8');
 
 const checks = [
   'data-home-section="hero"',
-  'data-home-section="value-split"',
-  'data-home-section="mechanism-trust"',
-  'data-home-section="final-cta"',
+  'Run any agent skill in one command.',
+  'Make skills easier to try, easier to trust, and easier to adopt.',
+  'Install skillx',
+  '32+ agents',
+  '18+ sources',
+  '30 rules',
+  '5 risk levels',
+  'scan before inject',
 ];
 
 let cursor = 0;
