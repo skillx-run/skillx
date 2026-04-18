@@ -87,6 +87,6 @@ skillx uninstall skill-a skill-b skill-c
 
 ## Related Docs
 
-- [Manage Project Skills](/guides/manage-project-skills/)
-- [skillx run](/cli/run/)
-- [Examples Overview](/examples/overview/)
+- [Manage Project Skills](/guides/manage-project-skills/) for the full cleanup and maintenance workflow around project skills
+- [skillx list](/cli/list/) to confirm what is still installed after removal
+- [skillx install](/cli/install/) if you are removing temporarily and expect to add the skill back later

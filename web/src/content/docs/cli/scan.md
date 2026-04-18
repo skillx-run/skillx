@@ -9,9 +9,9 @@ description: Security workflow guide for skillx scan — inspect a skill before 
 skillx scan <source> [options]
 ```
 
-Use `skillx scan` when you want the security decision without launching an agent. In practice this is the page you reach right after a first successful `skillx run`, when you want to validate a skill more deliberately, gate it in CI, or explain why a skill should or should not be promoted to regular project use.
+Use `skillx scan` when you want the security decision without launching an agent. In practice this is the page you reach right after a first successful `skillx run`, when you want to validate a skill more deliberately, gate it in CI, or decide whether that skill should graduate into regular project use.
 
-The command runs the same scanner used by `skillx run` and `skillx install`, but stops after reporting findings.
+The command runs the same scanner used by `skillx run` and `skillx install`, but stops after reporting findings. That makes it the natural middle step between "try it once" and "manage it as part of the project."
 
 ## Arguments
 
@@ -217,8 +217,8 @@ skillx scan --fail-on warn --format json ./my-skill
 
 ## Next Steps
 
-These are the three pages most commonly used after `scan`:
+After `scan`, the path usually splits in one of two directions: learn more about the risk model, or promote the skill into repeatable usage:
 
 - [Security Overview](/security/overview/) for the risk model and scan levels behind PASS, WARN, DANGER, and BLOCK
-- [CI Integration](/guides/ci-integration/) to turn scan output into pipeline checks
-- [skillx run](/cli/run/) if you want to go back to one-command fetch, scan, and launch
+- [CI Integration](/guides/ci-integration/) to turn scan output into repeatable pipeline checks
+- [skillx run](/cli/run/) if you are still iterating in one-off mode before promoting the skill further

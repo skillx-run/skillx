@@ -106,6 +106,6 @@ skillx update --agent claude-code
 
 ## Related Docs
 
-- [Manage Project Skills](/guides/manage-project-skills/)
-- [skillx run](/cli/run/)
-- [Examples Overview](/examples/overview/)
+- [Manage Project Skills](/guides/manage-project-skills/) for the full project-skill lifecycle and recommended command order
+- [skillx list](/cli/list/) to inspect installed versions before or after an update
+- [skillx scan](/cli/scan/) if you want an explicit security review workflow alongside updates

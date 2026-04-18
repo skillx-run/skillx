@@ -9,9 +9,9 @@ description: Real-world guide to skillx run — fetch, scan, inject, run, and cl
 skillx run <source> [prompt] [options]
 ```
 
-`skillx run` is the fastest way to go from "I found a skill" to "the agent is using it right now". Use it for first-run testing, one-off tasks, and validating a skill before you decide to keep it around at the project level.
+`skillx run` is the fastest way to go from "I found a skill" to "the agent is using it right now". Use it for first-run testing, one-off tasks, and validating a skill before you decide whether it belongs in your regular project workflow.
 
-Behind one command, skillx resolves the source, scans it, injects it into the current agent, launches the session, then cleans everything up when the run ends.
+Behind one command, skillx resolves the source, scans it, injects it into the current agent, launches the session, then cleans everything up when the run ends. The usual progression is: start with `run`, switch to `scan` when you want a clearer security decision, then move to project-level management once the skill proves useful.
 
 ## Arguments
 
@@ -179,8 +179,8 @@ skillx run ./examples/skills/code-review \
 
 ## After `run` starts working
 
-Once a one-off run is useful, the usual next move is to make it part of your regular workflow:
+Once a one-off run is useful, the next step is usually to stabilize how you use it:
 
-- [Scan Skills](/cli/scan/) for explicit audit and CI-oriented checks
-- [Manage Project Skills](/guides/manage-project-skills/) to move from ad hoc runs to `skillx.toml`-based project usage
-- [Agent System Overview](/agents/overview/) to understand how skillx adapts injection paths and launch behavior per agent
+- [Scan Skills](/cli/scan/) when you want to review the same security gate without launching an agent
+- [Manage Project Skills](/guides/manage-project-skills/) when the skill should graduate from ad hoc runs to `skillx.toml`-based project usage
+- [Agent System Overview](/agents/overview/) when you need to understand agent-specific injection paths and launch behavior

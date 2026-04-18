@@ -5,9 +5,9 @@ description: Move from one-off skillx run usage to a stable project-level workfl
 
 ## From First Run to Project Workflow
 
-`skillx run` is the fastest way to prove a skill is useful. Once that stops being a one-off experiment, the next step is to manage skills as part of the project itself so teammates, CI, and future sessions all use the same setup.
+`skillx run` is the fastest way to prove a skill is useful. `skillx scan` is where you validate that trust decision more explicitly. This guide is the next stage after both of those: moving from a one-off success to a project setup that teammates, CI, and future sessions can all share.
 
-This guide is the entry point for that transition. The usual order is:
+If `run` answered "does this help?" and `scan` answered "is this acceptable?", the sequence below answers "how do we keep it around cleanly?" The usual order is:
 
 1. Create `skillx.toml` for the project with [`skillx init`](/cli/init/).
 2. Add and persist the skills you actually want with [`skillx install`](/cli/install/).
@@ -77,3 +77,9 @@ Project management commands do not replace `skillx run`. Use [`skillx run`](/cli
 - Comparing agent behavior quickly during evaluation
 
 Once a skill becomes part of normal team workflow, shift to the manifest-driven flow above.
+
+## Where This Fits
+
+- Start with [`skillx run`](/cli/run/) to prove the skill is useful in a real session
+- Use [`skillx scan`](/cli/scan/) when you want a clearer security review or CI gate
+- Use the commands in this guide when the skill should become part of the project's steady-state setup

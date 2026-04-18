@@ -146,6 +146,6 @@ skillx install --no-save github:org/skills/one-off-tool
 
 ## Related Docs
 
-- [Manage Project Skills](/guides/manage-project-skills/)
-- [skillx run](/cli/run/)
-- [Examples Overview](/examples/overview/)
+- [Manage Project Skills](/guides/manage-project-skills/) for the broader transition from one-off runs to persistent project usage
+- [skillx list](/cli/list/) to verify what is installed and where it was injected
+- [skillx run](/cli/run/) if you are still evaluating a skill before making it persistent

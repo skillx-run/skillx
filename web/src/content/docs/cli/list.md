@@ -155,6 +155,6 @@ skillx list --json | jq '.[].name'
 
 ## Related Docs
 
-- [Manage Project Skills](/guides/manage-project-skills/)
-- [skillx run](/cli/run/)
-- [Examples Overview](/examples/overview/)
+- [Manage Project Skills](/guides/manage-project-skills/) for the full maintenance workflow around installed skills
+- [skillx update](/cli/update/) when `--outdated` shows changes you want to apply
+- [skillx uninstall](/cli/uninstall/) when the inventory shows skills you no longer want to keep
