@@ -35,7 +35,7 @@ Gather signals without making assumptions:
 
 1. Look for `SKILL.md` at the repository root, and also at common sub-paths (for example `skills/*/SKILL.md`, `examples/skills/*/SKILL.md`).
 2. If a `SKILL.md` is found, read its YAML frontmatter and extract `name` and `description`.
-3. Read the git remote from `.git/config` (or by asking the user) to infer the hosting platform and the `owner/repo` slug. Support GitHub, GitLab, Bitbucket, Gitea/Codeberg, and SourceHut.
+3. Run `git remote -v` (or read `.git/config`, or ask the user) to infer the hosting platform and the `owner/repo` slug. Support GitHub, GitLab, Bitbucket, Gitea/Codeberg, and SourceHut.
 4. If multiple `SKILL.md` files exist, ask which one to advertise, or suggest advertising the repo as a whole when it clearly is a skill monorepo.
 
 If no `SKILL.md` is present, tell the user this does not look like a skill project and stop.
@@ -60,7 +60,7 @@ Platform prefix mapping:
 
 ### Step 3 — Update the README
 
-1. Locate `README.md` (case-insensitive). If there is no README, offer to create a minimal one that contains only the skillx section.
+1. Locate README files (case-insensitive). Check for a primary `README.md` plus common localized siblings (`README.<locale>.md`, e.g. `README.zh-CN.md`, `README.ja.md`, `README.fr.md`). If multiple are found, list them and ask which ones the user wants to update — do not assume all should be changed. If there is no README at all, offer to create a minimal primary `README.md` that contains only the skillx section.
 2. Render the quick-start block using the template below, substituting `<source>`, `<skill-name>`, and a short `<sample-prompt>` that matches the skill's purpose (take the prompt idea from the `description` field).
 3. Wrap the block with the idempotency markers `<!-- skillx:begin:setup-skillx -->` and `<!-- skillx:end:setup-skillx -->` so it can be updated in place on a later run without touching surrounding content.
 4. If the markers already exist, diff the new block against the existing one. If nothing changed, tell the user and stop. Otherwise show the diff and ask before overwriting.
@@ -100,9 +100,10 @@ If none are found, skip this step and move on.
 If a landing page exists:
 
 1. Describe what you found ("detected an Astro site under `web/`", "found `index.html` at repo root") so the user can confirm.
-2. Ask whether to integrate the skillx entry point there as well.
-3. If the user says yes, propose an integration — but do not force a template. Pick a location and a form that fits the site (a hero call-to-action, a "Try it" section, a nav link, or a dedicated quick-start page). Show the proposed change as a diff and wait for approval.
-4. Prefer the same idempotency marker pattern when the file format supports HTML comments. For formats that do not (YAML, JSON, TOML), describe the change explicitly in the summary so the user can maintain it by hand.
+2. If the site is internationalized (multiple locale content dirs like `content/en/` + `content/zh/`, Next.js locale subpaths, Docusaurus `i18n/` plugin, etc.), name the locales you detected and ask which ones to update — do not assume all locales should be changed.
+3. Ask whether to integrate the skillx entry point on the selected location(s).
+4. If the user says yes, propose an integration — but do not force a template. Pick a location and a form that fits the site (a hero call-to-action, a "Try it" section, a nav link, or a dedicated quick-start page). Show the proposed change as a diff and wait for approval.
+5. Prefer the same idempotency marker pattern when the file format supports HTML comments. For formats that do not (YAML, JSON, TOML), describe the change explicitly in the summary so the user can maintain it by hand.
 
 ### Step 5 — Summarize
 
@@ -123,7 +124,17 @@ At the end, print a short summary:
 - **Private repo**: still emit the source URL. Advise the user that anyone running the skill will need access to the repo.
 - **No git remote**: ask the user for the canonical repo URL, or fall back to a local-path example (`skillx run ./path/to/skill "..."`).
 - **Multiple skills in one repo**: default to advertising each skill with its full sub-path; offer a one-liner example per skill inside a single block.
-- **Non-English README**: keep the block's prose in the README's existing language, but keep the code sample and markers unchanged.
+- **Non-English README**: localize the block so it reads naturally in the README's language, using the table below. When the project has multiple language-specific READMEs, localize each copy to its own language.
+
+  | Element | Localize? |
+  |---------|-----------|
+  | Section heading (`## Try it with skillx`) | Yes — follow the README's language |
+  | Prose sentences (e.g. "Run this skill without installing anything") | Yes |
+  | `Powered by skillx — ...` trailing sentence | Yes |
+  | The `skillx run <source> "..."` command | No — keep as-is |
+  | Marker comments | No — keep as-is |
+  | Shields.io badge URL (text inside the image) | No — keep as-is; the community recognizes the English badge |
+  | Link targets (`https://skillx.run`) | No — keep as-is |
 
 ## Output Style
 
