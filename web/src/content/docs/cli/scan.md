@@ -217,6 +217,8 @@ skillx scan --fail-on warn --format json ./my-skill
 
 ## Next Steps
 
+These are the three pages most commonly used after `scan`:
+
 - [Security Overview](/security/overview/) for the risk model and scan levels behind PASS, WARN, DANGER, and BLOCK
 - [CI Integration](/guides/ci-integration/) to turn scan output into pipeline checks
 - [skillx run](/cli/run/) if you want to go back to one-command fetch, scan, and launch
