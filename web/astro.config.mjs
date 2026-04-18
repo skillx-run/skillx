@@ -9,6 +9,7 @@ export default defineConfig({
       description: 'npx for Agent Skills — fetch, scan, inject, run, clean in one command',
       components: {
         ThemeSelect: './src/components/empty.astro',
+        ThemeProvider: './src/components/empty.astro',
       },
       head: [
         {
