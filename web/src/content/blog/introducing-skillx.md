@@ -13,7 +13,7 @@ We're excited to announce **skillx** — a cross-platform CLI tool that brings t
 
 ## The Problem
 
-Agent Skills are spreading across repositories, registries, and platforms. Running a skill today requires:
+Agent Skills are spreading across repositories and platforms. Running a skill today requires:
 
 1. Finding it (GitHub? skills.sh? A colleague's repo?)
 2. Downloading it manually
@@ -69,7 +69,7 @@ Five risk levels: **PASS → INFO → WARN → DANGER → BLOCK**
 
 - **v0.2** — `install`/`uninstall`/`list`/`update`, more platforms (GitLab, Bitbucket), Tier 2 agents
 - **v0.3** — 20+ agent adapters, custom URL patterns
-- **v0.4** — `registry.skillx.run` for skill discovery
+- **Next focus** — keep improving the run-first workflow, publish stronger examples, and make the docs easier to trust and use
 
 ## Get Started
 

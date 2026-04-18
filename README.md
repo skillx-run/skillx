@@ -65,7 +65,7 @@ skillx install github:skillx-run/skillx/examples/skills/name-poem
 
 ## Supported Sources
 
-10 source types with smart URL recognition for 20+ platforms:
+9 source types with smart URL recognition for Git hosts, archives, and local paths:
 
 | Source | Example |
 |--------|---------|
@@ -78,7 +78,6 @@ skillx install github:skillx-run/skillx/examples/skills/name-poem
 | SourceHut | `https://git.sr.ht/~user/repo/tree/main/item/skill.md` |
 | HuggingFace | `https://huggingface.co/org/model/blob/main/skill.md` |
 | Archive | `https://example.com/skill.tar.gz` |
-| Skill Directories | 10 supported platforms |
 
 Custom URL patterns can be added via `config.toml` `[[url_patterns]]`.
 
