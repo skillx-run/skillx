@@ -240,6 +240,41 @@ If a script needs network access, document it clearly:
 the official repository. This is required for the skill to function.
 ```
 
+## Advertise Your Skill
+
+A skill only gets tried when the README points users at a `skillx run` command they can copy. Writing that snippet by hand is easy to get wrong — stale sub-path, wrong platform prefix, mismatched sample prompt.
+
+The `setup-skillx` skill writes it for you. From the root of your skill project:
+
+```bash
+skillx run github:skillx-run/skillx/examples/skills/setup-skillx \
+  "set this project up"
+```
+
+It reads your `SKILL.md`, inspects `git remote` to derive the source URL, and proposes a short "Try it with skillx" block for `README.md`. Every change is shown as a diff and requires your confirmation before anything is written.
+
+### Safety Guarantees
+
+- Touches only `README.md` (and localized siblings like `README.zh-CN.md`), plus landing-page files you explicitly point it at.
+- Never modifies source code, `.git/`, lockfiles, CI configs, or env files.
+- Never runs installers or network requests — all changes are local file edits.
+
+### The Inserted Block
+
+The block is wrapped with idempotency markers so a re-run updates it in place instead of duplicating:
+
+~~~markdown
+<!-- skillx:begin:setup-skillx -->
+## Try it with skillx
+
+[badge] Run this skill without installing anything:
+
+`skillx run <source> "<sample-prompt>"`
+<!-- skillx:end:setup-skillx -->
+~~~
+
+The skill also localizes the block for non-English READMEs, handles monorepos where multiple `SKILL.md` files live under sub-paths, and can be re-run safely. See [Setup skillx](/examples/setup-skillx/) for the full workflow, edge cases, and the optional landing-page integration.
+
 ## Publishing Checklist
 
 Before sharing your skill:
@@ -251,3 +286,4 @@ Before sharing your skill:
 - [ ] No unnecessary files in the skill directory
 - [ ] No sensitive data (API keys, passwords) in any files
 - [ ] References are under 50 MB each
+- [ ] README has a "Try it with skillx" quick-start block (see Advertise Your Skill above)
