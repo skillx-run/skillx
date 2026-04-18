@@ -5,7 +5,7 @@ date: 2026-03-20
 author: "skillx team"
 ---
 
-> **Note:** This post describes skillx v0.1. For the latest features (32 agents, 10 source types, 23 scanner rules), see the [documentation](/getting-started/).
+> **Note:** This post describes skillx v0.1. For the latest capabilities and current platform support, see the [documentation](/getting-started/).
 
 # Introducing skillx v0.1
 
@@ -13,9 +13,9 @@ We're excited to announce **skillx** — a cross-platform CLI tool that brings t
 
 ## The Problem
 
-Agent Skills are spreading across repositories, registries, and platforms. Running a skill today requires:
+Agent Skills are spreading across repositories and platforms. Running a skill today requires:
 
-1. Finding it (GitHub? skills.sh? A colleague's repo?)
+1. Finding it (GitHub? A colleague's repo? A bookmarked link?)
 2. Downloading it manually
 3. Checking if it's safe (does anyone actually do this?)
 4. Copying files to the right agent directory
@@ -33,7 +33,7 @@ skillx run github:skillx-run/skillx/examples/skills/code-review "Review the auth
 One command. skillx handles the entire lifecycle:
 
 - **Fetch** — Pulls the skill from GitHub (or any supported source)
-- **Scan** — Runs a security scan with 20+ rules
+- **Scan** — Runs a security scan before the skill reaches your agent
 - **Gate** — Shows you findings and asks for confirmation
 - **Inject** — Places files in the right agent directory
 - **Run** — Launches your agent with the prompt
@@ -51,7 +51,7 @@ One command. skillx handles the entire lifecycle:
 
 ### Security Scanner
 
-20 rules across three categories:
+Rules across three categories:
 
 - **MD-001~006** — SKILL.md analysis (prompt injection, sensitive dirs, external URLs)
 - **SC-001~011** — Script analysis (binary detection, eval/exec, rm -rf, privilege escalation)
@@ -69,7 +69,7 @@ Five risk levels: **PASS → INFO → WARN → DANGER → BLOCK**
 
 - **v0.2** — `install`/`uninstall`/`list`/`update`, more platforms (GitLab, Bitbucket), Tier 2 agents
 - **v0.3** — 20+ agent adapters, custom URL patterns
-- **v0.4** — `registry.skillx.run` for skill discovery
+- **Next focus** — keep improving the run-first workflow, publish stronger examples, and make the docs easier to trust and use
 
 ## Get Started
 

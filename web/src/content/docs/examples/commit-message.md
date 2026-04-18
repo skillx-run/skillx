@@ -148,8 +148,10 @@ git diff --staged | skillx run --stdin
 
 The `skillx run` command (with no source argument) reads from `skillx.toml` and uses the configured skills.
 
+## Why this example exists
+
+This example exists to show how a skill can read staged changes, infer intent, and emit a commit message that fits non-interactive shell workflows and Git habits.
+
 ## Next Steps
 
-- [Code Review](/examples/code-review) — Structured code review with severity levels
-- [Testing Guide](/examples/testing-guide) — Multi-file skill with references
-- [Hello World](/examples/hello-world) — The simplest possible skill
+If you want a companion pattern for review workflows, open [Code Review](/examples/code-review/). If you want to build your own command-line skill around a different Git task, use [Writing Skills](/guides/writing-skills/). If you are comparing this with upstream workflows, check [Famous Skills](/getting-started/famous-skills/).

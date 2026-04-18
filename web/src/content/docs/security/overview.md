@@ -1,44 +1,43 @@
 ---
 title: Security Overview
-description: How skillx protects you from malicious skills through automated scanning and risk gating.
+description: Trust model and safety boundaries for running untrusted skills with skillx.
 ---
 
-## Philosophy
+## Trust Model
 
-Agent Skills are powerful — they instruct AI agents to read, write, and execute code on your behalf. This power comes with risk. A malicious skill could:
+skillx is built around a simple rule:
 
-- **Exfiltrate secrets** — read SSH keys, AWS credentials, or environment variables
-- **Destroy data** — `rm -rf` your home directory
-- **Inject prompts** — override the agent's instructions to do something harmful
-- **Escalate privileges** — install rootkits or modify system files
-- **Self-replicate** — copy itself into other projects
+- **Scan before inject**
+- **Gate before launch**
+- **Clean after exit**
 
-skillx's security model is **scan before inject**. Every skill is analyzed before any files touch your system or your agent's context.
+That sequence is the core trust model for skillx. You should be able to inspect a skill before it reaches your agent, approve risk before execution starts, and trust that temporary files are removed when the run ends.
 
-## Defense Layers
+This matters because Agent Skills can ask an AI agent to read files, write code, run shell commands, and fetch remote content on your behalf. A malicious skill could try to exfiltrate secrets, destroy data, inject instructions, escalate privileges, or persist beyond the session. skillx reduces that risk by adding explicit control points around the full lifecycle.
 
-### 1. Automated Scanning
+## What skillx protects
 
-The built-in scanner runs 30 rules across three categories:
+skillx is designed to protect three boundaries:
 
-- **Markdown Analyzer** (MD-001 ~ MD-011) — checks SKILL.md for prompt injection, sensitive directory references, external URLs, destructive operations, system modification, security bypass, hidden text / invisible characters, data URI / JS URI injection, and missing metadata (license, name, description)
-- **Script Analyzer** (SC-001 ~ SC-015) — checks scripts for binaries, dynamic execution, recursive delete, credential access, shell config modification, network requests, writes outside skill directory, privilege escalation, setuid/setgid, self-replication, skillx path modification, base64/hex decode execution, string obfuscation, and environment variable exfiltration
-- **Resource Analyzer** (RS-001 ~ RS-005) — checks reference files for disguised extensions, oversized files, executables, symlinks, and scripts (via shebang detection)
+- **Your machine**: reduce the chance that untrusted skill files touch sensitive locations or ship obvious destructive behavior.
+- **Your agent context**: surface prompt injection and hidden instructions before they are copied into the agent's working environment.
+- **Your session lifecycle**: keep temporary injection isolated, auditable, and removable after the run.
 
-### 1.5 Anti-Evasion
+## How the trust flow works
 
-The scanner includes defenses against common bypass techniques:
+### 1. Scan before inject
 
-- **Continuation-line joining** — shell backslash continuations (e.g., `cur\` + `l url`) are joined before pattern matching
-- **Whitespace normalization** — extra spaces around dangerous keywords (e.g., `eval  (`) are collapsed
-- **Obfuscation detection** — base64 decoding, hex encoding, string concatenation (chr/fromCharCode)
-- **Hidden text detection** — zero-width Unicode characters and injection hidden in HTML comments
-- **Symlink protection** — symbolic links are detected and never followed (prevents directory traversal)
-- **Shebang analysis** — extensionless files with shebangs are scanned as scripts
+Before any skill files are injected into an agent environment, skillx analyzes the source with built-in scanners across three analyzers:
 
-### 2. Risk Gating
+- **Markdown Analyzer** (`MD-001` to `MD-011`) checks `SKILL.md` for prompt injection, sensitive directory references, destructive instructions, hidden text, external URLs, and missing metadata.
+- **Script Analyzer** (`SC-001` to `SC-015`) checks helper scripts for dynamic execution, recursive deletes, credential access, shell profile changes, privilege escalation, self-replication, and obfuscation.
+- **Resource Analyzer** (`RS-001` to `RS-005`) checks references and assets for disguised extensions, oversized files, executables, symlinks, and script payloads.
 
-Scan findings are assigned one of five risk levels. The gating behavior at each level ensures dangerous skills cannot run silently:
+The scanner also includes anti-evasion checks such as continuation-line joining, whitespace normalization, hidden text detection, obfuscation detection, shebang analysis, and symlink protection. The goal is not to prove safety, but to catch risky patterns before they reach the agent.
+
+### 2. Gate before launch
+
+Findings are turned into explicit risk levels, and those levels control whether a run can proceed:
 
 | Level | Gating Behavior |
 |-------|----------------|
@@ -48,17 +47,31 @@ Scan findings are assigned one of five risk levels. The gating behavior at each 
 | **DANGER** | Require typing `yes`. Supports `detail N` to inspect. |
 | **BLOCK** | Execution refused. Cannot be overridden. |
 
-### 3. SHA-256 Integrity
+This is the second trust boundary: skillx does not silently continue from a risky scan. You see the result before launch, and truly blocked content never runs.
 
-Every injected file is hashed with SHA-256 and recorded in the session manifest. This provides an audit trail and enables tamper detection.
+### 3. Clean after exit
 
-### 4. Session Isolation
+Each run gets its own session ID and manifest. Injected files are hashed with SHA-256, tracked individually, and removed when the agent finishes. If the process is interrupted, orphaned sessions are recovered on the next run.
 
-Each run creates an isolated session with a unique ID. Injected files are tracked individually, and cleanup removes exactly what was injected — nothing more, nothing less.
+This keeps temporary skill files from becoming hidden long-term state on your system.
 
-### 5. Automatic Cleanup
+## Defense Layers
 
-Injected files are removed after the agent completes. If a run is interrupted (Ctrl+C, crash, power loss), orphaned sessions are recovered on the next run.
+### Automated scanning
+
+The scanner is the first control point. It looks for risky instructions in Markdown, scripts, and bundled resources before the skill is injected anywhere.
+
+### Risk gating
+
+The gate is the second control point. It converts scan output into an approval workflow so users decide whether a risky skill should proceed.
+
+### Session integrity
+
+SHA-256 manifests provide an audit trail for what was injected during a run and make cleanup deterministic.
+
+### Session isolation and recovery
+
+skillx isolates each run, removes exactly the files it injected, and recovers interrupted sessions on the next invocation.
 
 ## What the Scanner Does NOT Do
 
@@ -71,22 +84,22 @@ Injected files are removed after the agent completes. If a run is interrupted (C
 
 ### For Users
 
-1. **Never skip the scan** unless you wrote the skill yourself
-2. **Read DANGER findings** — use `detail N` to understand what was flagged
-3. **Avoid auto-approve mode** with untrusted skills
-4. **Use `--fail-on warn`** in CI environments
-5. **Check scan results** before running skills from unknown authors
+1. **Treat PASS as a trust signal, not a guarantee**
+2. **Read DANGER findings** with `detail N` before approving
+3. **Avoid auto-approve mode** for untrusted or newly discovered skills
+4. **Use `--fail-on warn`** in CI or policy-driven environments
+5. **Prefer pinned refs** when running remote skills from Git hosts
 
 ### For Skill Authors
 
-1. **Avoid triggering scanner rules unnecessarily** — if your skill needs network access, document why
-2. **Don't reference sensitive directories** in SKILL.md unless the skill genuinely needs them
-3. **Keep scripts minimal** — the more code in scripts/, the more the scanner has to check
-4. **Test with `skillx scan --fail-on info`** before publishing to catch all findings
-5. **Document permissions** your skill needs in the SKILL.md description
+1. **Document why elevated behavior is necessary** if your skill needs network, shell, or filesystem access
+2. **Avoid referencing sensitive directories** unless the skill genuinely requires them
+3. **Keep helper scripts minimal and readable**
+4. **Test with `skillx scan --fail-on info`** before publishing
+5. **Write SKILL.md for auditability** so users can understand intent quickly
 
 ## Next Steps
 
-- [Risk Levels](/security/risk-levels/) — detailed behavior at each level
-- [Rules](/security/rules/) — complete rule reference
-- [CI Integration](/guides/ci-integration/) — enforce scanning in your pipeline
+- [Risk Levels](/security/risk-levels/) for the exact approval behavior at each level
+- [Rules](/security/rules/) for the complete scanner rule reference
+- [CI Integration](/guides/ci-integration/) for enforcing scan policy in automation

@@ -11,6 +11,8 @@ skillx agents [options]
 
 Detect and display all agent environments available on your system. This is useful for verifying which agents skillx can use and how they are configured.
 
+If `skillx run` is already working and you want to understand why one agent behaves differently from another, this command is the quickest way to inspect what skillx detected and which auto-approve behavior is available.
+
 ## Options
 
 | Flag | Default | Description |
@@ -113,7 +115,9 @@ preferred = "claude-code"
 | Name | Display Name | Lifecycle | Auto-approve Args |
 |------|-------------|-----------|-----------|
 | `claude-code` | Claude Code | ManagedProcess | `--dangerously-skip-permissions` |
-| `codex` | OpenAI Codex | ManagedProcess | `--full-auto` |
+| `codex` | OpenAI Codex | ManagedProcess | `--yolo` |
+| `gemini-cli` | Gemini CLI | ManagedProcess | `--yolo` |
+| `amp` | Amp | ManagedProcess | `--dangerously-allow-all` |
 | `copilot` | GitHub Copilot | FileInjectAndWait | — |
 | `cursor` | Cursor | FileInjectAndWait | — |
 | `universal` | Universal Agent | FileInjectAndWait | — |

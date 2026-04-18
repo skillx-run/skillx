@@ -143,8 +143,10 @@ skillx run github:skillx-run/skillx/examples/skills/hello-world "Hello"
 
 skillx fetches the skill from GitHub, caches it locally, scans it, and injects it — all in one command.
 
+## Why this example exists
+
+This example exists as the smallest complete skill in the repository, so you can see the minimum viable `SKILL.md` shape before you study any of the more opinionated patterns.
+
 ## Next Steps
 
-- [Code Review](/examples/code-review) — A more practical skill with structured output
-- [Testing Guide](/examples/testing-guide) — A multi-file skill with references
-- [Writing Skills](/guides/writing-skills) — Create your own skill from scratch
+If you want to see a more practical single-file skill, open [Code Review](/examples/code-review/). If you want to turn this minimal shape into your own skill, continue with [Writing Skills](/guides/writing-skills/). If you are ready to skip templates and use something mature from GitHub, go to [Famous Skills](/getting-started/famous-skills/).

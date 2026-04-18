@@ -111,8 +111,10 @@ code-review = "github:skillx-run/skillx/examples/skills/code-review"
 commit-message = "github:skillx-run/skillx/examples/skills/commit-message"
 ```
 
+## Why this example exists
+
+This example exists to show that a skill can be expressive without becoming vague: it still uses explicit rules for tradition, structure, and output, but it leaves room for a distinct creative result.
+
 ## Next Steps
 
-- [Hello World](/examples/hello-world) — The simplest possible skill
-- [Code Review](/examples/code-review) — Structured code reviews with severity levels
-- [Writing Skills](/guides/writing-skills) — Create your own multilingual skill
+If you want to see another example of structured output, compare it with [Code Review](/examples/code-review/). If you want to create a skill with a different voice or format, read [Writing Skills](/guides/writing-skills/). If you would rather try a polished external workflow than build from scratch, visit [Famous Skills](/getting-started/famous-skills/).

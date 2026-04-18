@@ -195,3 +195,9 @@ xcode-select --install
 # Fedora
 sudo dnf install gcc openssl-devel
 ```
+
+## Next Step
+
+- [First Run](/getting-started/first-run/) - prove the install with a real GitHub skill
+- [Famous Skills](/getting-started/famous-skills/) - explore the most useful starter skills
+- [Security Overview](/security/overview/) - learn how skillx scans before it runs

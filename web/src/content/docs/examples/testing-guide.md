@@ -119,8 +119,10 @@ db-migration/
 
 See the [Writing Skills](/guides/writing-skills) guide for details on the `references/` and `scripts/` directories.
 
+## Why this example exists
+
+This example exists to show the boundary between concise instructions and supporting context: the main skill stays focused, while `references/patterns.md` carries the reusable test heuristics.
+
 ## Next Steps
 
-- [Hello World](/examples/hello-world) — Start with the simplest possible skill
-- [Code Review](/examples/code-review) — Structured output format example
-- [Commit Message](/examples/commit-message) — Piped input and non-interactive mode
+If you want a simpler single-file starting point, compare it with [Hello World](/examples/hello-world/). If you want to design your own multi-file skill structure, continue with [Writing Skills](/guides/writing-skills/). For a ready-made external workflow, review [Famous Skills](/getting-started/famous-skills/).

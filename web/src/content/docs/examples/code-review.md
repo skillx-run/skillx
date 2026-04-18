@@ -142,8 +142,10 @@ commit-message = "github:skillx-run/skillx/examples/skills/commit-message"
 
 The `[skills.dev]` section is for development-only skills that are not needed in CI or production.
 
+## Why this example exists
+
+This example exists to demonstrate how a broad instruction like “review this code” can be narrowed into a predictable reviewer role, a ranked severity model, and a response shape that is useful in real pull requests.
+
 ## Next Steps
 
-- [Commit Message](/examples/commit-message) — Automate commit message generation
-- [Testing Guide](/examples/testing-guide) — Improve test coverage with guided patterns
-- [Writing Skills](/guides/writing-skills) — Create a custom review skill for your team's conventions
+If you want to see a different pattern for developer workflow automation, try [Commit Message](/examples/commit-message/). If you want to author a review skill with your team's terminology, move on to [Writing Skills](/guides/writing-skills/). For a curated external reference point, see [Famous Skills](/getting-started/famous-skills/).
