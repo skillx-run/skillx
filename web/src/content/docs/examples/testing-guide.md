@@ -121,6 +121,10 @@ See the [Writing Skills](/guides/writing-skills) guide for details on the `refer
 
 ## Next Steps
 
-- [Hello World](/examples/hello-world) — Start with the simplest possible skill
-- [Code Review](/examples/code-review) — Structured output format example
-- [Commit Message](/examples/commit-message) — Piped input and non-interactive mode
+## Why this example exists
+
+This example shows how a skill can stay small in `SKILL.md` while still pulling in extra guidance from a `references/` directory for more complex tasks.
+
+## Next Steps
+
+Use [Famous Skills](/getting-started/famous-skills/), go back to the [Official Examples](/examples/overview/), or open [Writing Skills](/guides/writing-skills/) to design a multi-file skill of your own.

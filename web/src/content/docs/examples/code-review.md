@@ -144,6 +144,10 @@ The `[skills.dev]` section is for development-only skills that are not needed in
 
 ## Next Steps
 
-- [Commit Message](/examples/commit-message) — Automate commit message generation
-- [Testing Guide](/examples/testing-guide) — Improve test coverage with guided patterns
-- [Writing Skills](/guides/writing-skills) — Create a custom review skill for your team's conventions
+## Why this example exists
+
+This example shows how to turn an open-ended review task into a repeatable workflow with a fixed output format, severity levels, and clear recommendations.
+
+## Next Steps
+
+Use [Famous Skills](/getting-started/famous-skills/), return to the [Official Examples](/examples/overview/), or follow the [Writing Skills](/guides/writing-skills/) guide to build a review skill for your own conventions.

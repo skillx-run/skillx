@@ -145,6 +145,10 @@ skillx fetches the skill from GitHub, caches it locally, scans it, and injects i
 
 ## Next Steps
 
-- [Code Review](/examples/code-review) — A more practical skill with structured output
-- [Testing Guide](/examples/testing-guide) — A multi-file skill with references
-- [Writing Skills](/guides/writing-skills) — Create your own skill from scratch
+## Why this example exists
+
+This example is the smallest complete skill in the repository, so it is the fastest way to understand what a runnable `SKILL.md` looks like.
+
+## Next Steps
+
+Use [Famous Skills](/getting-started/famous-skills/), return to the [Official Examples](/examples/overview/), or continue with [Writing Skills](/guides/writing-skills/) when you are ready to build your own skill.

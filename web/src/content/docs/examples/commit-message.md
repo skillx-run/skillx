@@ -150,6 +150,10 @@ The `skillx run` command (with no source argument) reads from `skillx.toml` and 
 
 ## Next Steps
 
-- [Code Review](/examples/code-review) — Structured code review with severity levels
-- [Testing Guide](/examples/testing-guide) — Multi-file skill with references
-- [Hello World](/examples/hello-world) — The simplest possible skill
+## Why this example exists
+
+This example demonstrates how to convert staged changes into a consistent commit message workflow that works well in non-interactive shell pipelines.
+
+## Next Steps
+
+Use [Famous Skills](/getting-started/famous-skills/), review the [Official Examples](/examples/overview/), or read [Writing Skills](/guides/writing-skills/) to author your own commit-message skill.

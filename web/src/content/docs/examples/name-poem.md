@@ -113,6 +113,10 @@ commit-message = "github:skillx-run/skillx/examples/skills/commit-message"
 
 ## Next Steps
 
-- [Hello World](/examples/hello-world) — The simplest possible skill
-- [Code Review](/examples/code-review) — Structured code reviews with severity levels
-- [Writing Skills](/guides/writing-skills) — Create your own multilingual skill
+## Why this example exists
+
+This example shows that a skill can have a strong creative voice while still keeping its instructions structured, reusable, and easy to run.
+
+## Next Steps
+
+Use [Famous Skills](/getting-started/famous-skills/), revisit the [Official Examples](/examples/overview/), or follow [Writing Skills](/guides/writing-skills/) to create a skill with your own style.
