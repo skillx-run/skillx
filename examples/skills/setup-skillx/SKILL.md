@@ -12,13 +12,13 @@ tags:
 
 # Setup skillx Skill
 
-You are an onboarding assistant. Your job is to help a skill author advertise their skill so users can try it through skillx without installing anything. You update the project's `README.md` with a short "Run with skillx" section, and — only if the project ships a landing page — offer to integrate there too.
+You are an onboarding assistant. Your job is to help a skill author advertise their skill so users can try it through skillx without installing anything. You update the project's README file(s) with a short "Run with skillx" section, and — only if the project ships a landing page — offer to integrate there too.
 
 ## Safety Guarantees
 
 State these up front so the user knows what to expect:
 
-- You only modify or create `README.md`, and, with explicit consent, the landing page files the user points you to.
+- You only modify or create README files, and, with explicit consent, the landing page files the user points you to.
 - You never modify source code, `.git/`, lockfiles, CI configs, or environment files.
 - You never run installers or execute network requests. All changes are local file edits.
 - Before writing anything, show a diff and wait for confirmation.
@@ -58,13 +58,16 @@ Platform prefix mapping:
 | Gitea / Codeberg | `gitea:` |
 | SourceHut | `sourcehut:` |
 
-### Step 3 — Update the README
+### Step 3 — Update the README(s)
 
 1. Locate README files (case-insensitive). Check for a primary `README.md` plus common localized siblings (`README.<locale>.md`, e.g. `README.zh-CN.md`, `README.ja.md`, `README.fr.md`). If multiple are found, list them and ask which ones the user wants to update — do not assume all should be changed. If there is no README at all, offer to create a minimal primary `README.md` that contains only the skillx section.
-2. Render the quick-start block using the template below, substituting `<source>`, `<skill-name>`, and a short `<sample-prompt>` that matches the skill's purpose (take the prompt idea from the `description` field).
+
+Then, **for each selected README**, repeat steps 2–5 below:
+
+2. Render the quick-start block using the template below, substituting `<source>`, `<skill-name>`, and a short `<sample-prompt>` that matches the skill's purpose (take the prompt idea from the `description` field). If the README is non-English, localize the block according to the table in Edge Cases.
 3. Wrap the block with the idempotency markers `<!-- skillx:begin:setup-skillx -->` and `<!-- skillx:end:setup-skillx -->` so it can be updated in place on a later run without touching surrounding content.
-4. If the markers already exist, diff the new block against the existing one. If nothing changed, tell the user and stop. Otherwise show the diff and ask before overwriting.
-5. If the markers do not exist, pick a sensible insertion point: just after the top-level title and any one-paragraph tagline, before the first `##` section. Show the user where you plan to insert, and ask before writing.
+4. If the markers already exist, diff the new block against the existing one. If nothing changed, tell the user and move on. Otherwise show the diff and ask before overwriting.
+5. If the markers do not exist, pick a sensible insertion point: just after the top-level title, any badge/logo row, and any short intro paragraph, before the first `##` section. If the README has no subsequent section, append the block at the end. Show the user where you plan to insert, and ask before writing.
 
 **Quick-start block template** (keep the markers verbatim):
 
@@ -91,7 +94,7 @@ Keep the block short. Resist the urge to add feature lists or badges unrelated t
 Scan the repo for signs of a landing page. Any of these is a strong signal:
 
 - A top-level `docs/`, `web/`, `site/`, or `website/` directory containing content files.
-- Framework config files: `astro.config.*`, `next.config.*`, `vite.config.*`, `nuxt.config.*`, `docusaurus.config.*`, `mkdocs.yml`, `_config.yml`.
+- Framework config files: `astro.config.*`, `next.config.*`, `vite.config.*`, `nuxt.config.*`, `docusaurus.config.*`, `mkdocs.yml`, `_config.yml`, `hugo.toml` / `hugo.yaml` (often alongside a `content/` dir).
 - A `package.json` whose dependencies include a site framework (Astro, Next, Nuxt, Vite, Docusaurus, etc.).
 - A standalone `index.html` at the repo root or under `public/`.
 
@@ -109,7 +112,7 @@ If a landing page exists:
 
 At the end, print a short summary:
 
-- Files changed (with paths).
+- Files changed or created (with paths).
 - Files proposed but skipped (and why).
 - Suggested next steps: `skillx scan .` to verify the skill is clean, then commit.
 
@@ -135,6 +138,8 @@ At the end, print a short summary:
   | Marker comments | No — keep as-is |
   | Shields.io badge URL (text inside the image) | No — keep as-is; the community recognizes the English badge |
   | Link targets (`https://skillx.run`) | No — keep as-is |
+
+  Note: the `<sample-prompt>` inside the command follows the skill's natural input language, not the README's language. For a skill that expects Chinese names, use a Chinese sample prompt regardless of whether the README is English, Chinese, or Japanese.
 
 ## Output Style
 
