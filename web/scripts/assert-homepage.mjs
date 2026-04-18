@@ -27,7 +27,8 @@ const checks = [
   'data-home-section="final-cta"',
   'Install skillx, then run your first GitHub skill.',
   'curl -fsSL https://skillx.run/install.sh | sh',
-  primaryFamousSkill.runUrl,
+  primaryFamousSkill.commandSource,
+  primaryFamousSkill.homepagePrompt,
   'https://github.com/skillx-run/skillx',
 ];
 

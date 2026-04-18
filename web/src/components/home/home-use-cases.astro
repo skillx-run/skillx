@@ -1,7 +1,7 @@
 ---
 import { buildSkillxRunCommand, famousSkills } from '../../data/famous-skills.mjs';
 
-const cases = famousSkills.map((skill) => ({
+const cases = famousSkills.slice(0, 3).map((skill) => ({
   title: skill.homepageTitle,
   body: skill.homepageBody,
   command: buildSkillxRunCommand(skill, skill.homepagePrompt),

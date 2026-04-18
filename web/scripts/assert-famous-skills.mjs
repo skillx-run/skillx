@@ -27,6 +27,8 @@ const slugs = new Set();
 const docsHrefs = new Set();
 const runUrls = new Set();
 
+assert(famousSkills.length >= 8, 'Famous skills list must contain at least 8 curated skills');
+
 for (const skill of famousSkills) {
   assert(!slugs.has(skill.slug), `Duplicate famous skill slug: ${skill.slug}`);
   assert(!docsHrefs.has(skill.docsHref), `Duplicate docsHref: ${skill.docsHref}`);
@@ -41,13 +43,14 @@ assert(primaryFamousSkill.slug === famousSkills[0].slug, 'Primary famous skill m
 const homepageComponent = readFileSync(resolve('src/components/home/home-use-cases.astro'), 'utf8');
 assert(
   homepageComponent.includes('famousSkills') &&
+    homepageComponent.includes('slice(0, 3)') &&
     homepageComponent.includes("../../data/famous-skills.mjs"),
   'Homepage use cases must consume the shared famous skills data source',
 );
 
 const firstRunDoc = readFileSync(resolve('src/content/docs/getting-started/first-run.md'), 'utf8');
 assert(
-  firstRunDoc.includes(primaryFamousSkill.runUrl) &&
+  firstRunDoc.includes(primaryFamousSkill.commandSource) &&
     firstRunDoc.includes(primaryFamousSkill.homepagePrompt),
   'First Run doc must include the primary famous skill command',
 );
@@ -56,18 +59,23 @@ const famousSkillsDoc = readFileSync(
   resolve('src/content/docs/getting-started/famous-skills.md'),
   'utf8',
 );
+assert(
+  famousSkillsDoc.includes('famous-copy-button'),
+  'Famous Skills doc must include explicit copy-button UI hooks',
+);
 for (const skill of famousSkills) {
   assert(
     famousSkillsDoc.includes(skill.runUrl) &&
       famousSkillsDoc.includes(skill.sourceUrl) &&
-      famousSkillsDoc.includes(`<a id="${skill.slug}"></a>`),
+      famousSkillsDoc.includes(`id="${skill.slug}"`) &&
+      famousSkillsDoc.includes(skill.commandSource),
     `Famous Skills doc must include URL, source, and anchor for ${skill.slug}`,
   );
 }
 
 const command = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.homepagePrompt);
 assert(
-  command.includes(primaryFamousSkill.runUrl),
+  command.includes(primaryFamousSkill.commandSource),
   'Primary command should include the primary famous skill URL',
 );
 

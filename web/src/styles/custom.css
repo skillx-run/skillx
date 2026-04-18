@@ -321,3 +321,108 @@ site-search dialog .dialog-frame {
 .social-icons::after {
   display: none;
 }
+
+.famous-skills-table-shell {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border: 1px solid var(--docs-border);
+  border-radius: var(--docs-radius-lg);
+  box-shadow: var(--docs-shadow);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 247, 240, 0.96));
+}
+
+.famous-skills-table-shell table {
+  min-width: 74rem;
+  margin: 0;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.famous-skills-table-shell td,
+.famous-skills-table-shell th {
+  white-space: normal;
+}
+
+.famous-skills-table-shell td:first-child {
+  width: 12rem;
+  min-width: 12rem;
+}
+
+.famous-skill-links {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-top: 0.65rem;
+}
+
+.famous-skill-links a,
+.famous-source-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--docs-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--docs-text);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.famous-command-cell {
+  min-width: 30rem;
+}
+
+.famous-command-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.famous-command-scroll {
+  overflow-x: auto;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--docs-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.famous-command-scroll code {
+  display: inline-block;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.famous-command-actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.famous-copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.15rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--docs-border);
+  border-radius: 999px;
+  background: var(--docs-accent-soft);
+  color: var(--docs-accent-strong);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.famous-copy-button:hover,
+.famous-skill-links a:hover,
+.famous-source-link:hover {
+  border-color: var(--docs-border-strong);
+  background: var(--docs-surface-strong);
+}

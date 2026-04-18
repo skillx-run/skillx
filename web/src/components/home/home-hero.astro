@@ -1,5 +1,5 @@
 ---
-import { primaryFamousSkill } from '../../data/famous-skills.mjs';
+import { buildSkillxRunCommand, primaryFamousSkill } from '../../data/famous-skills.mjs';
 
 const terminalRows = [
   { label: 'resolved from GitHub', value: primaryFamousSkill.slug },
@@ -8,6 +8,7 @@ const terminalRows = [
   { label: 'session mode', value: 'temporary injection' },
   { label: 'after exit', value: 'workspace cleaned up' },
 ];
+const heroCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.homepagePrompt);
 ---
 
 <section data-home-section="hero" class="landing-section hero-section">
@@ -51,9 +52,7 @@ const terminalRows = [
       <div class="terminal-body">
         <div class="terminal-line terminal-line-command">
           <span class="prompt">$</span>
-          <span>
-            {`skillx run ${primaryFamousSkill.runUrl} "${primaryFamousSkill.homepagePrompt}"`}
-          </span>
+          <span>{heroCommand}</span>
         </div>
 
         {terminalRows.map((row) => (
