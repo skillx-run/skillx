@@ -49,7 +49,6 @@ The source string is resolved in this priority order:
 3. **`gist:` prefix** — e.g., `gist:abc123[@revision]`
 4. **Platform URL** — GitHub, GitLab, Bitbucket, Gitea/Codeberg, SourceHut, HuggingFace URLs
 5. **Archive URL** — direct `.zip` or `.tar.gz` download links
-6. **Skill Directory URL** — skills.sh, skillsmp.com, and 8 other directory platforms
 
 If no `source` is provided and a `skillx.toml` exists with `[skills]` entries, all listed skills are run sequentially.
 

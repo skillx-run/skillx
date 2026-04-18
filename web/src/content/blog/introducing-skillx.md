@@ -5,7 +5,7 @@ date: 2026-03-20
 author: "skillx team"
 ---
 
-> **Note:** This post describes skillx v0.1. For the latest features (32 agents, 10 source types, 23 scanner rules), see the [documentation](/getting-started/).
+> **Note:** This post describes skillx v0.1. For the latest capabilities and current platform support, see the [documentation](/getting-started/).
 
 # Introducing skillx v0.1
 
@@ -33,7 +33,7 @@ skillx run github:skillx-run/skillx/examples/skills/code-review "Review the auth
 One command. skillx handles the entire lifecycle:
 
 - **Fetch** — Pulls the skill from GitHub (or any supported source)
-- **Scan** — Runs a security scan with 20+ rules
+- **Scan** — Runs a security scan before the skill reaches your agent
 - **Gate** — Shows you findings and asks for confirmation
 - **Inject** — Places files in the right agent directory
 - **Run** — Launches your agent with the prompt
@@ -51,7 +51,7 @@ One command. skillx handles the entire lifecycle:
 
 ### Security Scanner
 
-20 rules across three categories:
+Rules across three categories:
 
 - **MD-001~006** — SKILL.md analysis (prompt injection, sensitive dirs, external URLs)
 - **SC-001~011** — Script analysis (binary detection, eval/exec, rm -rf, privilege escalation)

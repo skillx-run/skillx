@@ -27,7 +27,7 @@ skillx is designed to protect three boundaries:
 
 ### 1. Scan before inject
 
-Before any skill files are injected into an agent environment, skillx analyzes the source with built-in scanners. The scanner runs 30 rules across three analyzers:
+Before any skill files are injected into an agent environment, skillx analyzes the source with built-in scanners across three analyzers:
 
 - **Markdown Analyzer** (`MD-001` to `MD-011`) checks `SKILL.md` for prompt injection, sensitive directory references, destructive instructions, hidden text, external URLs, and missing metadata.
 - **Script Analyzer** (`SC-001` to `SC-015`) checks helper scripts for dynamic execution, recursive deletes, credential access, shell profile changes, privilege escalation, self-replication, and obfuscation.
