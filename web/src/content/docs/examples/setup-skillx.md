@@ -112,4 +112,4 @@ Most skills produce content for the user. `setup-skillx` produces a change to th
 
 ## Next Steps
 
-If you want to publish a skill of your own, read [Writing Skills](/guides/writing-skills/) for the SKILL.md conventions. To see how skills are run and cleaned up, see [Run Skills](/cli/run/). For a curated list of external skills you can try without writing anything, visit [Famous Skills](/getting-started/famous-skills/).
+If you already have a skill and want to wire this into your own project, see [Advertise Your Skill](/guides/advertise-your-skill/). For SKILL.md authoring conventions, see the [upstream Agent Skills repo](https://github.com/anthropics/skills); for passing the skillx scanner, see [Writing Skills](/guides/writing-skills/). To see how skills are run and cleaned up, see [Run Skills](/cli/run/).
