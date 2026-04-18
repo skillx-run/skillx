@@ -144,8 +144,8 @@ The `[skills.dev]` section is for development-only skills that are not needed in
 
 ## Why this example exists
 
-This example shows how to turn an open-ended review task into a repeatable workflow with a fixed output format, severity levels, and clear recommendations.
+This example exists to demonstrate how a broad instruction like “review this code” can be narrowed into a predictable reviewer role, a ranked severity model, and a response shape that is useful in real pull requests.
 
 ## Next Steps
 
-Use [Famous Skills](/getting-started/famous-skills/), return to the [Official Examples](/examples/overview/), or follow the [Writing Skills](/guides/writing-skills/) guide to build a review skill for your own conventions.
+If you want to see a different pattern for developer workflow automation, try [Commit Message](/examples/commit-message/). If you want to author a review skill with your team's terminology, move on to [Writing Skills](/guides/writing-skills/). For a curated external reference point, see [Famous Skills](/getting-started/famous-skills/).

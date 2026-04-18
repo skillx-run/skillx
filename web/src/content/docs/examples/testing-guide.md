@@ -121,8 +121,8 @@ See the [Writing Skills](/guides/writing-skills) guide for details on the `refer
 
 ## Why this example exists
 
-This example shows how a skill can stay small in `SKILL.md` while still pulling in extra guidance from a `references/` directory for more complex tasks.
+This example exists to show the boundary between concise instructions and supporting context: the main skill stays focused, while `references/patterns.md` carries the reusable test heuristics.
 
 ## Next Steps
 
-Use [Famous Skills](/getting-started/famous-skills/), go back to the [Official Examples](/examples/overview/), or open [Writing Skills](/guides/writing-skills/) to design a multi-file skill of your own.
+If you want a simpler single-file starting point, compare it with [Hello World](/examples/hello-world/). If you want to design your own multi-file skill structure, continue with [Writing Skills](/guides/writing-skills/). For a ready-made external workflow, review [Famous Skills](/getting-started/famous-skills/).

@@ -145,8 +145,8 @@ skillx fetches the skill from GitHub, caches it locally, scans it, and injects i
 
 ## Why this example exists
 
-This example is the smallest complete skill in the repository, so it is the fastest way to understand what a runnable `SKILL.md` looks like.
+This example exists as the smallest complete skill in the repository, so you can see the minimum viable `SKILL.md` shape before you study any of the more opinionated patterns.
 
 ## Next Steps
 
-Use [Famous Skills](/getting-started/famous-skills/), return to the [Official Examples](/examples/overview/), or continue with [Writing Skills](/guides/writing-skills/) when you are ready to build your own skill.
+If you want to see a more practical single-file skill, open [Code Review](/examples/code-review/). If you want to turn this minimal shape into your own skill, continue with [Writing Skills](/guides/writing-skills/). If you are ready to skip templates and use something mature from GitHub, go to [Famous Skills](/getting-started/famous-skills/).

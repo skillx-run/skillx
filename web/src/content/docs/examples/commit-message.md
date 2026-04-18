@@ -150,8 +150,8 @@ The `skillx run` command (with no source argument) reads from `skillx.toml` and 
 
 ## Why this example exists
 
-This example demonstrates how to convert staged changes into a consistent commit message workflow that works well in non-interactive shell pipelines.
+This example exists to show how a skill can read staged changes, infer intent, and emit a commit message that fits non-interactive shell workflows and Git habits.
 
 ## Next Steps
 
-Use [Famous Skills](/getting-started/famous-skills/), review the [Official Examples](/examples/overview/), or read [Writing Skills](/guides/writing-skills/) to author your own commit-message skill.
+If you want a companion pattern for review workflows, open [Code Review](/examples/code-review/). If you want to build your own command-line skill around a different Git task, use [Writing Skills](/guides/writing-skills/). If you are comparing this with upstream workflows, check [Famous Skills](/getting-started/famous-skills/).
