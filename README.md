@@ -119,7 +119,7 @@ skillx init --from-installed # Create from currently installed skills
 
 ## Examples
 
-Browse the [examples/skills](examples/skills) directory for complete, runnable example skills including name-poem, hello-world, code-review, testing-guide, and commit-message.
+Browse the [examples/skills](examples/skills) directory for complete, runnable example skills including name-poem, hello-world, code-review, testing-guide, commit-message, and setup-skillx.
 
 ## Documentation
 
