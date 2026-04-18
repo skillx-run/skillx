@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-skillx.run-brightgreen.svg)](https://skillx.run)
 
-**skillx** is a CLI tool that runs Agent Skills without permanently installing them. One command fetches a skill from any Git host, scans it with 23 security rules, injects it into your agent, and cleans everything up when the session ends. No files are left behind.
+**skillx** is a CLI tool that runs Agent Skills without permanently installing them. One command fetches a skill from Git hosts and other supported sources, scans it for risky patterns, injects it into your agent, and cleans everything up when the session ends. No files are left behind.
 
 ```bash
 skillx run ./examples/skills/name-poem "Your Name"
@@ -18,7 +18,7 @@ skillx run ./examples/skills/name-poem "Your Name"
 
 **No install needed.** Every other skill manager requires permanent installation. skillx runs skills ephemerally by default — fetch, use, auto-clean. When you want persistence, `skillx install` is there, but it's opt-in.
 
-**Security first.** Every skill is scanned before injection. 23 rules across 3 analyzers detect prompt injection, credential access, destructive operations, and disguised binaries. Dangerous patterns are blocked — you never run untrusted code.
+**Security first.** Every skill is scanned before injection. Built-in analyzers look for prompt injection, credential access, destructive operations, and disguised binaries before launch. Dangerous patterns are blocked — you never run untrusted code silently.
 
 **One command.** No config files, no setup. One command handles the entire lifecycle: fetch → scan → inject → run → clean.
 
@@ -55,7 +55,7 @@ skillx install github:skillx-run/skillx/examples/skills/name-poem
 
 ## Supported Agents
 
-32 built-in agents across 3 tiers, plus custom agent support:
+Built-in agents across multiple tiers, plus custom agent support:
 
 - **Tier 1**: Claude Code, Codex, GitHub Copilot, Cursor
 - **Tier 2**: Gemini CLI, OpenCode, Amp, Windsurf, Cline, Roo
@@ -65,7 +65,7 @@ skillx install github:skillx-run/skillx/examples/skills/name-poem
 
 ## Supported Sources
 
-10 source types with smart URL recognition for 20+ platforms:
+skillx is built around local paths, Git hosts, archives, and other compatible source URLs:
 
 | Source | Example |
 |--------|---------|
@@ -78,13 +78,14 @@ skillx install github:skillx-run/skillx/examples/skills/name-poem
 | SourceHut | `https://git.sr.ht/~user/repo/tree/main/item/skill.md` |
 | HuggingFace | `https://huggingface.co/org/model/blob/main/skill.md` |
 | Archive | `https://example.com/skill.tar.gz` |
-| Skill Directories | 10 supported platforms |
+
+skillx also keeps compatibility with selected legacy directory links when they resolve cleanly to underlying Git repositories, but those URLs are not the recommended discovery path.
 
 Custom URL patterns can be added via `config.toml` `[[url_patterns]]`.
 
 ## Security
 
-23 rules across 3 analyzers (markdown, script, resource):
+Built-in analyzers cover Markdown, scripts, and bundled resources:
 
 - **5 risk levels**: Pass → Info → Warn → Danger → Block
 - **Interactive gating**: auto-pass for Pass/Info, prompt for Warn, confirmation for Danger, refuse for Block

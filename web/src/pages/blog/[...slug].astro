@@ -15,7 +15,10 @@ const { post } = Astro.props;
 const { Content } = await render(post);
 ---
 
-<Base title={`${post.data.title} — skillx`}>
+<Base
+  title={`${post.data.title} — skillx`}
+  description={post.data.description}
+>
   <Nav />
   <main>
     <article class="container">
@@ -30,7 +33,7 @@ const { Content } = await render(post);
         <h1>{post.data.title}</h1>
         {post.data.author && <p class="author">By {post.data.author}</p>}
       </header>
-      <div class="content neo-box">
+      <div class="content">
         <Content />
       </div>
       <footer class="post-footer">
@@ -42,97 +45,105 @@ const { Content } = await render(post);
 
 <style>
   main {
-    background: #fffbf2;
-    color: #1a1a1a;
+    background:
+      radial-gradient(circle at top left, rgba(53, 92, 255, 0.08), transparent 28%),
+      radial-gradient(circle at top right, rgba(255, 184, 108, 0.1), transparent 24%),
+      #f6f2ea;
+    color: #111111;
     min-height: 100vh;
     padding-bottom: 6rem;
   }
 
   .container {
-    max-width: 800px;
+    width: min(860px, calc(100% - 2rem));
     margin: 0 auto;
-    padding: 6rem 2rem;
+    padding: 5.5rem 0 0;
   }
 
   .post-header {
-    margin-bottom: 4rem;
-    text-align: center;
+    margin-bottom: 2rem;
+    max-width: 40rem;
   }
 
   time {
     display: inline-block;
-    color: #1a1a1a;
-    font-size: 0.9rem;
+    color: #243fc2;
+    font-size: 0.82rem;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
-    background: #ff9f1c;
-    padding: 0.25rem 0.75rem;
-    border: 2px solid #1a1a1a;
-    margin-bottom: 1.5rem;
-    box-shadow: 3px 3px 0px #1a1a1a;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: rgba(53, 92, 255, 0.12);
+    padding: 0.38rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
   }
 
   h1 {
-    font-size: 3.5rem;
-    font-weight: 900;
+    font-size: clamp(2.8rem, 8vw, 4.8rem);
+    font-weight: 700;
     margin: 0.5rem 0;
-    line-height: 1.1;
-    text-transform: uppercase;
+    line-height: 0.96;
+    letter-spacing: -0.05em;
   }
 
   .author {
-    color: #333;
-    margin-top: 1rem;
-    font-weight: 700;
-    font-size: 1.1rem;
+    color: rgba(17, 17, 17, 0.68);
+    margin-top: 0.9rem;
+    font-size: 1rem;
   }
 
   .content {
-    background: white;
+    border: 1px solid rgba(17, 17, 17, 0.12);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 247, 240, 0.96));
+    box-shadow: 0 24px 80px rgba(17, 17, 17, 0.08);
     padding: 3rem;
-    line-height: 1.7;
-    font-size: 1.1rem;
-    font-weight: 500;
+    line-height: 1.75;
+    font-size: 1.08rem;
   }
 
   .content :global(h2) {
-    font-size: 2rem;
-    font-weight: 900;
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    font-weight: 700;
     margin-top: 3rem;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    border-bottom: 3px solid #1a1a1a;
-    display: inline-block;
+    margin-bottom: 1rem;
+    line-height: 1.02;
+    letter-spacing: -0.05em;
+    color: #111111;
   }
 
   .content :global(h3) {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+    margin-top: 2.2rem;
+    margin-bottom: 0.9rem;
+    letter-spacing: -0.04em;
+    color: #111111;
   }
 
   .content :global(p) {
     margin-bottom: 1.5rem;
+    color: rgba(17, 17, 17, 0.76);
   }
 
   .content :global(pre) {
-    background: #f5f5f5;
-    border: 2px solid #1a1a1a;
-    border-radius: 4px;
-    padding: 1.5rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(250, 247, 240, 0.98));
+    border: 1px solid rgba(17, 17, 17, 0.12);
+    border-radius: 20px;
+    padding: 1.25rem 1.35rem;
     overflow-x: auto;
     margin-bottom: 2rem;
-    box-shadow: 4px 4px 0px #1a1a1a;
+    box-shadow: 0 24px 80px rgba(17, 17, 17, 0.08);
   }
 
   .content :global(code) {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.9em;
-    background: #eee;
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
-    border: 1px solid #ccc;
+    background: rgba(17, 17, 17, 0.05);
+    padding: 0.18em 0.38em;
+    border-radius: 8px;
+    border: 1px solid rgba(17, 17, 17, 0.1);
   }
 
   .content :global(pre code) {
@@ -141,9 +152,11 @@ const { Content } = await render(post);
     border: none;
   }
 
-  .content :global(ul), .content :global(ol) {
+  .content :global(ul),
+  .content :global(ol) {
     margin-bottom: 1.5rem;
     padding-left: 2rem;
+    color: rgba(17, 17, 17, 0.76);
   }
 
   .content :global(li) {
@@ -155,40 +168,43 @@ const { Content } = await render(post);
   }
 
   .content :global(blockquote) {
-    border-left: 4px solid #6366f1;
-    padding-left: 1.5rem;
-    font-style: italic;
+    border: 1px solid rgba(53, 92, 255, 0.16);
+    border-radius: 20px;
+    padding: 1.25rem 1.4rem;
+    background: rgba(53, 92, 255, 0.06);
     margin: 2rem 0;
-    color: #333;
+    color: rgba(17, 17, 17, 0.76);
   }
 
   .post-footer {
-    margin-top: 4rem;
-    text-align: center;
+    margin-top: 2rem;
   }
 
   .back-link {
-    display: inline-block;
-    color: #1a1a1a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+    color: #111111;
     text-decoration: none;
-    font-weight: 800;
-    border: 2px solid #1a1a1a;
-    padding: 0.75rem 1.5rem;
-    background: white;
-    box-shadow: 4px 4px 0px #1a1a1a;
-    transition: all 0.1s;
+    font-weight: 700;
+    border: 1px solid rgba(17, 17, 17, 0.12);
+    border-radius: 999px;
+    padding: 0.75rem 1.1rem;
+    background: rgba(255, 255, 255, 0.74);
+    transition:
+      transform 0.18s ease,
+      background-color 0.18s ease,
+      border-color 0.18s ease;
   }
 
   .back-link:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0px #1a1a1a;
-    background: #f5f5f5;
+    transform: translateY(-1px);
+    background: #ffffff;
+    border-color: rgba(17, 17, 17, 0.18);
   }
 
   @media (max-width: 768px) {
-    h1 {
-      font-size: 2.2rem;
-    }
     .content {
       padding: 1.5rem;
     }

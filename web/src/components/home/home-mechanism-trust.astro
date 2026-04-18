@@ -1,0 +1,189 @@
+---
+const steps = [
+  {
+    name: 'resolve',
+    description: 'Resolve the GitHub skill URL and identify the exact skill before anything is injected.',
+  },
+  {
+    name: 'scan',
+    description: 'Run security checks and risk evaluation before the skill enters the session.',
+  },
+  {
+    name: 'inject',
+    description: 'Inject only the temporary files needed for this run in the active agent.',
+  },
+  {
+    name: 'run',
+    description: 'Launch the agent with the skill in place and keep the session bounded.',
+  },
+  {
+    name: 'clean',
+    description: 'Remove injected files and session artifacts when the run is finished.',
+  },
+];
+
+const proofCards = [
+  {
+    title: 'Built-in analyzers',
+    body: 'Security checks before injection, not after something goes wrong.',
+  },
+  {
+    title: 'Risk-based gate',
+    body: 'A clearer way to understand whether a skill looks safe to run.',
+  },
+  {
+    title: 'Common agents',
+    body: 'Use the same workflow across the agents people already have installed.',
+  },
+  {
+    title: 'Git hosts + archives',
+    body: 'Start with GitHub now, then keep the same workflow across supported remote sources.',
+  },
+];
+---
+
+<section
+  id="how-it-works"
+  data-home-section="mechanism-trust"
+  class="landing-section mechanism-trust-section"
+>
+  <div class="landing-container mechanism-trust-grid">
+    <div class="mechanism-trust-copy">
+      <p class="eyebrow">Trust the workflow</p>
+      <h2>Trust comes from the workflow, not a promise.</h2>
+      <p class="lede">
+        skillx makes the first run easier to try without hiding what happens before, during,
+        or after a session.
+      </p>
+    </div>
+
+    <div class="mechanism-flow" aria-label="Mechanism steps">
+      {steps.map((step, index) => (
+        <article class="step-card">
+          <p class="step-index">0{index + 1}</p>
+          <h3>{step.name}</h3>
+          <p>{step.description}</p>
+        </article>
+      ))}
+    </div>
+
+    <div class="proof-grid" aria-label="Trust proof cards">
+      {proofCards.map((proof) => (
+        <article class="proof-card">
+          <h3>{proof.title}</h3>
+          <p>{proof.body}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .mechanism-trust-section {
+    padding-top: 0;
+  }
+
+  .mechanism-trust-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .mechanism-trust-copy {
+    max-width: 38rem;
+  }
+
+  .eyebrow {
+    margin-bottom: 0.9rem;
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    max-width: 15ch;
+  }
+
+  .lede {
+    margin-top: 1rem;
+    max-width: 40ch;
+    color: var(--landing-muted);
+    font-size: 1.06rem;
+  }
+
+  .mechanism-flow {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .step-card,
+  .proof-card {
+    border: 1px solid var(--landing-border);
+    border-radius: var(--landing-radius-lg);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 247, 240, 0.96));
+    box-shadow: var(--landing-shadow);
+  }
+
+  .step-card {
+    padding: 1.2rem;
+    min-height: 12.25rem;
+  }
+
+  .step-index {
+    display: inline-flex;
+    margin-bottom: 0.9rem;
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .step-card h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    text-transform: lowercase;
+  }
+
+  .step-card p,
+  .proof-card p {
+    color: var(--landing-muted);
+  }
+
+  .proof-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .proof-card {
+    padding: 1.2rem;
+  }
+
+  .proof-card h3 {
+    margin-bottom: 0.7rem;
+    font-size: 1.18rem;
+  }
+
+  @media (max-width: 1080px) {
+    .mechanism-flow {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .proof-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .mechanism-flow,
+    .proof-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

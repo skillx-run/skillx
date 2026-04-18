@@ -1,6 +1,6 @@
 ---
 title: "skillx run"
-description: Full reference for the skillx run command — fetch, scan, inject, run, and clean a skill in one step.
+description: Real-world guide to skillx run — fetch, scan, inject, run, and clean a skill in one step.
 ---
 
 ## Synopsis
@@ -9,7 +9,9 @@ description: Full reference for the skillx run command — fetch, scan, inject, 
 skillx run <source> [prompt] [options]
 ```
 
-Fetch a skill, scan it for security issues, inject it into the active agent's context, launch the agent, wait for completion, and clean up.
+`skillx run` is the fastest way to go from "I found a skill" to "the agent is using it right now". Use it for first-run testing, one-off tasks, and validating a skill before you decide whether it belongs in your regular project workflow.
+
+Behind one command, skillx resolves the source, scans it, injects it into the current agent, launches the session, then cleans everything up when the run ends. The usual progression is: start with `run`, switch to `scan` when you want a clearer security decision, then move to project-level management once the skill proves useful.
 
 ## Arguments
 
@@ -31,6 +33,8 @@ Fetch a skill, scan it for security issues, inject it into the active agent's co
 | `--skip-scan` | — | — | Skip the security scan (not recommended) |
 | `--yes` | — | — | Auto-confirm WARN level risks |
 | `--auto-approve` | `--auto` | — | Pass permission-skip flags to the agent |
+| `--headless` | — | — | Run without interactive terminal UI when the selected agent supports it |
+| `--fail-on <level>` | — | `danger` | Stop before launch if scan results meet or exceed `info`, `warn`, `danger`, or `block` |
 | `--print` | `-p` | — | Non-interactive mode: agent processes prompt and exits |
 | `--timeout <dur>` | — | — | Maximum run duration (e.g., `30m`, `2h`) |
 
@@ -45,7 +49,8 @@ The source string is resolved in this priority order:
 3. **`gist:` prefix** — e.g., `gist:abc123[@revision]`
 4. **Platform URL** — GitHub, GitLab, Bitbucket, Gitea/Codeberg, SourceHut, HuggingFace URLs
 5. **Archive URL** — direct `.zip` or `.tar.gz` download links
-6. **Skill Directory URL** — skills.sh, skillsmp.com, and 8 other directory platforms
+
+skillx may also accept other compatible source URLs, including selected legacy directory links that resolve to underlying Git repositories. Those compatibility paths exist for existing links, not as the primary discovery workflow.
 
 If no `source` is provided and a `skillx.toml` exists with `[skills]` entries, all listed skills are run sequentially.
 
@@ -124,7 +129,7 @@ Prompts are resolved in priority order:
 ### Basic usage
 
 ```bash
-skillx run ./examples/skills/hello-world "Hello"
+skillx run github:skillx-run/skillx/examples/skills/hello-world "Hello"
 ```
 
 ### GitHub skill with timeout
@@ -136,35 +141,37 @@ skillx run --timeout 30m github:skillx-run/skillx/examples/skills/code-review "R
 ### Pipe prompt from another command
 
 ```bash
-git diff HEAD~1 | skillx run ./examples/skills/code-review --stdin
+git diff HEAD~1 | skillx run github:skillx-run/skillx/examples/skills/code-review --stdin
 ```
 
 ### Project-scoped injection
 
 ```bash
-skillx run --scope project ./examples/skills/hello-world "Set up the project"
+skillx run --scope project github:skillx-run/skillx/examples/skills/hello-world "Set up the project"
 ```
 
 ### Non-interactive (print) mode
 
 ```bash
-skillx run --print ./examples/skills/code-review "Review src/main.rs"
+skillx run --print github:skillx-run/skillx/examples/skills/code-review "Review src/main.rs"
 ```
 
 ### Auto-approve mode with auto-confirm
 
 ```bash
-skillx run --yes --auto-approve ./examples/skills/code-review "Fix all lint errors"
+skillx run --yes --auto-approve github:skillx-run/skillx/examples/skills/code-review "Fix all lint errors"
 ```
 
 ### Attach context files
 
 ```bash
-skillx run ./examples/skills/code-review \
+skillx run github:skillx-run/skillx/examples/skills/code-review \
   --attach ./data.csv \
   --attach ./schema.sql \
   "Review the data processing code"
 ```
+
+If you are inside a local clone of the repository and want to point at the checked-out example files directly, swap the GitHub source for `./examples/skills/<name>`.
 
 ## Exit Codes
 
@@ -172,3 +179,13 @@ skillx run ./examples/skills/code-review \
 |------|---------|
 | 0 | Success |
 | 1 | Error (scan blocked, agent failure, source resolution failed) |
+
+## After `run` starts working
+
+Once a one-off run is useful, the next step is usually to stabilize how you use it:
+
+- [Scan Skills](/cli/scan/) when you want to review the same security gate without launching an agent
+- [Manage Project Skills](/guides/manage-project-skills/) when the skill should graduate from ad hoc runs to `skillx.toml`-based project usage
+- [Agent System Overview](/agents/overview/) when you need to understand agent-specific injection paths and launch behavior
+- [FAQ](/getting-started/faq/) when you are still deciding between one-off, scanned, and persistent workflows
+- [Troubleshooting](/getting-started/troubleshooting/) when the failure is still basic first-run setup, source resolution, or agent detection

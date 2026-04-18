@@ -54,7 +54,7 @@ claude "your prompt here" --dangerously-skip-permissions
 Claude Code's `--dangerously-skip-permissions` flag skips all permission prompts. The agent can read, write, and execute without asking for confirmation.
 
 ```bash
-skillx run --auto-approve ./examples/skills/code-review "Review all files"
+skillx run --auto-approve github:skillx-run/skillx/examples/skills/code-review "Review all files"
 # Equivalent to: claude "..." --dangerously-skip-permissions
 ```
 
@@ -62,19 +62,19 @@ skillx run --auto-approve ./examples/skills/code-review "Review all files"
 
 ```bash
 # Normal mode — Claude Code will ask for permissions
-skillx run ./examples/skills/code-review "Review the auth module"
+skillx run github:skillx-run/skillx/examples/skills/code-review "Review the auth module"
 
 # Non-interactive (print) mode — process prompt and exit
-skillx run --print ./examples/skills/code-review "Review src/main.rs"
+skillx run --print github:skillx-run/skillx/examples/skills/code-review "Review src/main.rs"
 
 # Auto-approve mode — no permission prompts
-skillx run --auto-approve ./examples/skills/code-review "Fix all lint errors"
+skillx run --auto-approve github:skillx-run/skillx/examples/skills/code-review "Fix all lint errors"
 
 # With timeout
-skillx run --timeout 30m ./examples/skills/code-review "Review the full codebase"
+skillx run --timeout 30m github:skillx-run/skillx/examples/skills/code-review "Review the full codebase"
 
 # Project-scoped injection
-skillx run --scope project ./examples/skills/hello-world "Set up project"
+skillx run --scope project github:skillx-run/skillx/examples/skills/hello-world "Set up project"
 ```
 
 ## OpenAI Codex
@@ -120,7 +120,7 @@ codex "your prompt here" --yolo
 Codex's `--yolo` flag enables fully autonomous operation without user confirmation.
 
 ```bash
-skillx run --auto-approve --agent codex ./examples/skills/code-review "Refactor the database layer"
+skillx run --auto-approve --agent codex github:skillx-run/skillx/examples/skills/code-review "Refactor the database layer"
 # Equivalent to: codex "..." --yolo
 ```
 
@@ -128,16 +128,16 @@ skillx run --auto-approve --agent codex ./examples/skills/code-review "Refactor 
 
 ```bash
 # Normal mode
-skillx run --agent codex ./examples/skills/testing-guide "Add unit tests"
+skillx run --agent codex github:skillx-run/skillx/examples/skills/testing-guide "Add unit tests"
 
 # Non-interactive (print) mode
-skillx run --print --agent codex ./examples/skills/code-review "Review src/main.rs"
+skillx run --print --agent codex github:skillx-run/skillx/examples/skills/code-review "Review src/main.rs"
 
 # Auto-approve mode
-skillx run --auto-approve --agent codex ./examples/skills/code-review "Fix all TODOs"
+skillx run --auto-approve --agent codex github:skillx-run/skillx/examples/skills/code-review "Fix all TODOs"
 
 # With timeout and auto-confirm warnings
-skillx run --yes --timeout 1h --agent codex ./examples/skills/code-review "Complete refactor"
+skillx run --yes --timeout 1h --agent codex github:skillx-run/skillx/examples/skills/code-review "Complete refactor"
 ```
 
 ## Tier 3 CLI Agents
@@ -235,7 +235,7 @@ gemini -p "your prompt here"
 Gemini CLI supports auto-approve mode with the `--yolo` flag.
 
 ```bash
-skillx run --auto-approve --agent gemini-cli ./examples/skills/hello-world "prompt"
+skillx run --auto-approve --agent gemini-cli github:skillx-run/skillx/examples/skills/hello-world "prompt"
 # Equivalent to: gemini -i "..." --yolo
 ```
 
@@ -306,7 +306,7 @@ amp -x "your prompt here"
 Amp supports auto-approve mode with the `--dangerously-allow-all` flag.
 
 ```bash
-skillx run --auto-approve --agent amp ./examples/skills/hello-world "prompt"
+skillx run --auto-approve --agent amp github:skillx-run/skillx/examples/skills/hello-world "prompt"
 # Equivalent to: amp -x "..." --dangerously-allow-all
 ```
 

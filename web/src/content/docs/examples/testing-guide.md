@@ -50,10 +50,12 @@ These are general-purpose patterns that apply to any language or test framework.
 
 ## Usage
 
-### Write Tests for a Module
+### Run from GitHub
+
+Run the official multi-file example directly from GitHub:
 
 ```bash
-skillx run ./examples/skills/testing-guide "Write unit tests for src/utils/parser.ts"
+skillx run github:skillx-run/skillx/examples/skills/testing-guide "Write unit tests for src/utils/parser.ts"
 ```
 
 The agent will:
@@ -62,16 +64,24 @@ The agent will:
 3. Consult `references/patterns.md` for applicable strategies
 4. Write tests following your project's existing style
 
+### Run from a Local Clone of this Repository
+
+If you are exploring the files in a local checkout of `skillx-run/skillx`, use:
+
+```bash
+skillx run ./examples/skills/testing-guide "Write unit tests for src/utils/parser.ts"
+```
+
 ### Improve Existing Tests
 
 ```bash
-skillx run ./examples/skills/testing-guide "Improve test coverage for the auth module — focus on edge cases"
+skillx run github:skillx-run/skillx/examples/skills/testing-guide "Improve test coverage for the auth module — focus on edge cases"
 ```
 
 ### Test-Driven Development
 
 ```bash
-skillx run ./examples/skills/testing-guide "I need to add a retry mechanism to the HTTP client. Write the tests first."
+skillx run github:skillx-run/skillx/examples/skills/testing-guide "I need to add a retry mechanism to the HTTP client. Write the tests first."
 ```
 
 The skill's guidelines include writing failing tests before implementing features (bug-fix and TDD patterns).
@@ -79,7 +89,7 @@ The skill's guidelines include writing failing tests before implementing feature
 ## Scan Output
 
 ```bash
-skillx scan ./examples/skills/testing-guide
+skillx scan github:skillx-run/skillx/examples/skills/testing-guide
 ```
 
 ```
@@ -92,6 +102,12 @@ skillx scan ./examples/skills/testing-guide
 ```
 
 Note that the scanner checks **2 files** — both `SKILL.md` and `references/patterns.md`. The references file is scanned for security issues just like any other file in the skill directory.
+
+If you want to scan the files from a local clone instead, run:
+
+```bash
+skillx scan ./examples/skills/testing-guide
+```
 
 ## Creating Your Own Multi-File Skill
 
@@ -119,8 +135,10 @@ db-migration/
 
 See the [Writing Skills](/guides/writing-skills) guide for details on the `references/` and `scripts/` directories.
 
+## Why this example exists
+
+This example exists to show the boundary between concise instructions and supporting context: the main skill stays focused, while `references/patterns.md` carries the reusable test heuristics.
+
 ## Next Steps
 
-- [Hello World](/examples/hello-world) — Start with the simplest possible skill
-- [Code Review](/examples/code-review) — Structured output format example
-- [Commit Message](/examples/commit-message) — Piped input and non-interactive mode
+If you want a simpler single-file starting point, compare it with [Hello World](/examples/hello-world/). If you want to design your own multi-file skill structure, continue with [Writing Skills](/guides/writing-skills/). For a ready-made external workflow, review [Famous Skills](/getting-started/famous-skills/).

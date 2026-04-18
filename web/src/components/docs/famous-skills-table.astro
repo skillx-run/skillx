@@ -1,0 +1,31 @@
+---
+import { buildSkillxRunCommand, famousSkills } from '../../data/famous-skills.mjs';
+---
+
+<table>
+  <thead>
+    <tr>
+      <th>Skill</th>
+      <th>Source</th>
+      <th>Best for</th>
+      <th>Copyable command</th>
+    </tr>
+  </thead>
+  <tbody>
+    {famousSkills.map((skill) => (
+      <tr>
+        <td>{skill.title}</td>
+        <td><a href={skill.sourceUrl}>anthropics/skills</a></td>
+        <td>{skill.bestFor}</td>
+        <td><code>{buildSkillxRunCommand(skill, skill.docsPrompt)}</code></td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+{famousSkills.map((skill) => (
+  <>
+    <h3 id={skill.slug}>{skill.title}</h3>
+    <p>{skill.docsDescription}</p>
+  </>
+))}

@@ -90,3 +90,9 @@ skillx init
 ```bash
 skillx init --from-installed
 ```
+
+## Related Docs
+
+- [Manage Project Skills](/guides/manage-project-skills/) for the full project-level lifecycle after the manifest exists
+- [skillx install](/cli/install/) to populate the new `skillx.toml` with real skills
+- [Manifest Reference](/reference/manifest/) to understand every field you can add next

@@ -55,7 +55,13 @@ The frontmatter provides metadata (name, description, author, version, license, 
 
 ## Step 1: Scan
 
-Before running any skill, scan it to verify it is safe:
+You can use the GitHub source directly from the docs:
+
+```bash
+skillx scan github:skillx-run/skillx/examples/skills/hello-world
+```
+
+If you are already inside a local clone of this repository, the equivalent local path is:
 
 ```bash
 skillx scan ./examples/skills/hello-world
@@ -76,7 +82,13 @@ The skill passes cleanly because it contains no dangerous patterns — no extern
 
 ## Step 2: Run
 
-Run the skill with a prompt:
+Run the skill directly from GitHub:
+
+```bash
+skillx run github:skillx-run/skillx/examples/skills/hello-world "Hello, what can you do?"
+```
+
+If you are studying the repository locally, use:
 
 ```bash
 skillx run ./examples/skills/hello-world "Hello, what can you do?"
@@ -84,7 +96,7 @@ skillx run ./examples/skills/hello-world "Hello, what can you do?"
 
 skillx performs the full lifecycle:
 
-1. **Resolve** — Finds `SKILL.md` in the local path
+1. **Resolve** — Resolves the source, whether it comes from GitHub or a local path
 2. **Scan** — Checks for security issues (PASS)
 3. **Detect agent** — Identifies your active AI coding agent
 4. **Inject** — Copies the skill into the agent's instruction directory
@@ -104,7 +116,7 @@ By default, skillx auto-detects your active agent. You can override this with `-
 ### Claude Code
 
 ```bash
-skillx run ./examples/skills/hello-world --agent claude-code "Hello"
+skillx run github:skillx-run/skillx/examples/skills/hello-world --agent claude-code "Hello"
 ```
 
 Injects into Claude Code's `CLAUDE.md` instruction file.
@@ -112,7 +124,7 @@ Injects into Claude Code's `CLAUDE.md` instruction file.
 ### Codex
 
 ```bash
-skillx run ./examples/skills/hello-world --agent codex "Hello"
+skillx run github:skillx-run/skillx/examples/skills/hello-world --agent codex "Hello"
 ```
 
 Injects into Codex's instruction directory.
@@ -120,7 +132,7 @@ Injects into Codex's instruction directory.
 ### Cursor
 
 ```bash
-skillx run ./examples/skills/hello-world --agent cursor "Hello"
+skillx run github:skillx-run/skillx/examples/skills/hello-world --agent cursor "Hello"
 ```
 
 Injects into Cursor's `.cursor/rules/` directory.
@@ -128,23 +140,19 @@ Injects into Cursor's `.cursor/rules/` directory.
 ### Universal (Fallback)
 
 ```bash
-skillx run ./examples/skills/hello-world --agent universal "Hello"
+skillx run github:skillx-run/skillx/examples/skills/hello-world --agent universal "Hello"
 ```
 
 Copies the skill to the project root and displays the content for manual use with any agent.
 
-## Running from GitHub
+skillx fetches the GitHub source, caches it locally, scans it, and injects it — all in one command.
 
-You do not need a local clone to try this skill:
+If you are testing these same flows from a local clone of `skillx-run/skillx`, replace the GitHub source with `./examples/skills/hello-world`.
 
-```bash
-skillx run github:skillx-run/skillx/examples/skills/hello-world "Hello"
-```
+## Why this example exists
 
-skillx fetches the skill from GitHub, caches it locally, scans it, and injects it — all in one command.
+This example exists as the smallest complete skill in the repository, so you can see the minimum viable `SKILL.md` shape before you study any of the more opinionated patterns.
 
 ## Next Steps
 
-- [Code Review](/examples/code-review) — A more practical skill with structured output
-- [Testing Guide](/examples/testing-guide) — A multi-file skill with references
-- [Writing Skills](/guides/writing-skills) — Create your own skill from scratch
+If you want to see a more practical single-file skill, open [Code Review](/examples/code-review/). If you want to turn this minimal shape into your own skill, continue with [Writing Skills](/guides/writing-skills/). If you are ready to skip templates and use something mature from GitHub, go to [Famous Skills](/getting-started/famous-skills/).

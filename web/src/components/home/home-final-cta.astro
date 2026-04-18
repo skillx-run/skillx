@@ -1,0 +1,236 @@
+---
+import { buildSkillxRunCommand, primaryFamousSkill } from '../../data/famous-skills.mjs';
+
+const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
+const runCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.homepagePrompt);
+---
+
+<section id="first-run" data-home-section="final-cta" class="landing-section final-cta-section">
+  <div class="landing-container final-cta-shell">
+    <div class="final-cta-copy">
+      <p class="eyebrow">Try it now</p>
+      <h2>Install skillx, then run your first GitHub skill.</h2>
+      <p class="lede">The fastest path from a public skill URL to a real first run.</p>
+    </div>
+
+    <div class="install-panel">
+      <div class="command-stack">
+        <div class="command-group">
+          <p class="command-label">Install</p>
+          <button class="install-bar copy-command" type="button" data-command={installCommand}>
+            <code>{installCommand}</code>
+            <span class="copy-label">Copy</span>
+          </button>
+        </div>
+
+        <div class="command-group">
+          <p class="command-label">Run</p>
+          <button class="install-bar copy-command" type="button" data-command={runCommand}>
+            <code>{runCommand}</code>
+            <span class="copy-label">Copy</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <a href="/getting-started/installation/" class="neo-btn">Install skillx</a>
+        <a href="/getting-started/first-run/" class="neo-btn neo-btn-secondary">
+          See first-run docs
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .final-cta-section {
+    padding-top: 0;
+  }
+
+  .final-cta-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .final-cta-copy {
+    max-width: 33rem;
+  }
+
+  .eyebrow {
+    margin-bottom: 0.9rem;
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    max-width: 13ch;
+  }
+
+  .lede {
+    margin-top: 1rem;
+    max-width: 34ch;
+    color: var(--landing-muted);
+    font-size: 1.06rem;
+  }
+
+  .install-panel {
+    padding: 1.4rem;
+    border: 1px solid var(--landing-border);
+    border-radius: var(--landing-radius-lg);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(250, 247, 240, 0.98));
+    box-shadow: var(--landing-shadow);
+  }
+
+  .command-stack {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .command-group {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .command-label {
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .install-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    width: 100%;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--landing-border-strong);
+    border-radius: 16px;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+    appearance: none;
+    font: inherit;
+    color: inherit;
+  }
+
+  .install-bar code {
+    flex: 1;
+    color: var(--landing-text);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    word-break: break-all;
+  }
+
+  .copy-label {
+    flex-shrink: 0;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: var(--landing-accent-soft);
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  .action-row a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.9rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--landing-border-strong);
+    border-radius: 999px;
+    background: var(--landing-text);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      background-color 0.18s ease,
+      color 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .action-row a:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 32px rgba(17, 17, 17, 0.14);
+  }
+
+  .action-row .neo-btn-secondary {
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--landing-text);
+    border-color: var(--landing-border);
+  }
+
+  @media (max-width: 900px) {
+    .final-cta-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .final-cta-copy {
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .install-bar {
+      padding: 0.9rem 1rem;
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .copy-label {
+      align-self: flex-start;
+    }
+
+    .action-row a {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  const buttons = document.querySelectorAll('.copy-command');
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      const command = button.getAttribute('data-command') || '';
+
+      try {
+        await navigator.clipboard.writeText(command);
+        button.dataset.copied = 'true';
+        const label = button.querySelector('.copy-label');
+        if (label) label.textContent = 'Copied';
+        window.setTimeout(() => {
+          delete button.dataset.copied;
+          if (label) label.textContent = 'Copy';
+        }, 1400);
+      } catch {
+        window.prompt('Copy this command', command);
+      }
+    });
+  });
+</script>

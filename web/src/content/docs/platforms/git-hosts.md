@@ -190,3 +190,9 @@ All remote sources are cached using a SHA-256 hash of the full source string. Th
 skillx cache ls      # View all cached entries
 skillx cache clean   # Clear cache
 ```
+
+## Next Steps
+
+- [Platforms Overview](/platforms/overview/) for the full source resolution order
+- [Run a Skill](/cli/run/) for CLI flags and runtime behavior
+- [Famous Skills](/getting-started/famous-skills/) for real skill examples to try

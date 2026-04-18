@@ -44,7 +44,7 @@ Two modes of operation:
 When one or more source arguments are provided, skillx installs those specific skills:
 
 ```bash
-skillx install github:skillx-run/skillx/examples/skills/pdf-processing github:org/skills/formatter
+skillx install github:skillx-run/skillx/examples/skills/code-review github:org/skills/formatter
 ```
 
 By default, installed sources are saved to skillx.toml (if it exists). Use `--no-save` to skip saving.
@@ -105,7 +105,7 @@ Skills with active run sessions are skipped during pruning.
 ### Install a single skill
 
 ```bash
-skillx install github:skillx-run/skillx/examples/skills/pdf-processing
+skillx install github:skillx-run/skillx/examples/skills/code-review
 ```
 
 ### Install to a specific agent
@@ -143,3 +143,9 @@ skillx install --prod --prune
 ```bash
 skillx install --no-save github:org/skills/one-off-tool
 ```
+
+## Related Docs
+
+- [Manage Project Skills](/guides/manage-project-skills/) for the broader transition from one-off runs to persistent project usage
+- [skillx list](/cli/list/) to verify what is installed and where it was injected
+- [skillx run](/cli/run/) if you are still evaluating a skill before making it persistent

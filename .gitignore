@@ -33,3 +33,10 @@ Thumbs.db
 
 # skillx runtime injected skills
 .agents/
+
+# local git worktrees
+.worktrees/
+
+# local superpowers workflow artifacts
+.superpowers/
+docs/superpowers/

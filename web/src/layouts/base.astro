@@ -1,9 +1,12 @@
 ---
 interface Props {
   title: string;
+  description?: string;
 }
 
-const { title } = Astro.props;
+const { title, description } = Astro.props;
+const canonical = Astro.url;
+const ogImage = new URL('/og-image.png', Astro.site ?? canonical).toString();
 ---
 
 <!doctype html>
@@ -11,11 +14,21 @@ const { title } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="npx for Agent Skills — fetch, scan, inject, run, clean in one command" />
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonical} />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content="npx for Agent Skills — fetch, scan, inject, run, clean in one command" />
+    {description && <meta property="og:description" content={description} />}
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://skillx.run" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content="skillx social preview card" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content={ogImage} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
   </head>
@@ -31,14 +44,34 @@ const { title } = Astro.props;
     box-sizing: border-box;
   }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #fffbf2;
-    color: #1a1a1a;
-    -webkit-font-smoothing: antialiased;
+  html {
+    scroll-behavior: smooth;
   }
 
-  code, pre, .mono {
+  body {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #111111;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    line-height: 1.02;
+  }
+
+  code,
+  pre,
+  .mono {
     font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+  }
+
+  nav a {
+    text-decoration: none;
   }
 </style>
