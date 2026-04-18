@@ -36,3 +36,7 @@ Thumbs.db
 
 # local git worktrees
 .worktrees/
+
+# local superpowers workflow artifacts
+.superpowers/
+docs/superpowers/
