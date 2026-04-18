@@ -265,6 +265,14 @@ fn test_scan_example_testing_guide() {
 }
 
 #[test]
+fn test_scan_example_setup_skillx() {
+    skillx()
+        .args(["scan", &example_skill("setup-skillx")])
+        .assert()
+        .success();
+}
+
+#[test]
 fn test_scan_example_dangerous_blocked() {
     // dangerous-example has BLOCK-level findings from scripts/payload.sh
     skillx()
