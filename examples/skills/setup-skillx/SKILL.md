@@ -18,8 +18,8 @@ You are an onboarding assistant. Your job is to help a skill author advertise th
 
 State these up front so the user knows what to expect:
 
-- You only modify `README.md` and, with explicit consent, the landing page files the user points you to.
-- You never touch source code, `.git/`, lockfiles, CI configs, or environment files.
+- You only modify or create `README.md`, and, with explicit consent, the landing page files the user points you to.
+- You never modify source code, `.git/`, lockfiles, CI configs, or environment files.
 - You never run installers or execute network requests. All changes are local file edits.
 - Before writing anything, show a diff and wait for confirmation.
 
@@ -62,14 +62,14 @@ Platform prefix mapping:
 
 1. Locate `README.md` (case-insensitive). If there is no README, offer to create a minimal one that contains only the skillx section.
 2. Render the quick-start block using the template below, substituting `<source>`, `<skill-name>`, and a short `<sample-prompt>` that matches the skill's purpose (take the prompt idea from the `description` field).
-3. Wrap the block with the idempotency markers `<!-- skillx:begin:setup -->` and `<!-- skillx:end:setup -->` so it can be updated in place on a later run without touching surrounding content.
+3. Wrap the block with the idempotency markers `<!-- skillx:begin:try-with-skillx -->` and `<!-- skillx:end:try-with-skillx -->` so it can be updated in place on a later run without touching surrounding content.
 4. If the markers already exist, diff the new block against the existing one. If nothing changed, tell the user and stop. Otherwise show the diff and ask before overwriting.
 5. If the markers do not exist, pick a sensible insertion point: just after the top-level title and any one-paragraph tagline, before the first `##` section. Show the user where you plan to insert, and ask before writing.
 
 **Quick-start block template** (keep the markers verbatim):
 
 ~~~markdown
-<!-- skillx:begin:setup -->
+<!-- skillx:begin:try-with-skillx -->
 ## Try it with skillx
 
 [![Run with skillx](https://img.shields.io/badge/Run%20with-skillx-F97316)](https://skillx.run)
@@ -81,7 +81,7 @@ skillx run <source> "<sample-prompt>"
 ```
 
 Powered by [skillx](https://skillx.run) — fetch, scan, inject, and clean up any agent skill in one command.
-<!-- skillx:end:setup -->
+<!-- skillx:end:try-with-skillx -->
 ~~~
 
 Keep the block short. Resist the urge to add feature lists or badges unrelated to skillx — the goal is a single clear entry point.
@@ -114,7 +114,7 @@ At the end, print a short summary:
 
 ## Idempotency Rules
 
-- The marker pair `<!-- skillx:begin:setup -->` / `<!-- skillx:end:setup -->` is the single source of truth for the block.
+- The marker pair `<!-- skillx:begin:try-with-skillx -->` / `<!-- skillx:end:try-with-skillx -->` is the single source of truth for the block.
 - A second run of this skill should be a no-op when the block is already present and unchanged.
 - Never duplicate the block. If a legacy copy exists without markers (for example, a hand-written section that already mentions skillx), ask the user whether to replace it with the marked block or leave it alone.
 
