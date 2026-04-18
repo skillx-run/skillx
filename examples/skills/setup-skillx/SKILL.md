@@ -36,7 +36,7 @@ Gather signals without making assumptions:
 1. Look for `SKILL.md` at the repository root, and also at common sub-paths (for example `skills/*/SKILL.md`, `examples/skills/*/SKILL.md`).
 2. If a `SKILL.md` is found, read its YAML frontmatter and extract `name` and `description`.
 3. Run `git remote -v` (or read `.git/config`, or ask the user) to infer the hosting platform and the `owner/repo` slug. Support GitHub, GitLab, Bitbucket, Gitea/Codeberg, and SourceHut.
-4. If multiple `SKILL.md` files exist, ask which one to advertise, or suggest advertising the repo as a whole when it clearly is a skill monorepo.
+4. If multiple `SKILL.md` files exist, list them and ask whether to advertise one, several, or all of them. See the "Multiple skills in one repo" entry under Edge Cases for how the selection shapes the block.
 
 If no `SKILL.md` is present, tell the user this does not look like a skill project and stop.
 
@@ -126,7 +126,7 @@ At the end, print a short summary:
 
 - **Private repo**: still emit the source URL. Advise the user that anyone running the skill will need access to the repo.
 - **No git remote**: ask the user for the canonical repo URL, or fall back to a local-path example (`skillx run ./path/to/skill "..."`).
-- **Multiple skills in one repo**: default to advertising each skill with its full sub-path; offer a one-liner example per skill inside a single block.
+- **Multiple skills in one repo**: when the user picks more than one skill in Step 1.4, render a single block that contains one `skillx run` command per selected skill, each using its full sub-path. Do not create separate blocks.
 - **Non-English README**: localize the block so it reads naturally in the README's language, using the table below. When the project has multiple language-specific READMEs, localize each copy to its own language.
 
   | Element | Localize? |
