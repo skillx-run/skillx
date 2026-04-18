@@ -1,36 +1,39 @@
 ---
 const terminalRows = [
-  { label: 'resolve skill source', value: 'github:skillx-run/skillx/examples/skills/code-review' },
-  { label: 'scan before inject', value: '30 rules | 5 risk levels | PASS' },
-  { label: 'inject temporarily', value: 'session-only workspace mount' },
-  { label: 'launch agent', value: 'claude-code / codex / cursor' },
-  { label: 'cleanup on exit', value: 'workspace restored' },
+  { label: 'resolved from GitHub', value: 'frontend-design' },
+  { label: 'scan result', value: '30 rules | PASS' },
+  { label: 'agent', value: 'claude-code / codex / cursor' },
+  { label: 'session mode', value: 'temporary injection' },
+  { label: 'after exit', value: 'workspace cleaned up' },
 ];
 ---
 
 <section data-home-section="hero" class="landing-section hero-section">
   <div class="landing-container hero-grid">
     <div class="hero-copy">
-      <p class="eyebrow">npx for agent skills</p>
-      <h1>Run any agent skill in one command.</h1>
-      <p class="lede">Make skills easier to try, easier to share, and easier to adopt.</p>
+      <p class="eyebrow">Run public GitHub skills</p>
+      <h1>Run a GitHub skill in one command.</h1>
+      <p class="lede">
+        Paste a public GitHub skill URL. skillx fetches it, scans it, injects it into your
+        agent for one session, and cleans it up when you're done.
+      </p>
       <p class="supporting">
-        Scan before inject. Keep every run temporary. Share skills without asking people to
-        install them by hand.
+        Start with a real skill from GitHub, keep the first run temporary, and avoid manual
+        setup work before you see a result.
       </p>
 
       <div class="hero-actions">
-        <a class="button button-primary" href="/getting-started/installation/">Install skillx</a>
-        <a class="button button-secondary" href="/getting-started/">See how it works</a>
+        <a class="button button-primary" href="#first-run">Run your first skill</a>
+        <a class="button button-secondary" href="#how-it-works">How it works</a>
       </div>
 
       <div class="trust-block">
-        <p class="trust-label">Built to make trial and adoption easier without lowering trust.</p>
+        <p class="trust-label">Built for first-run trust without permanent install baggage.</p>
         <div class="trust-strip" aria-label="Homepage trust strip">
+          <span>Public GitHub URLs</span>
+          <span>Scan before inject</span>
+          <span>Temporary by default</span>
           <span>32+ agents</span>
-          <span>18+ sources</span>
-          <span>30 rules</span>
-          <span>5 risk levels</span>
         </div>
       </div>
     </div>
@@ -40,13 +43,17 @@ const terminalRows = [
         <span></span>
         <span></span>
         <span></span>
-        <span>skillx session</span>
+        <span>skillx first run</span>
       </div>
 
       <div class="terminal-body">
         <div class="terminal-line terminal-line-command">
           <span class="prompt">$</span>
-          <span>skillx run github:skillx-run/skillx/examples/skills/code-review "Review my auth module"</span>
+          <span>
+            skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design
+            "Redesign the hero section of this landing page for higher conversion. Keep the
+            existing stack and return production-ready code."
+          </span>
         </div>
 
         {terminalRows.map((row) => (
@@ -74,7 +81,7 @@ const terminalRows = [
   }
 
   .hero-copy {
-    max-width: 36rem;
+    max-width: 40rem;
   }
 
   .eyebrow {
@@ -88,21 +95,22 @@ const terminalRows = [
   }
 
   h1 {
-    font-size: clamp(3rem, 8vw, 5.8rem);
+    font-size: clamp(3rem, 8vw, 5.6rem);
     line-height: 0.94;
-    max-width: 11ch;
+    max-width: 10ch;
   }
 
   .lede {
     margin-top: 1.2rem;
     font-size: clamp(1.1rem, 2vw, 1.35rem);
     color: var(--landing-text);
-    max-width: 32ch;
+    max-width: 34ch;
   }
 
   .supporting {
     margin-top: 0.9rem;
-    max-width: 36ch;
+    max-width: 38ch;
+    color: var(--landing-muted);
   }
 
   .hero-actions {
@@ -235,8 +243,8 @@ const terminalRows = [
 
   .terminal-line-command {
     grid-template-columns: auto minmax(0, 1fr);
-    padding-bottom: 0.4rem;
-    margin-bottom: 0.2rem;
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.1rem;
     border-bottom: 1px dashed var(--landing-border);
   }
 
@@ -253,53 +261,23 @@ const terminalRows = [
   .terminal-value {
     color: var(--landing-text);
     font-weight: 600;
+    word-break: break-word;
   }
 
-  @media (max-width: 920px) {
+  @media (max-width: 960px) {
     .hero-grid {
       grid-template-columns: 1fr;
     }
 
     .hero-copy {
-      max-width: 42rem;
+      max-width: none;
     }
   }
 
   @media (max-width: 640px) {
-    .hero-section {
-      padding-top: 1.5rem;
-    }
-
-    h1 {
-      max-width: 100%;
-      font-size: clamp(2.7rem, 13vw, 4rem);
-    }
-
-    .hero-actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .button {
-      width: 100%;
-    }
-
-    .trust-strip {
-      gap: 0.5rem;
-    }
-
-    .trust-strip span {
-      width: 100%;
-      justify-content: center;
-    }
-
     .terminal-line {
       grid-template-columns: 1fr;
       gap: 0.25rem;
-    }
-
-    .terminal-line-command {
-      grid-template-columns: auto minmax(0, 1fr);
     }
   }
 </style>

@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "check:homepage": "node scripts/assert-homepage.mjs"
+    "check:homepage": "node scripts/assert-homepage.mjs",
+    "generate:og-image": "node scripts/render-og-image.mjs"
   },
   "dependencies": {
     "astro": "5.5.5",

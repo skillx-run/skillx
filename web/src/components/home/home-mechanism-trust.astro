@@ -2,54 +2,58 @@
 const steps = [
   {
     name: 'resolve',
-    description: 'Resolve the source and pinpoint the exact skill before anything is touched.',
+    description: 'Resolve the GitHub skill URL and identify the exact skill before anything is injected.',
   },
   {
     name: 'scan',
-    description: 'Scan the skill against security rules and risk levels before injection.',
+    description: 'Run security checks and risk evaluation before the skill enters the session.',
   },
   {
     name: 'inject',
-    description: 'Inject only the temporary files that are needed for the session.',
+    description: 'Inject only the temporary files needed for this run in the active agent.',
   },
   {
     name: 'run',
-    description: 'Run the agent with the skill in place and keep the session bounded.',
+    description: 'Launch the agent with the skill in place and keep the session bounded.',
   },
   {
     name: 'clean',
-    description: 'Clean the workspace, cache, and session artifacts after the run ends.',
+    description: 'Remove injected files and session artifacts when the run is finished.',
   },
 ];
 
 const proofCards = [
   {
     title: '30 rules',
-    body: 'The scanner uses thirty rules to catch prompt injection, destructive actions, and escape paths.',
-  },
-  {
-    title: '32+ agents',
-    body: 'The homepage proof strip shows support for 32+ agents across the current ecosystem.',
-  },
-  {
-    title: '18+ sources',
-    body: 'skillx can resolve skills from 18+ sources, giving teams flexibility without changing the workflow.',
+    body: 'Security checks before injection, not after something goes wrong.',
   },
   {
     title: '5 risk levels',
-    body: 'Findings are organized across five risk levels so scan before inject stays strict without being opaque.',
+    body: 'A clearer way to understand whether a skill looks safe to run.',
+  },
+  {
+    title: '32+ agents',
+    body: 'Use the same workflow across the agents people already have installed.',
+  },
+  {
+    title: '18+ sources',
+    body: 'Start with GitHub now, then keep the same workflow across more sources later.',
   },
 ];
 ---
 
-<section data-home-section="mechanism-trust" class="landing-section mechanism-trust-section">
+<section
+  id="how-it-works"
+  data-home-section="mechanism-trust"
+  class="landing-section mechanism-trust-section"
+>
   <div class="landing-container mechanism-trust-grid">
     <div class="mechanism-trust-copy">
-      <p class="eyebrow">Mechanism trust</p>
-      <h2>Trust is a workflow, not a promise.</h2>
+      <p class="eyebrow">Trust the workflow</p>
+      <h2>Trust comes from the workflow, not a promise.</h2>
       <p class="lede">
-        skillx shows the chain of custody from resolve to clean so users can verify what happens
-        before, during, and after a session.
+        skillx makes the first run easier to try without hiding what happens before, during,
+        or after a session.
       </p>
     </div>
 
@@ -100,7 +104,7 @@ const proofCards = [
 
   h2 {
     font-size: clamp(2.2rem, 4vw, 3.4rem);
-    max-width: 14ch;
+    max-width: 15ch;
   }
 
   .lede {
@@ -127,7 +131,7 @@ const proofCards = [
 
   .step-card {
     padding: 1.2rem;
-    min-height: 11.5rem;
+    min-height: 12.25rem;
   }
 
   .step-index {

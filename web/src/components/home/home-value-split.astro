@@ -1,16 +1,26 @@
 ---
 const valueCards = [
   {
-    eyebrow: 'Try before you install',
-    title: 'For Skill Users',
-    body:
-      'Skip manual install and cleanup. skillx fetches the skill, scans it, injects it temporarily, runs it, and removes it when the session ends.',
+    eyebrow: 'Too much friction',
+    title: 'Manual setup',
+    summary: 'Too much friction before the first result.',
+    bullets: [
+      'Find the right repo and hope you picked the right folder',
+      'Figure out where your agent expects the skill to live',
+      'Inspect the files yourself before you trust them',
+      'Clean everything up manually when the session is over',
+    ],
   },
   {
-    eyebrow: 'Lower friction to first run',
-    title: 'For Skill Developers',
-    body:
-      'Share one command and reduce drop-off between discovery and usage. Users can try your skill immediately without copying files into a permanent directory.',
+    eyebrow: 'One-command first run',
+    title: 'Run with skillx',
+    summary: 'From public GitHub URL to first run in one command.',
+    bullets: [
+      'Paste the GitHub skill URL',
+      'Scan before inject',
+      'Run it in your agent for one session',
+      'Clean up automatically on exit',
+    ],
   },
 ];
 ---
@@ -19,10 +29,10 @@ const valueCards = [
   <div class="landing-container value-split-grid">
     <div class="value-split-copy">
       <p class="eyebrow">Why skillx</p>
-      <h2>One runtime, two sides of adoption.</h2>
+      <h2>Trying a GitHub skill should not feel like setup work.</h2>
       <p class="lede">
-        Users get a safer first run. Skill developers get a lighter path from a shared link to
-        real usage.
+        The hard part is not finding a skill. The hard part is getting from a public GitHub
+        URL to a safe first run without manual setup, trust guesswork, or cleanup.
       </p>
     </div>
 
@@ -31,7 +41,12 @@ const valueCards = [
         <article class="value-card">
           <p class="card-eyebrow">{card.eyebrow}</p>
           <h3>{card.title}</h3>
-          <p>{card.body}</p>
+          <p class="card-summary">{card.summary}</p>
+          <ul class="card-list">
+            {card.bullets.map((bullet) => (
+              <li>{bullet}</li>
+            ))}
+          </ul>
         </article>
       ))}
     </div>
@@ -53,7 +68,7 @@ const valueCards = [
   .value-split-copy {
     position: sticky;
     top: 1.5rem;
-    max-width: 30rem;
+    max-width: 31rem;
   }
 
   .eyebrow {
@@ -68,12 +83,12 @@ const valueCards = [
 
   h2 {
     font-size: clamp(2.2rem, 4vw, 3.5rem);
-    max-width: 11ch;
+    max-width: 13ch;
   }
 
   .lede {
     margin-top: 1rem;
-    max-width: 34ch;
+    max-width: 35ch;
     color: var(--landing-muted);
     font-size: 1.06rem;
   }
@@ -117,11 +132,24 @@ const valueCards = [
 
   .value-card h3 {
     font-size: 1.45rem;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.55rem;
   }
 
-  .value-card p {
+  .card-summary {
+    color: var(--landing-text);
+    font-weight: 600;
+  }
+
+  .card-list {
+    margin-top: 0.9rem;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.65rem;
     color: var(--landing-muted);
+  }
+
+  .card-list li::marker {
+    color: var(--landing-accent-strong);
   }
 
   @media (max-width: 900px) {

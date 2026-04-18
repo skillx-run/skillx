@@ -3,18 +3,20 @@ import Base from '../layouts/base.astro';
 import Nav from '../components/nav.astro';
 import HomeHero from '../components/home/home-hero.astro';
 import HomeValueSplit from '../components/home/home-value-split.astro';
+import HomeUseCases from '../components/home/home-use-cases.astro';
 import HomeMechanismTrust from '../components/home/home-mechanism-trust.astro';
 import HomeFinalCta from '../components/home/home-final-cta.astro';
 ---
 
 <Base
-  title="skillx — Run any agent skill in one command"
-  description="Run any agent skill in one command. Make skills easier to try, easier to share, and easier to adopt with skillx."
+  title="skillx — Run a GitHub skill in one command"
+  description="Run public GitHub skills in one command. skillx fetches, scans, injects, runs, and cleans up skills for one session in your agent."
 >
   <Nav />
   <main>
     <HomeHero />
     <HomeValueSplit />
+    <HomeUseCases />
     <HomeMechanismTrust />
     <HomeFinalCta />
   </main>
@@ -22,7 +24,10 @@ import HomeFinalCta from '../components/home/home-final-cta.astro';
     <div class="landing-container footer-shell">
       <div class="footer-brand">
         <p class="footer-logo">skillx</p>
-        <p class="footer-copy">Make skills easier to try and easier to adopt.</p>
+        <p class="footer-copy">
+          Run public GitHub skills in one command, with scan-before-inject and temporary
+          cleanup by default.
+        </p>
       </div>
 
       <nav class="footer-nav" aria-label="Footer links">

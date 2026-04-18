@@ -1,0 +1,158 @@
+---
+const cases = [
+  {
+    title: 'Redesign a landing page',
+    body: 'Use a public GitHub skill to redesign a real landing page section with production-ready code.',
+    command:
+      'skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."',
+    note: 'A strong first run if you want a visible, high-signal result.',
+    href: 'https://github.com/anthropics/skills/tree/main/skills/frontend-design',
+  },
+  {
+    title: 'Test a local web app',
+    body: 'Run a testing skill from GitHub to inspect a local app, validate flows, and catch UI issues.',
+    command:
+      'skillx run https://github.com/anthropics/skills/tree/main/skills/webapp-testing "Test the signup flow on http://localhost:3000 and report any broken states or console errors."',
+    note: 'Good for engineers who want a practical verification workflow.',
+    href: 'https://github.com/anthropics/skills/tree/main/skills/webapp-testing',
+  },
+  {
+    title: 'Process a PDF for one task',
+    body: 'Pull a PDF skill from GitHub, use it once, and leave nothing permanently installed afterward.',
+    command:
+      'skillx run https://github.com/anthropics/skills/tree/main/skills/pdf "Extract the tables from ./reports/q1.pdf and summarize the key changes."',
+    note: 'Useful when you need a capability now, not a permanent install.',
+    href: 'https://github.com/anthropics/skills/tree/main/skills/pdf',
+  },
+];
+---
+
+<section data-home-section="use-cases" class="landing-section use-cases-section">
+  <div class="landing-container use-cases-shell">
+    <div class="use-cases-copy">
+      <p class="eyebrow">Use cases</p>
+      <h2>Start with a real skill, not a toy example.</h2>
+      <p class="lede">Pick a public GitHub skill and use it for one useful job right away.</p>
+    </div>
+
+    <div class="use-cases-grid">
+      {cases.map((item) => (
+        <article class="case-card">
+          <h3>{item.title}</h3>
+          <p class="case-body">{item.body}</p>
+          <div class="case-command">
+            <code>{item.command}</code>
+          </div>
+          <p class="case-note">{item.note}</p>
+          <div class="case-actions">
+            <a href={item.href}>View skill</a>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .use-cases-section {
+    padding-top: 0;
+  }
+
+  .use-cases-shell {
+    display: grid;
+    gap: 1.4rem;
+  }
+
+  .use-cases-copy {
+    max-width: 38rem;
+  }
+
+  .eyebrow {
+    margin-bottom: 0.9rem;
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    max-width: 15ch;
+  }
+
+  .lede {
+    margin-top: 1rem;
+    max-width: 36ch;
+    color: var(--landing-muted);
+    font-size: 1.06rem;
+  }
+
+  .use-cases-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .case-card {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.35rem;
+    border: 1px solid var(--landing-border);
+    border-radius: var(--landing-radius-lg);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 247, 240, 0.96));
+    box-shadow: var(--landing-shadow);
+  }
+
+  .case-card h3 {
+    font-size: 1.4rem;
+  }
+
+  .case-body,
+  .case-note {
+    color: var(--landing-muted);
+  }
+
+  .case-command {
+    padding: 0.95rem;
+    border: 1px solid var(--landing-border);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.78);
+  }
+
+  .case-command code {
+    font-size: 0.84rem;
+    line-height: 1.55;
+    word-break: break-word;
+  }
+
+  .case-note {
+    font-size: 0.95rem;
+  }
+
+  .case-actions a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.6rem;
+    padding: 0.7rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid var(--landing-border);
+    background: var(--landing-surface);
+    color: var(--landing-text);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .case-actions a:hover {
+    border-color: var(--landing-border-strong);
+    background: var(--landing-surface-strong);
+  }
+
+  @media (max-width: 1080px) {
+    .use-cases-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

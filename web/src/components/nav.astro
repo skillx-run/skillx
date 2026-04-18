@@ -7,10 +7,11 @@
     </a>
     <div class="nav-links">
       <a href="/getting-started/">Docs</a>
-      <a href="/blog/">Blog</a>
+      <a href="/getting-started/first-run/">Examples</a>
       <a href="https://github.com/skillx-run/skillx" class="gh-link">
         GitHub
       </a>
+      <a href="#first-run" class="nav-cta">Run your first skill</a>
     </div>
   </div>
 </nav>
@@ -86,6 +87,18 @@
     transform: translateY(-1px);
   }
 
+  .nav-links .nav-cta {
+    border-color: var(--landing-border, rgba(17, 17, 17, 0.12));
+    background: var(--landing-text, #111111);
+    color: #ffffff;
+  }
+
+  .nav-links .nav-cta:hover {
+    color: #ffffff;
+    background: var(--landing-accent-strong, #243fc2);
+    border-color: var(--landing-accent-strong, #243fc2);
+  }
+
   @media (max-width: 480px) {
     .nav-inner {
       width: min(1120px, calc(100% - 1rem));
@@ -108,6 +121,11 @@
     .nav-links a {
       padding: 0.45rem 0.55rem;
       font-size: 0.88rem;
+    }
+
+    .nav-links .nav-cta {
+      width: 100%;
+      justify-content: center;
     }
   }
 </style>

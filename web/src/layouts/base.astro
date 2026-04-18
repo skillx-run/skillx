@@ -5,6 +5,8 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+const canonical = Astro.url;
+const ogImage = new URL('/og-image.png', Astro.site ?? canonical).toString();
 ---
 
 <!doctype html>
@@ -13,10 +15,17 @@ const { title, description } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonical} />
     <meta property="og:title" content={title} />
     {description && <meta property="og:description" content={description} />}
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://skillx.run" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content="skillx social preview card" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content={ogImage} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />

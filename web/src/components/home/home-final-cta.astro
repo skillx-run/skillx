@@ -1,28 +1,40 @@
 ---
 const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
+const runCommand =
+  'skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."';
 ---
 
-<section data-home-section="final-cta" class="landing-section final-cta-section">
+<section id="first-run" data-home-section="final-cta" class="landing-section final-cta-section">
   <div class="landing-container final-cta-shell">
     <div class="final-cta-copy">
       <p class="eyebrow">Try it now</p>
-      <h2>Run your first skill in under a minute.</h2>
-      <p class="lede">
-        Make skills easier to try and easier to adopt. Install skillx, run one command, and
-        keep the setup temporary.
-      </p>
+      <h2>Install skillx, then run your first GitHub skill.</h2>
+      <p class="lede">The fastest path from a public skill URL to a real first run.</p>
     </div>
 
     <div class="install-panel">
-      <p class="command-label">Install command</p>
-      <button class="install-bar copy-command" type="button" data-command={installCommand}>
-        <code>{installCommand}</code>
-        <span class="copy-label">Copy</span>
-      </button>
+      <div class="command-stack">
+        <div class="command-group">
+          <p class="command-label">Install</p>
+          <button class="install-bar copy-command" type="button" data-command={installCommand}>
+            <code>{installCommand}</code>
+            <span class="copy-label">Copy</span>
+          </button>
+        </div>
+
+        <div class="command-group">
+          <p class="command-label">Run</p>
+          <button class="install-bar copy-command" type="button" data-command={runCommand}>
+            <code>{runCommand}</code>
+            <span class="copy-label">Copy</span>
+          </button>
+        </div>
+      </div>
+
       <div class="action-row">
         <a href="/getting-started/installation/" class="neo-btn">Install skillx</a>
-        <a href="https://github.com/skillx-run/skillx" class="neo-btn neo-btn-secondary">
-          View on GitHub
+        <a href="/getting-started/first-run/" class="neo-btn neo-btn-secondary">
+          See first-run docs
         </a>
       </div>
     </div>
@@ -36,7 +48,7 @@ const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
 
   .final-cta-shell {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
     gap: 1.5rem;
     align-items: center;
   }
@@ -57,7 +69,7 @@ const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
 
   h2 {
     font-size: clamp(2.2rem, 4vw, 3.5rem);
-    max-width: 12ch;
+    max-width: 13ch;
   }
 
   .lede {
@@ -76,8 +88,17 @@ const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
     box-shadow: var(--landing-shadow);
   }
 
+  .command-stack {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .command-group {
+    display: grid;
+    gap: 0.6rem;
+  }
+
   .command-label {
-    margin-bottom: 0.8rem;
     color: var(--landing-accent-strong);
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.78rem;
@@ -105,7 +126,7 @@ const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
   .install-bar code {
     flex: 1;
     color: var(--landing-text);
-    font-size: 0.98rem;
+    font-size: 0.95rem;
     line-height: 1.5;
     word-break: break-all;
   }
