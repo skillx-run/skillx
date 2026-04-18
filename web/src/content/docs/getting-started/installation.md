@@ -159,7 +159,7 @@ cargo uninstall skillx
 rm -rf ~/.skillx  # Remove data directory
 ```
 
-## Troubleshooting
+## Quick Fixes
 
 ### "command not found: skillx"
 
@@ -196,8 +196,11 @@ xcode-select --install
 sudo dnf install gcc openssl-devel
 ```
 
+For the full list of first-run and source-resolution problems, see [Troubleshooting](/getting-started/troubleshooting/).
+
 ## Next Step
 
 - [First Run](/getting-started/first-run/) - prove the install with a real GitHub skill
 - [Famous Skills](/getting-started/famous-skills/) - explore the most useful starter skills
 - [Security Overview](/security/overview/) - learn how skillx scans before it runs
+- [Troubleshooting](/getting-started/troubleshooting/) - debug install and agent-detection problems
