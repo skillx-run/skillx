@@ -10,6 +10,7 @@
     "astro": "astro",
     "check:homepage": "node scripts/assert-homepage.mjs",
     "check:famous-skills": "node scripts/assert-famous-skills.mjs",
+    "check:light-theme": "node scripts/assert-light-theme.mjs",
     "generate:og-image": "node scripts/render-og-image.mjs"
   },
   "dependencies": {
