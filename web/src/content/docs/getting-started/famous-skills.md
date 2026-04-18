@@ -17,11 +17,23 @@ If you only try one, start with **Frontend Design**. It shows the strongest end-
 
 ## Curated Skills
 
-| Skill | 来源 | 用途 | 可复制命令 |
-|-------|------|------|------------|
-| Frontend Design | [anthropics/skills](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md) | 用于设计和实现高质量前端界面，适合页面、组件和应用 UI。 | `skillx run github:anthropics/skills/skills/frontend-design "Design a distinctive landing page for a developer tool"` |
-| Webapp Testing | [anthropics/skills](https://github.com/anthropics/skills/blob/main/skills/webapp-testing/SKILL.md) | 用于用 Playwright 测试本地 Web 应用、排查 UI 问题并检查浏览器日志。 | `skillx run github:anthropics/skills/skills/webapp-testing "Test my local web app at http://localhost:3000 for UI regressions and console errors"` |
-| PDF Processing | [anthropics/skills](https://github.com/anthropics/skills/blob/main/skills/pdf/SKILL.md) | 用于读取、提取、合并、拆分和生成 PDF，以及处理表单和扫描件。 | `skillx run github:anthropics/skills/skills/pdf "Extract the text, tables, and form fields from this PDF"` |
+| Skill | Source | Best for | Copyable command |
+|-------|--------|----------|------------------|
+| Frontend Design | [anthropics/skills](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md) | Turning a rough product brief into a visible UI result | `skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Design a distinctive landing page for a developer tool"` |
+| Webapp Testing | [anthropics/skills](https://github.com/anthropics/skills/blob/main/skills/webapp-testing/SKILL.md) | Browser-driven checks against a running local app | `skillx run https://github.com/anthropics/skills/tree/main/skills/webapp-testing "Test my local web app at http://localhost:3000 for UI regressions and console errors"` |
+| PDF Processing | [anthropics/skills](https://github.com/anthropics/skills/blob/main/skills/pdf/SKILL.md) | One-off extraction and transformation work for PDF-heavy tasks | `skillx run https://github.com/anthropics/skills/tree/main/skills/pdf "Extract the text, tables, and form fields from this PDF"` |
+
+### Frontend Design
+
+Use this when you want the most convincing first run: the prompt is concrete, the output is visible, and the value of a reusable skill is easy to judge from the result.
+
+### Webapp Testing
+
+Use this when you already have a local app running and want a skill to exercise flows, report browser issues, and give you a faster QA loop.
+
+### PDF Processing
+
+Use this when the task is document-heavy and you need a focused capability right now without turning PDF handling into a permanent part of your setup.
 
 ## When to use Famous Skills
 

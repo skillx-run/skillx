@@ -7,6 +7,7 @@ const cases = [
       'skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."',
     note: 'A strong first run if you want a visible, high-signal result.',
     href: 'https://github.com/anthropics/skills/tree/main/skills/frontend-design',
+    docsHref: '/getting-started/famous-skills/#frontend-design',
   },
   {
     title: 'Test a local web app',
@@ -15,6 +16,7 @@ const cases = [
       'skillx run https://github.com/anthropics/skills/tree/main/skills/webapp-testing "Test the signup flow on http://localhost:3000 and report any broken states or console errors."',
     note: 'Good for engineers who want a practical verification workflow.',
     href: 'https://github.com/anthropics/skills/tree/main/skills/webapp-testing',
+    docsHref: '/getting-started/famous-skills/#webapp-testing',
   },
   {
     title: 'Process a PDF for one task',
@@ -23,6 +25,7 @@ const cases = [
       'skillx run https://github.com/anthropics/skills/tree/main/skills/pdf "Extract the tables from ./reports/q1.pdf and summarize the key changes."',
     note: 'Useful when you need a capability now, not a permanent install.',
     href: 'https://github.com/anthropics/skills/tree/main/skills/pdf',
+    docsHref: '/getting-started/famous-skills/#pdf-processing',
   },
 ];
 ---
@@ -45,7 +48,8 @@ const cases = [
           </div>
           <p class="case-note">{item.note}</p>
           <div class="case-actions">
-            <a href={item.href}>View skill</a>
+            <a href={item.docsHref}>See docs</a>
+            <a href={item.href} class="case-link-secondary">View source</a>
           </div>
         </article>
       ))}
@@ -145,9 +149,19 @@ const cases = [
     text-decoration: none;
   }
 
+  .case-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
   .case-actions a:hover {
     border-color: var(--landing-border-strong);
     background: var(--landing-surface-strong);
+  }
+
+  .case-actions .case-link-secondary {
+    background: transparent;
   }
 
   @media (max-width: 1080px) {
