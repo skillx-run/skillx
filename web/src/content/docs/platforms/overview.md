@@ -121,23 +121,3 @@ Manage the cache with:
 skillx cache ls      # List cached skills
 skillx cache clean   # Remove all cached entries
 ```
-
-## Skill Directory Requirements
-
-Regardless of source, a valid skill directory must contain a `SKILL.md` file at its root. The expected structure is:
-
-```
-my-skill/
-├── SKILL.md          # Required — main instruction file
-├── scripts/          # Optional — helper scripts
-│   ├── setup.sh
-│   └── process.py
-└── references/       # Optional — supporting documents
-    ├── examples.md
-    └── template.json
-```
-
-See [Writing Skills](/guides/writing-skills/) for details on the SKILL.md format.
-
-See:
-- [Git Hosts](/platforms/git-hosts/) — details on all supported Git platforms
