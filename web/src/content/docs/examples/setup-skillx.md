@@ -10,7 +10,7 @@ The `setup-skillx` skill helps skill authors plug their project into the skillx 
 Getting a new user to try your skill should be one command: `skillx run github:owner/repo "..."`. But that only works if the command is visible on your README. Writing that snippet by hand is easy to forget and easy to get wrong (wrong prefix, wrong sub-path, stale sample prompt). This skill automates the part that matters while staying out of the author's way:
 
 - **Safety first** — only edits `README.md` and, with explicit consent, landing page files the user points to. Never touches source code, `.git/`, CI configs, or env files.
-- **Idempotent by construction** — the inserted block is wrapped with `<!-- skillx:begin:try-with-skillx -->` / `<!-- skillx:end:try-with-skillx -->` markers, so re-running the skill updates the block in place instead of duplicating it.
+- **Idempotent by construction** — the inserted block is wrapped with `<!-- skillx:begin:setup-skillx -->` / `<!-- skillx:end:setup-skillx -->` markers, so re-running the skill updates the block in place instead of duplicating it.
 - **Diff-before-write** — every change is shown as a diff and requires the user's go-ahead.
 - **Agent decides the details** — the landing page integration deliberately has no template. The agent inspects the site and proposes a form that fits (hero CTA, "Try it" section, nav link, dedicated quick-start page).
 
@@ -70,7 +70,7 @@ skillx run ./examples/skills/setup-skillx "set up my neighbouring skill project"
 The block inserted into the README looks like this (values filled in by the agent):
 
 ~~~markdown
-<!-- skillx:begin:try-with-skillx -->
+<!-- skillx:begin:setup-skillx -->
 ## Try it with skillx
 
 [![Run with skillx](https://img.shields.io/badge/Run%20with-skillx-F97316)](https://skillx.run)
@@ -82,7 +82,7 @@ skillx run github:acme/my-skill "review this diff"
 ```
 
 Powered by [skillx](https://skillx.run) — fetch, scan, inject, and clean up any agent skill in one command.
-<!-- skillx:end:try-with-skillx -->
+<!-- skillx:end:setup-skillx -->
 ~~~
 
 The badge is a static shields.io image; no external service has to be set up.
