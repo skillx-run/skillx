@@ -83,14 +83,22 @@ header {
 .site-title {
   display: inline-flex;
   align-items: center;
-  min-height: 2.9rem;
-  padding: 0.55rem 1rem;
+  min-height: auto;
+  padding: 0.65rem 0.9rem;
   border: 1px solid var(--docs-border);
   border-radius: 999px;
   background: var(--docs-surface);
   box-shadow: var(--docs-shadow);
   color: var(--docs-text) !important;
   text-decoration: none;
+}
+
+.site-title span {
+  font-family: var(--sl-font-system-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.05em;
 }
 
 .site-title:hover {
@@ -143,6 +151,49 @@ site-search dialog .dialog-frame {
   box-shadow: var(--docs-shadow);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 247, 240, 0.96)) !important;
   color: var(--docs-text) !important;
+}
+
+.sl-markdown-content table {
+  width: 100%;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+}
+
+.sl-markdown-content th,
+.sl-markdown-content td {
+  padding: 0.95rem 1.2rem !important;
+  vertical-align: top;
+  border-color: var(--docs-border) !important;
+}
+
+.sl-markdown-content th {
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--docs-text);
+  font-weight: 700;
+}
+
+.sl-markdown-content th:first-child,
+.sl-markdown-content td:first-child {
+  width: 9.5rem;
+  min-width: 9.5rem;
+  padding-left: 1.2rem !important;
+}
+
+.sl-markdown-content th:last-child,
+.sl-markdown-content td:last-child {
+  padding-right: 1.2rem !important;
+}
+
+.sl-markdown-content td:first-child a {
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.sl-markdown-content tbody tr:last-child td {
+  border-bottom: 0 !important;
 }
 
 .card:hover {
