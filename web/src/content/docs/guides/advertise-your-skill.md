@@ -12,8 +12,7 @@ Hand-writing that snippet is easy to get wrong: stale sub-path, wrong platform p
 From the root of your skill project:
 
 ```bash
-skillx run github:skillx-run/skillx/examples/skills/setup-skillx \
-  "set this project up"
+skillx run github:skillx-run/skillx/examples/skills/setup-skillx
 ```
 
 It reads your `SKILL.md` frontmatter, inspects `git remote` to infer the platform and `owner/repo` slug, and proposes a short "Try it with skillx" block for `README.md`. Every change is shown as a diff and requires your confirmation before anything is written.
@@ -21,7 +20,7 @@ It reads your `SKILL.md` frontmatter, inspects `git remote` to infer the platfor
 If you already have a local clone of `skillx-run/skillx`, the equivalent local invocation is:
 
 ```bash
-skillx run ./examples/skills/setup-skillx "set this project up"
+skillx run ./examples/skills/setup-skillx
 ```
 
 ## What It Touches

@@ -38,7 +38,7 @@ Key sections of the SKILL.md:
 Run from inside a repo whose root `SKILL.md` is the skill:
 
 ```bash
-skillx run github:skillx-run/skillx/examples/skills/setup-skillx "set this project up"
+skillx run github:skillx-run/skillx/examples/skills/setup-skillx
 ```
 
 The agent detects the root `SKILL.md`, reads its `name` and `description`, derives the source URL as `github:<owner>/<repo>`, and proposes the quick-start block.
@@ -62,7 +62,7 @@ If no landing page is detected, this step is skipped silently.
 If you are already inside a local clone of `skillx-run/skillx`, use:
 
 ```bash
-skillx run ./examples/skills/setup-skillx "set up my neighbouring skill project"
+skillx run ./examples/skills/setup-skillx
 ```
 
 ## The Quick-Start Block
