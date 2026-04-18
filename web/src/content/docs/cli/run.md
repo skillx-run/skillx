@@ -1,6 +1,6 @@
 ---
 title: "skillx run"
-description: Full reference for the skillx run command — fetch, scan, inject, run, and clean a skill in one step.
+description: Real-world guide to skillx run — fetch, scan, inject, run, and clean a skill in one step.
 ---
 
 ## Synopsis
@@ -9,7 +9,9 @@ description: Full reference for the skillx run command — fetch, scan, inject, 
 skillx run <source> [prompt] [options]
 ```
 
-Fetch a skill, scan it for security issues, inject it into the active agent's context, launch the agent, wait for completion, and clean up.
+`skillx run` is the fastest way to go from "I found a skill" to "the agent is using it right now". Use it for first-run testing, one-off tasks, and validating a skill before you decide to keep it around at the project level.
+
+Behind one command, skillx resolves the source, scans it, injects it into the current agent, launches the session, then cleans everything up when the run ends.
 
 ## Arguments
 
@@ -31,6 +33,8 @@ Fetch a skill, scan it for security issues, inject it into the active agent's co
 | `--skip-scan` | — | — | Skip the security scan (not recommended) |
 | `--yes` | — | — | Auto-confirm WARN level risks |
 | `--auto-approve` | `--auto` | — | Pass permission-skip flags to the agent |
+| `--headless` | — | — | Run without interactive terminal UI when the selected agent supports it |
+| `--fail-on <level>` | — | `danger` | Stop before launch if scan results meet or exceed `info`, `warn`, `danger`, or `block` |
 | `--print` | `-p` | — | Non-interactive mode: agent processes prompt and exits |
 | `--timeout <dur>` | — | — | Maximum run duration (e.g., `30m`, `2h`) |
 
@@ -172,3 +176,11 @@ skillx run ./examples/skills/code-review \
 |------|---------|
 | 0 | Success |
 | 1 | Error (scan blocked, agent failure, source resolution failed) |
+
+## After `run` starts working
+
+Once a one-off run is useful, the usual next move is to make it part of your regular workflow:
+
+- [Scan Skills](/cli/scan/) for explicit audit and CI-oriented checks
+- [Manage Project Skills](/guides/manage-project-skills/) to move from ad hoc runs to `skillx.toml`-based project usage
+- [Agent System Overview](/agents/overview/) to understand how skillx adapts injection paths and launch behavior per agent

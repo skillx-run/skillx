@@ -103,3 +103,9 @@ skillx update --yes
 ```bash
 skillx update --agent claude-code
 ```
+
+## Related Docs
+
+- [Manage Project Skills](/guides/manage-project-skills/)
+- [skillx run](/cli/run/)
+- [Examples Overview](/examples/overview/)

@@ -5,6 +5,8 @@ description: How skillx detects, selects, and adapts to different AI coding agen
 
 ## What Are Agents?
 
+Once your first `skillx run` works, the next question is usually "what changed for this agent?" This page explains that adaptation layer: where skillx injects files, how it decides which agent to launch, and which agent-specific flags it can pass for you.
+
 In skillx, an "agent" is an AI coding assistant that can read instructions from files and act on them. skillx supports **32 built-in agents** across three tiers, plus custom agents via `config.toml`. Each agent has different conventions for where skill files should be placed, how to launch, and what flags are available. skillx abstracts these differences behind a unified interface.
 
 ## Agent Tiers
@@ -14,7 +16,7 @@ In skillx, an "agent" is an AI coding assistant that can read instructions from 
 | Agent | Type | Detection | Auto-approve |
 |-------|------|-----------|------|
 | Claude Code | CLI | `claude` binary or `~/.claude/` | `--dangerously-skip-permissions` |
-| OpenAI Codex | CLI | `codex` binary or `~/.codex/` | `--full-auto` |
+| OpenAI Codex | CLI | `codex` binary or `~/.codex/` | `--yolo` |
 
 ### Tier 1 — Dedicated Adapters (IDE)
 
@@ -27,9 +29,9 @@ In skillx, an "agent" is an AI coding assistant that can read instructions from 
 
 | Agent | Type | Detection | Auto-approve |
 |-------|------|-----------|------|
-| Gemini CLI | CLI | `gemini` binary or `~/.gemini/` | `--sandbox=none` |
+| Gemini CLI | CLI | `gemini` binary or `~/.gemini/` | `--yolo` |
 | OpenCode | CLI | `opencode` binary or `~/.config/opencode/` | — |
-| Amp | CLI | `amp` binary or `~/.amp/` | — |
+| Amp | CLI | `amp` binary or `~/.amp/` | `--dangerously-allow-all` |
 | Windsurf | IDE | `windsurf` binary or process | — |
 | Cline | IDE | VS Code extension `saoudrizwan.claude-dev-*` | — |
 | Roo Code | IDE | VS Code extension `rooveterinaryinc.roo-cline-*` | — |
@@ -171,7 +173,7 @@ Each agent has specific directories where it looks for skill files:
 | Codex | `~/.codex/skills/<name>/` | `.agents/skills/<name>/` |
 | Gemini CLI | `~/.gemini/skills/<name>/` | `.gemini/skills/<name>/` |
 | OpenCode | `~/.opencode/skills/<name>/` | `.opencode/skills/<name>/` |
-| Amp | `~/.amp/skills/<name>/` | `.amp/skills/<name>/` |
+| Amp | `~/.config/agents/skills/<name>/` | `.agents/skills/<name>/` |
 | Copilot | `~/.github/skills/<name>/` | `.github/skills/<name>/` |
 | Cursor | `~/.cursor/skills/<name>/` | `.cursor/skills/<name>/` |
 | Windsurf | `~/.windsurf/skills/<name>/` | `.windsurf/skills/<name>/` |
@@ -195,8 +197,9 @@ CLI agents can skip their built-in permission prompts:
 | Agent | Auto-approve Flag |
 |-------|-----------|
 | Claude Code | `--dangerously-skip-permissions` |
-| OpenAI Codex | `--full-auto` |
-| Gemini CLI | `--sandbox=none` |
+| OpenAI Codex | `--yolo` |
+| Gemini CLI | `--yolo` |
+| Amp | `--dangerously-allow-all` |
 | All others | Not supported |
 
 ```bash

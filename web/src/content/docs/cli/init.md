@@ -90,3 +90,9 @@ skillx init
 ```bash
 skillx init --from-installed
 ```
+
+## Related Docs
+
+- [Manage Project Skills](/guides/manage-project-skills/)
+- [skillx run](/cli/run/)
+- [Examples Overview](/examples/overview/)

@@ -152,3 +152,9 @@ skillx list --scope project
 ```bash
 skillx list --json | jq '.[].name'
 ```
+
+## Related Docs
+
+- [Manage Project Skills](/guides/manage-project-skills/)
+- [skillx run](/cli/run/)
+- [Examples Overview](/examples/overview/)

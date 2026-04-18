@@ -84,3 +84,9 @@ skillx uninstall old-skill --purge
 ```bash
 skillx uninstall skill-a skill-b skill-c
 ```
+
+## Related Docs
+
+- [Manage Project Skills](/guides/manage-project-skills/)
+- [skillx run](/cli/run/)
+- [Examples Overview](/examples/overview/)

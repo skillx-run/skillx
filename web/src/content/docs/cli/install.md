@@ -143,3 +143,9 @@ skillx install --prod --prune
 ```bash
 skillx install --no-save github:org/skills/one-off-tool
 ```
+
+## Related Docs
+
+- [Manage Project Skills](/guides/manage-project-skills/)
+- [skillx run](/cli/run/)
+- [Examples Overview](/examples/overview/)

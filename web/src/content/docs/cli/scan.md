@@ -1,6 +1,6 @@
 ---
 title: "skillx scan"
-description: Reference for the skillx scan command — security scan a skill and report findings.
+description: Security workflow guide for skillx scan — inspect a skill before you trust it in run, install, or CI.
 ---
 
 ## Synopsis
@@ -9,7 +9,9 @@ description: Reference for the skillx scan command — security scan a skill and
 skillx scan <source> [options]
 ```
 
-Run the security scanner against a skill without executing it. Useful for auditing skills before use or integrating into CI pipelines.
+Use `skillx scan` when you want the security decision without launching an agent. In practice this is the page you reach right after a first successful `skillx run`, when you want to validate a skill more deliberately, gate it in CI, or explain why a skill should or should not be promoted to regular project use.
+
+The command runs the same scanner used by `skillx run` and `skillx install`, but stops after reporting findings.
 
 ## Arguments
 
@@ -212,3 +214,9 @@ skillx scan --format json ./my-skill | jq '.findings[] | select(.level == "dange
 ```bash
 skillx scan --fail-on warn --format json ./my-skill
 ```
+
+## Next Steps
+
+- [Security Overview](/security/overview/) for the risk model and scan levels behind PASS, WARN, DANGER, and BLOCK
+- [CI Integration](/guides/ci-integration/) to turn scan output into pipeline checks
+- [skillx run](/cli/run/) if you want to go back to one-command fetch, scan, and launch
