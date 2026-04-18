@@ -65,7 +65,7 @@ Built-in agents across multiple tiers, plus custom agent support:
 
 ## Supported Sources
 
-9 source types with smart URL recognition for Git hosts, archives, and local paths:
+skillx is built around local paths, Git hosts, archives, and other compatible source URLs:
 
 | Source | Example |
 |--------|---------|
@@ -78,6 +78,8 @@ Built-in agents across multiple tiers, plus custom agent support:
 | SourceHut | `https://git.sr.ht/~user/repo/tree/main/item/skill.md` |
 | HuggingFace | `https://huggingface.co/org/model/blob/main/skill.md` |
 | Archive | `https://example.com/skill.tar.gz` |
+
+skillx also keeps compatibility with selected legacy directory links when they resolve cleanly to underlying Git repositories, but those URLs are not the recommended discovery path.
 
 Custom URL patterns can be added via `config.toml` `[[url_patterns]]`.
 

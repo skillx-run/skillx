@@ -15,7 +15,7 @@ We're excited to announce **skillx** — a cross-platform CLI tool that brings t
 
 Agent Skills are spreading across repositories and platforms. Running a skill today requires:
 
-1. Finding it (GitHub? skills.sh? A colleague's repo?)
+1. Finding it (GitHub? A colleague's repo? A bookmarked link?)
 2. Downloading it manually
 3. Checking if it's safe (does anyone actually do this?)
 4. Copying files to the right agent directory

@@ -50,6 +50,8 @@ The source string is resolved in this priority order:
 4. **Platform URL** — GitHub, GitLab, Bitbucket, Gitea/Codeberg, SourceHut, HuggingFace URLs
 5. **Archive URL** — direct `.zip` or `.tar.gz` download links
 
+skillx may also accept other compatible source URLs, including selected legacy directory links that resolve to underlying Git repositories. Those compatibility paths exist for existing links, not as the primary discovery workflow.
+
 If no `source` is provided and a `skillx.toml` exists with `[skills]` entries, all listed skills are run sequentially.
 
 Remote skills are cached after download. Use `--no-cache` to force a fresh fetch.
