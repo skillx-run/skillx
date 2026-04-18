@@ -1,7 +1,8 @@
 ---
+import { buildSkillxRunCommand, primaryFamousSkill } from '../../data/famous-skills.mjs';
+
 const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
-const runCommand =
-  'skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."';
+const runCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.homepagePrompt);
 ---
 
 <section id="first-run" data-home-section="final-cta" class="landing-section final-cta-section">

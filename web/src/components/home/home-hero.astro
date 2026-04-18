@@ -1,6 +1,8 @@
 ---
+import { primaryFamousSkill } from '../../data/famous-skills.mjs';
+
 const terminalRows = [
-  { label: 'resolved from GitHub', value: 'frontend-design' },
+  { label: 'resolved from GitHub', value: primaryFamousSkill.slug },
   { label: 'scan result', value: 'built-in checks | PASS' },
   { label: 'agent', value: 'claude-code / codex / cursor' },
   { label: 'session mode', value: 'temporary injection' },
@@ -50,9 +52,7 @@ const terminalRows = [
         <div class="terminal-line terminal-line-command">
           <span class="prompt">$</span>
           <span>
-            skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design
-            "Redesign the hero section of this landing page for higher conversion. Keep the
-            existing stack and return production-ready code."
+            {`skillx run ${primaryFamousSkill.runUrl} "${primaryFamousSkill.homepagePrompt}"`}
           </span>
         </div>
 

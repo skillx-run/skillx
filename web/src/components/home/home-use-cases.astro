@@ -1,33 +1,14 @@
 ---
-const cases = [
-  {
-    title: 'Redesign a landing page',
-    body: 'Use a public GitHub skill to redesign a real landing page section with production-ready code.',
-    command:
-      'skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."',
-    note: 'A strong first run if you want a visible, high-signal result.',
-    href: 'https://github.com/anthropics/skills/tree/main/skills/frontend-design',
-    docsHref: '/getting-started/famous-skills/#frontend-design',
-  },
-  {
-    title: 'Test a local web app',
-    body: 'Run a testing skill from GitHub to inspect a local app, validate flows, and catch UI issues.',
-    command:
-      'skillx run https://github.com/anthropics/skills/tree/main/skills/webapp-testing "Test the signup flow on http://localhost:3000 and report any broken states or console errors."',
-    note: 'Good for engineers who want a practical verification workflow.',
-    href: 'https://github.com/anthropics/skills/tree/main/skills/webapp-testing',
-    docsHref: '/getting-started/famous-skills/#webapp-testing',
-  },
-  {
-    title: 'Process a PDF for one task',
-    body: 'Pull a PDF skill from GitHub, use it once, and leave nothing permanently installed afterward.',
-    command:
-      'skillx run https://github.com/anthropics/skills/tree/main/skills/pdf "Extract the tables from ./reports/q1.pdf and summarize the key changes."',
-    note: 'Useful when you need a capability now, not a permanent install.',
-    href: 'https://github.com/anthropics/skills/tree/main/skills/pdf',
-    docsHref: '/getting-started/famous-skills/#pdf-processing',
-  },
-];
+import { buildSkillxRunCommand, famousSkills } from '../../data/famous-skills.mjs';
+
+const cases = famousSkills.map((skill) => ({
+  title: skill.homepageTitle,
+  body: skill.homepageBody,
+  command: buildSkillxRunCommand(skill, skill.homepagePrompt),
+  note: skill.homepageNote,
+  href: skill.runUrl,
+  docsHref: skill.docsHref,
+}));
 ---
 
 <section data-home-section="use-cases" class="landing-section use-cases-section">

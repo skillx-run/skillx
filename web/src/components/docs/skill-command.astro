@@ -1,0 +1,14 @@
+---
+import { buildSkillxRunCommand, getFamousSkill } from '../../data/famous-skills.mjs';
+
+const { slug, prompt } = Astro.props;
+const skill = getFamousSkill(slug);
+
+if (!skill) {
+  throw new Error(`Unknown famous skill slug: ${slug}`);
+}
+
+const command = buildSkillxRunCommand(skill, prompt ?? skill.docsPrompt);
+---
+
+<pre><code class="language-bash">{command}</code></pre>

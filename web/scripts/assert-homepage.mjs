@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { primaryFamousSkill } from '../src/data/famous-skills.mjs';
 
 const html = readFileSync(resolve('dist/index.html'), 'utf8');
 
@@ -21,12 +22,12 @@ const checks = [
   'Process a PDF for one task',
   'data-home-section="mechanism-trust"',
   'Trust comes from the workflow, not a promise.',
-  '30 rules',
-  '5 risk levels',
+  'Built-in analyzers',
+  'Risk-based gate',
   'data-home-section="final-cta"',
   'Install skillx, then run your first GitHub skill.',
   'curl -fsSL https://skillx.run/install.sh | sh',
-  'https://github.com/anthropics/skills/tree/main/skills/frontend-design',
+  primaryFamousSkill.runUrl,
   'https://github.com/skillx-run/skillx',
 ];
 
