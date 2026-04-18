@@ -55,6 +55,7 @@ export default defineConfig({
           label: 'Build Skills',
           items: [
             { label: 'Writing Skills', slug: 'guides/writing-skills' },
+            { label: 'Advertise Your Skill', slug: 'guides/advertise-your-skill' },
             { label: 'Official Example Patterns', slug: 'examples/overview' },
             { label: 'Agent Adapters', slug: 'guides/agent-adapters' },
           ],
