@@ -119,8 +119,6 @@ db-migration/
 
 See the [Writing Skills](/guides/writing-skills) guide for details on the `references/` and `scripts/` directories.
 
-## Next Steps
-
 ## Why this example exists
 
 This example shows how a skill can stay small in `SKILL.md` while still pulling in extra guidance from a `references/` directory for more complex tasks.

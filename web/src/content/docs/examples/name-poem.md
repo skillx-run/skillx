@@ -111,8 +111,6 @@ code-review = "github:skillx-run/skillx/examples/skills/code-review"
 commit-message = "github:skillx-run/skillx/examples/skills/commit-message"
 ```
 
-## Next Steps
-
 ## Why this example exists
 
 This example shows that a skill can have a strong creative voice while still keeping its instructions structured, reusable, and easy to run.

@@ -148,8 +148,6 @@ git diff --staged | skillx run --stdin
 
 The `skillx run` command (with no source argument) reads from `skillx.toml` and uses the configured skills.
 
-## Next Steps
-
 ## Why this example exists
 
 This example demonstrates how to convert staged changes into a consistent commit message workflow that works well in non-interactive shell pipelines.

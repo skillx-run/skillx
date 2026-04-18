@@ -142,8 +142,6 @@ commit-message = "github:skillx-run/skillx/examples/skills/commit-message"
 
 The `[skills.dev]` section is for development-only skills that are not needed in CI or production.
 
-## Next Steps
-
 ## Why this example exists
 
 This example shows how to turn an open-ended review task into a repeatable workflow with a fixed output format, severity levels, and clear recommendations.

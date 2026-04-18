@@ -143,8 +143,6 @@ skillx run github:skillx-run/skillx/examples/skills/hello-world "Hello"
 
 skillx fetches the skill from GitHub, caches it locally, scans it, and injects it — all in one command.
 
-## Next Steps
-
 ## Why this example exists
 
 This example is the smallest complete skill in the repository, so it is the fastest way to understand what a runnable `SKILL.md` looks like.
