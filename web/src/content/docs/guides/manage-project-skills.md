@@ -32,7 +32,7 @@ If you already tested skills locally and want to capture that state, `skillx ini
 Use `skillx install` when a skill should remain available instead of being cleaned up after one run:
 
 ```bash
-skillx install github:skillx-run/skillx/examples/skills/pdf-processing
+skillx install github:skillx-run/skillx/examples/skills/code-review
 ```
 
 This is the moment you move from ad hoc usage to repeatable project usage. See [`skillx install`](/cli/install/).
@@ -63,7 +63,7 @@ For safer review, start with `skillx update --dry-run`. See [`skillx update`](/c
 If a skill is obsolete or was only needed for a temporary workflow:
 
 ```bash
-skillx uninstall pdf-processing
+skillx uninstall code-review
 ```
 
 That keeps the manifest and installed state clean. See [`skillx uninstall`](/cli/uninstall/).
