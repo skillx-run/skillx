@@ -49,4 +49,5 @@ That sequence is the point of the tool: one command to run a skill safely withou
 - [Famous Skills](/getting-started/famous-skills/) - try the most useful skills next
 - [Official Examples](/examples/overview/) - browse the full set of runnable examples
 - [Run Skills](/cli/run/) - learn the command in detail
+- [FAQ](/getting-started/faq/) - understand when to stay in one-off mode and when to move deeper
 - [Troubleshooting](/getting-started/troubleshooting/) - debug source resolution, agent detection, and scan gate failures

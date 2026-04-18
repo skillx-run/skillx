@@ -19,4 +19,4 @@ Official Examples live in this repository and are designed to teach skill struct
 
 Use Official Examples when you want to learn the repo's own skill patterns, naming, and structure. Use Famous Skills when you want a curated external skill from GitHub and do not need a local template.
 
-See the [Famous Skills](/getting-started/famous-skills/) page for curated external skills and the [Writing Skills](/guides/writing-skills/) guide if you want to build your own.
+See the [Famous Skills](/getting-started/famous-skills/) page for curated external skills, [FAQ](/getting-started/faq/) for the reasoning behind that split, and the [Writing Skills](/guides/writing-skills/) guide if you want to build your own.

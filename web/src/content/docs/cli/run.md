@@ -185,4 +185,5 @@ Once a one-off run is useful, the next step is usually to stabilize how you use 
 - [Scan Skills](/cli/scan/) when you want to review the same security gate without launching an agent
 - [Manage Project Skills](/guides/manage-project-skills/) when the skill should graduate from ad hoc runs to `skillx.toml`-based project usage
 - [Agent System Overview](/agents/overview/) when you need to understand agent-specific injection paths and launch behavior
+- [FAQ](/getting-started/faq/) when you are still deciding between one-off, scanned, and persistent workflows
 - [Troubleshooting](/getting-started/troubleshooting/) when the failure is still basic first-run setup, source resolution, or agent detection

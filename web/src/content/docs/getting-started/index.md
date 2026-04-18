@@ -26,4 +26,5 @@ skillx gives you a zero-install way to fetch, scan, inject, run, and clean up Ag
 - [Run Skills](/cli/run/) - learn every `skillx run` flag and mode
 - [Manage Project Skills](/guides/manage-project-skills/) - keep reusable skills close to your repo
 - [Risk Levels](/security/risk-levels/) - see how PASS, WARN, DANGER, and BLOCK behave
+- [FAQ](/getting-started/faq/) - understand the main product and workflow choices
 - [Troubleshooting](/getting-started/troubleshooting/) - fix the most common install and first-run failures

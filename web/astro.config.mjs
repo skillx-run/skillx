@@ -27,6 +27,7 @@ export default defineConfig({
             { label: 'Introduction', slug: 'getting-started' },
             { label: 'Installation', slug: 'getting-started/installation' },
             { label: 'First Run', slug: 'getting-started/first-run' },
+            { label: 'FAQ', slug: 'getting-started/faq' },
             { label: 'Troubleshooting', slug: 'getting-started/troubleshooting' },
             { label: 'Famous Skills', slug: 'getting-started/famous-skills' },
             { label: 'Official Examples', slug: 'examples/overview' },

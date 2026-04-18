@@ -222,4 +222,5 @@ After `scan`, the path usually splits in one of two directions: learn more about
 - [Security Overview](/security/overview/) for the risk model and scan levels behind PASS, WARN, DANGER, and BLOCK
 - [CI Integration](/guides/ci-integration/) to turn scan output into repeatable pipeline checks
 - [skillx run](/cli/run/) if you are still iterating in one-off mode before promoting the skill further
+- [FAQ](/getting-started/faq/) if you want the conceptual difference between `scan`, `run`, and `install`
 - [Troubleshooting](/getting-started/troubleshooting/) if the real problem is first-run confusion, blocked scans, or source-resolution failure rather than scan syntax

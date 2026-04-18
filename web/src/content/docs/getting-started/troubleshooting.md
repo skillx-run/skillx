@@ -123,5 +123,6 @@ If the symptom does not match anything above, the next most useful pages are:
 
 - [Installation](/getting-started/installation/) for install and environment setup
 - [First Run](/getting-started/first-run/) for the shortest successful path
+- [FAQ](/getting-started/faq/) for the conceptual difference between `run`, `scan`, `install`, and examples
 - [Run Skills](/cli/run/) for source resolution and lifecycle details
 - [Scan Skills](/cli/scan/) for risk gate and exit-code behavior
