@@ -36,7 +36,7 @@ Key sections of the SKILL.md:
 ### Chinese Name — Classical Acrostic Poetry
 
 ```bash
-skillx run ./examples/skills/name-poem "李白"
+skillx run github:skillx-run/skillx/examples/skills/name-poem "李白"
 ```
 
 The agent composes a classical Chinese acrostic poem where each line begins with a character from the name, following 5-char or 7-char meter.
@@ -44,7 +44,7 @@ The agent composes a classical Chinese acrostic poem where each line begins with
 ### Japanese Name — Haiku
 
 ```bash
-skillx run ./examples/skills/name-poem "田中太郎"
+skillx run github:skillx-run/skillx/examples/skills/name-poem "田中太郎"
 ```
 
 A 5-7-5 mora haiku inspired by the kanji meanings, with a seasonal word woven in.
@@ -52,7 +52,7 @@ A 5-7-5 mora haiku inspired by the kanji meanings, with a seasonal word woven in
 ### English Name — Acrostic Poem
 
 ```bash
-skillx run ./examples/skills/name-poem "Alice"
+skillx run github:skillx-run/skillx/examples/skills/name-poem "Alice"
 ```
 
 Each line begins with a successive letter: A-L-I-C-E, with vivid imagery and rhythmic flow.
@@ -60,15 +60,17 @@ Each line begins with a successive letter: A-L-I-C-E, with vivid imagery and rhy
 ### Korean Name — Sijo
 
 ```bash
-skillx run ./examples/skills/name-poem "김민준"
+skillx run github:skillx-run/skillx/examples/skills/name-poem "김민준"
 ```
 
 A three-line sijo with the name's meaning blooming through natural imagery.
 
-### From GitHub
+### Run from a Local Clone of this Repository
+
+If you are already inside a local clone of `skillx-run/skillx`, use:
 
 ```bash
-skillx run github:skillx-run/skillx/examples/skills/name-poem "Your Name"
+skillx run ./examples/skills/name-poem "Your Name"
 ```
 
 ## Scan Output
@@ -76,7 +78,7 @@ skillx run github:skillx-run/skillx/examples/skills/name-poem "Your Name"
 Scanning the name-poem skill:
 
 ```bash
-skillx scan ./examples/skills/name-poem
+skillx scan github:skillx-run/skillx/examples/skills/name-poem
 ```
 
 ```
@@ -89,6 +91,12 @@ skillx scan ./examples/skills/name-poem
 ```
 
 The skill is purely instructional — no scripts, no URLs, no sensitive references — so it passes cleanly.
+
+If you want to scan the local checkout instead, run:
+
+```bash
+skillx scan ./examples/skills/name-poem
+```
 
 ## Team Configuration with skillx.toml
 

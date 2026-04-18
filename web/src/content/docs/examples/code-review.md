@@ -35,18 +35,28 @@ Key sections of the SKILL.md:
 
 ## Usage Scenarios
 
-### Review the Last Commit
+### Run from GitHub
+
+You can run this official example directly from the docs without cloning the repository:
+
+```bash
+skillx run github:skillx-run/skillx/examples/skills/code-review "Review the changes in the last commit"
+```
+
+The agent fetches the example from GitHub, scans it, and produces a structured review.
+
+### Run from a Local Clone of this Repository
+
+If you are already inside a local clone of `skillx-run/skillx`, use the repository path instead:
 
 ```bash
 skillx run ./examples/skills/code-review "Review the changes in the last commit"
 ```
 
-The agent reads the recent diff and produces a structured review.
-
 ### Review Staged Changes
 
 ```bash
-skillx run ./examples/skills/code-review "Review my staged changes before I commit"
+skillx run github:skillx-run/skillx/examples/skills/code-review "Review my staged changes before I commit"
 ```
 
 Useful as a pre-commit quality check.
@@ -54,7 +64,7 @@ Useful as a pre-commit quality check.
 ### Review a Specific File
 
 ```bash
-skillx run ./examples/skills/code-review "Review src/handlers/auth.rs for security issues"
+skillx run github:skillx-run/skillx/examples/skills/code-review "Review src/handlers/auth.rs for security issues"
 ```
 
 Focus the review on a specific file or concern.
@@ -64,7 +74,7 @@ Focus the review on a specific file or concern.
 For non-interactive use, pipe the diff via stdin:
 
 ```bash
-git diff HEAD~3 | skillx run ./examples/skills/code-review --stdin
+git diff HEAD~3 | skillx run github:skillx-run/skillx/examples/skills/code-review --stdin
 ```
 
 This sends the diff of the last 3 commits as input. The agent receives the diff content and reviews it using the structured format defined in the skill.
@@ -72,7 +82,7 @@ This sends the diff of the last 3 commits as input. The agent receives the diff 
 You can also pipe a PR diff:
 
 ```bash
-gh pr diff 42 | skillx run ./examples/skills/code-review --stdin
+gh pr diff 42 | skillx run github:skillx-run/skillx/examples/skills/code-review --stdin
 ```
 
 ## Scan Output
@@ -80,7 +90,7 @@ gh pr diff 42 | skillx run ./examples/skills/code-review --stdin
 Scanning the code-review skill:
 
 ```bash
-skillx scan ./examples/skills/code-review
+skillx scan github:skillx-run/skillx/examples/skills/code-review
 ```
 
 ```
@@ -93,6 +103,12 @@ skillx scan ./examples/skills/code-review
 ```
 
 The skill is purely instructional — no scripts, no URLs, no sensitive references — so it passes cleanly.
+
+If you want to inspect the exact files in a local checkout instead, run:
+
+```bash
+skillx scan ./examples/skills/code-review
+```
 
 ## Team Configuration with skillx.toml
 

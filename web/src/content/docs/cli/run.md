@@ -129,7 +129,7 @@ Prompts are resolved in priority order:
 ### Basic usage
 
 ```bash
-skillx run ./examples/skills/hello-world "Hello"
+skillx run github:skillx-run/skillx/examples/skills/hello-world "Hello"
 ```
 
 ### GitHub skill with timeout
@@ -141,35 +141,37 @@ skillx run --timeout 30m github:skillx-run/skillx/examples/skills/code-review "R
 ### Pipe prompt from another command
 
 ```bash
-git diff HEAD~1 | skillx run ./examples/skills/code-review --stdin
+git diff HEAD~1 | skillx run github:skillx-run/skillx/examples/skills/code-review --stdin
 ```
 
 ### Project-scoped injection
 
 ```bash
-skillx run --scope project ./examples/skills/hello-world "Set up the project"
+skillx run --scope project github:skillx-run/skillx/examples/skills/hello-world "Set up the project"
 ```
 
 ### Non-interactive (print) mode
 
 ```bash
-skillx run --print ./examples/skills/code-review "Review src/main.rs"
+skillx run --print github:skillx-run/skillx/examples/skills/code-review "Review src/main.rs"
 ```
 
 ### Auto-approve mode with auto-confirm
 
 ```bash
-skillx run --yes --auto-approve ./examples/skills/code-review "Fix all lint errors"
+skillx run --yes --auto-approve github:skillx-run/skillx/examples/skills/code-review "Fix all lint errors"
 ```
 
 ### Attach context files
 
 ```bash
-skillx run ./examples/skills/code-review \
+skillx run github:skillx-run/skillx/examples/skills/code-review \
   --attach ./data.csv \
   --attach ./schema.sql \
   "Review the data processing code"
 ```
+
+If you are inside a local clone of the repository and want to point at the checked-out example files directly, swap the GitHub source for `./examples/skills/<name>`.
 
 ## Exit Codes
 

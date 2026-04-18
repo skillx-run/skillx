@@ -21,12 +21,28 @@ commit-message/
 
 ## Basic Usage
 
+### Run from GitHub
+
+Run the official example directly from the docs:
+
+```bash
+skillx run github:skillx-run/skillx/examples/skills/commit-message "Generate a commit message for my staged changes"
+```
+
+### Run from a Local Clone of this Repository
+
+If you are working inside a clone of `skillx-run/skillx`, use the repository path:
+
+```bash
+skillx run ./examples/skills/commit-message "Generate a commit message for my staged changes"
+```
+
 ### Interactive Mode
 
 Run the skill and describe what you changed:
 
 ```bash
-skillx run ./examples/skills/commit-message "Generate a commit message for my staged changes"
+skillx run github:skillx-run/skillx/examples/skills/commit-message "Generate a commit message for my staged changes"
 ```
 
 The agent reads your staged diff and produces a commit message.
@@ -36,7 +52,7 @@ The agent reads your staged diff and produces a commit message.
 The most powerful usage pipes a diff directly into the skill:
 
 ```bash
-git diff --staged | skillx run ./examples/skills/commit-message --stdin
+git diff --staged | skillx run github:skillx-run/skillx/examples/skills/commit-message --stdin
 ```
 
 This sends the staged diff as input to the agent. The skill's instructions tell the agent to analyze the diff and generate a conventional commit message.
@@ -46,7 +62,7 @@ This sends the staged diff as input to the agent. The skill's instructions tell 
 Use `--print` to output the skill content without launching an interactive session. This is useful for scripting:
 
 ```bash
-git diff --staged | skillx run ./examples/skills/commit-message --stdin --print
+git diff --staged | skillx run github:skillx-run/skillx/examples/skills/commit-message --stdin --print
 ```
 
 In `--print` mode, skillx outputs the skill instructions to stdout and exits immediately — no agent session is created, no cleanup is needed.
@@ -58,7 +74,7 @@ In `--print` mode, skillx outputs the skill instructions to stdout and exits imm
 A one-liner to generate and review a commit message:
 
 ```bash
-git diff --staged | skillx run ./examples/skills/commit-message --stdin
+git diff --staged | skillx run github:skillx-run/skillx/examples/skills/commit-message --stdin
 ```
 
 The agent outputs something like:
@@ -80,7 +96,7 @@ Generate the message, review it, then commit:
 git add -p
 
 # Generate the commit message
-skillx run ./examples/skills/commit-message "Generate a commit message for my staged changes"
+skillx run github:skillx-run/skillx/examples/skills/commit-message "Generate a commit message for my staged changes"
 
 # Copy the suggested message and commit
 git commit -m "feat(scanner): add SARIF 2.1.0 output format"
@@ -91,7 +107,7 @@ git commit -m "feat(scanner): add SARIF 2.1.0 output format"
 Generate a message for squashing recent commits:
 
 ```bash
-git diff HEAD~3 | skillx run ./examples/skills/commit-message --stdin
+git diff HEAD~3 | skillx run github:skillx-run/skillx/examples/skills/commit-message --stdin
 ```
 
 ### PR Description
@@ -99,7 +115,7 @@ git diff HEAD~3 | skillx run ./examples/skills/commit-message --stdin
 The skill also works for pull request descriptions by providing a broader diff:
 
 ```bash
-git diff main...HEAD | skillx run ./examples/skills/commit-message --stdin
+git diff main...HEAD | skillx run github:skillx-run/skillx/examples/skills/commit-message --stdin
 ```
 
 ## The Conventional Commits Format
