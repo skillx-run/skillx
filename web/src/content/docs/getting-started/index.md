@@ -3,18 +3,15 @@ title: Getting Started
 description: The fastest path from install to your first successful skillx run.
 ---
 
-import SkillCommand from '../../../components/docs/skill-command.astro';
-
 ## Start Here
 
 ```bash
 curl -fsSL https://skillx.run/install.sh | sh
 ```
 
-<SkillCommand
-  slug="frontend-design"
-  prompt="Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."
-/>
+```bash
+skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."
+```
 
 skillx gives you a zero-install way to fetch, scan, inject, run, and clean up Agent Skills in one command. If you want the same high-signal first run shown on the landing page, start with the GitHub skill above.
 

@@ -47,18 +47,23 @@ assert(
 
 const firstRunDoc = readFileSync(resolve('src/content/docs/getting-started/first-run.md'), 'utf8');
 assert(
-  /<SkillCommand[\s\S]*slug="frontend-design"/.test(firstRunDoc),
-  'First Run doc must use the shared SkillCommand component',
+  firstRunDoc.includes(primaryFamousSkill.runUrl) &&
+    firstRunDoc.includes(primaryFamousSkill.homepagePrompt),
+  'First Run doc must include the primary famous skill command',
 );
 
 const famousSkillsDoc = readFileSync(
   resolve('src/content/docs/getting-started/famous-skills.md'),
   'utf8',
 );
-assert(
-  /<FamousSkillsTable\s*\/>/.test(famousSkillsDoc),
-  'Famous Skills doc must render from the shared FamousSkillsTable component',
-);
+for (const skill of famousSkills) {
+  assert(
+    famousSkillsDoc.includes(skill.runUrl) &&
+      famousSkillsDoc.includes(skill.sourceUrl) &&
+      famousSkillsDoc.includes(`<a id="${skill.slug}"></a>`),
+    `Famous Skills doc must include URL, source, and anchor for ${skill.slug}`,
+  );
+}
 
 const command = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.homepagePrompt);
 assert(

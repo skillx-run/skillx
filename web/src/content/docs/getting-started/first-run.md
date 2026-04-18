@@ -3,8 +3,6 @@ title: First Run
 description: The shortest path to a successful skillx run with a real GitHub skill.
 ---
 
-import SkillCommand from '../../../components/docs/skill-command.astro';
-
 ## 1. Install skillx
 
 If you have not installed skillx yet, use the recommended install command:
@@ -17,10 +15,9 @@ curl -fsSL https://skillx.run/install.sh | sh
 
 Use the same public GitHub skill featured on the landing page:
 
-<SkillCommand
-  slug="frontend-design"
-  prompt="Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."
-/>
+```bash
+skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."
+```
 
 ## 3. Expect This Kind of Output
 
