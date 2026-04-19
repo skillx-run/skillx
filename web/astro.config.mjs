@@ -23,7 +23,7 @@ export default defineConfig({
       ],
       sidebar: [
         {
-          label: 'Run a GitHub Skill',
+          label: 'Run an Agent Skill',
           items: [
             { label: 'Introduction', slug: 'getting-started' },
             { label: 'Installation', slug: 'getting-started/installation' },

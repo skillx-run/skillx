@@ -11,7 +11,7 @@ export const famousSkills = [
     bestFor: 'Turning a rough product brief into a visible UI result',
     homepageTitle: 'Redesign a landing page',
     homepageBody:
-      'Use a public GitHub skill to redesign a real landing page section with production-ready code.',
+      'Use a public Agent Skill to redesign a real landing page section with production-ready code.',
     homepagePrompt:
       'Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code.',
     homepageNote: 'A strong first run if you want a visible, high-signal result.',

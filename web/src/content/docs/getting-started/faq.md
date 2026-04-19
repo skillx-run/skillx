@@ -54,7 +54,7 @@ That is the point where [Manage Project Skills](/guides/manage-project-skills/) 
 
 They serve different jobs:
 
-- [Famous Skills](/getting-started/famous-skills/) are curated external GitHub skills chosen for immediate usefulness
+- [Famous Skills](/getting-started/famous-skills/) are curated external Agent Skills chosen for immediate usefulness
 - [Official Examples](/examples/overview/) are stable first-party examples in this repository for learning structure and patterns
 
 If you want the fastest convincing first run, start with Famous Skills. If you want to understand how skills are put together or copy a template, use Official Examples.
@@ -77,9 +77,9 @@ In practice that usually means:
 
 Legacy compatibility URLs may still resolve, but they are not the recommended discovery path.
 
-## Should I start with a local example or an external GitHub skill?
+## Should I start with a local example or an external Agent Skill?
 
-Start with an external GitHub skill if your goal is to judge product value quickly.
+Start with an external Agent Skill if your goal is to judge product value quickly.
 
 Start with a local example if your goal is to learn skill structure or inspect every file closely.
 

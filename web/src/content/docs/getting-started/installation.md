@@ -200,7 +200,7 @@ For the full list of first-run and source-resolution problems, see [Troubleshoot
 
 ## Next Step
 
-- [First Run](/getting-started/first-run/) - prove the install with a real GitHub skill
+- [First Run](/getting-started/first-run/) - prove the install with a real Agent Skill
 - [Famous Skills](/getting-started/famous-skills/) - explore the most useful starter skills
 - [Security Overview](/security/overview/) - learn how skillx scans before it runs
 - [Troubleshooting](/getting-started/troubleshooting/) - debug install and agent-detection problems

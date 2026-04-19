@@ -13,7 +13,7 @@ curl -fsSL https://skillx.run/install.sh | sh
 skillx run github:anthropics/skills/skills/frontend-design "Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."
 ```
 
-skillx gives you a zero-install way to fetch, scan, inject, run, and clean up Agent Skills in one command. If you want the same high-signal first run shown on the landing page, start with the GitHub skill above.
+skillx gives you a zero-install way to fetch, scan, inject, run, and clean up Agent Skills in one command. If you want the same high-signal first run shown on the landing page, start with the Agent Skill above.
 
 ## Next Steps
 
