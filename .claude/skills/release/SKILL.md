@@ -71,18 +71,26 @@ Update the following files with the new version (`X.Y.Z`):
 | File | What to update |
 |------|----------------|
 | `cli/Cargo.toml` | `version = "X.Y.Z"` |
-| `web/src/content/docs/getting-started/installation.md` | `skillx X.Y.Z` in the example output block |
-| `web/src/components/hero.astro` | Badge text to `vX.Y` (major.minor only) |
+| `web/src/content/docs/getting-started/installation.md` | `skillx X.Y.Z` in the `## Verify Installation` example output |
 | `Formula/skillx.rb` | `version "X.Y.Z"` |
+
+**Do NOT touch** these files — they look version-shaped but are intentionally static:
+
+- `web/package.json` (independent from the CLI version, stays at `0.1.0`)
+- `web/src/content/docs/cli/upgrade.md` and `web/src/content/docs/reference/config-toml.md` — the `v0.6.0 → v0.7.0` strings are illustrative examples, not live version references
+- `web/src/content/blog/**` — archival posts keep their original version mentions
+- `docs/**` (internal planning notes)
 
 ### Step 3: Update SECURITY.md (minor/major bumps only)
 
-If the **minor** or **major** version changed, update `SECURITY.md`:
+If the **minor** or **major** version changed, update `SECURITY.md`'s supported-versions table:
 
-- Supported version row: `X.Y.x` → `Yes`
-- Unsupported version row: `< X.Y` → `No`
+- Replace the existing `X.Y.x` row (e.g., `0.8.x`) with the new `X.Y.x`
+- Replace the existing `< X.Y` row (e.g., `< 0.8`) with the new `< X.Y`
 
 Skip this step for patch-only bumps.
+
+While the project is in `0.x`, every **minor** bump must update this table. After `1.0`, follow standard semver for what constitutes a security-supported line.
 
 ### Step 4: Update CHANGELOG.md
 
@@ -122,7 +130,6 @@ Release vX.Y.Z prepared
     - cli/Cargo.toml
     - CHANGELOG.md
     - web/src/content/docs/getting-started/installation.md
-    - web/src/components/hero.astro
     - Formula/skillx.rb
     - SECURITY.md (if applicable)
 
