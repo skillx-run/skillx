@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { primaryFamousSkill } from '../src/data/famous-skills.mjs';
+import { buildSkillxRunCommand, getFamousSkill, primaryFamousSkill } from '../src/data/famous-skills.mjs';
+
+const authorSkill = getFamousSkill('setup-skillx');
+const authorCommand = buildSkillxRunCommand(authorSkill, authorSkill.homepagePrompt);
 
 const html = readFileSync(resolve('dist/index.html'), 'utf8');
 
@@ -29,6 +32,10 @@ const checks = [
   'curl -fsSL https://skillx.run/install.sh | sh',
   primaryFamousSkill.runUrl,
   primaryFamousSkill.homepagePrompt,
+  'For skill authors',
+  'Shipping a skill? Generate a Run-with-skillx block for your README in one command.',
+  authorCommand,
+  '/guides/advertise-your-skill/',
   'https://github.com/skillx-run/skillx',
 ];
 

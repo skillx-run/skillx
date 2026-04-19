@@ -1,8 +1,15 @@
 ---
-import { buildSkillxRunCommand, primaryFamousSkill } from '../../data/famous-skills.mjs';
+import {
+  buildSkillxRunCommand,
+  getFamousSkill,
+  primaryFamousSkill,
+} from '../../data/famous-skills.mjs';
 
 const installCommand = 'curl -fsSL https://skillx.run/install.sh | sh';
 const runCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.homepagePrompt);
+
+const authorSkill = getFamousSkill('setup-skillx');
+const authorCommand = buildSkillxRunCommand(authorSkill, authorSkill.homepagePrompt);
 ---
 
 <section id="first-run" data-home-section="final-cta" class="landing-section final-cta-section">
@@ -39,6 +46,20 @@ const runCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.
         </a>
       </div>
     </div>
+
+    <div class="author-strip">
+      <div class="author-copy">
+        <p class="eyebrow author-eyebrow">For skill authors</p>
+        <p class="author-lede">
+          Shipping a skill? Generate a Run-with-skillx block for your README in one command.
+        </p>
+      </div>
+      <button class="author-command copy-command" type="button" data-command={authorCommand}>
+        <code>{authorCommand}</code>
+        <span class="copy-label">Copy</span>
+      </button>
+      <a href="/guides/advertise-your-skill/" class="author-link">Read the guide</a>
+    </div>
   </div>
 </section>
 
@@ -52,6 +73,91 @@ const runCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
     gap: 1.5rem;
     align-items: center;
+  }
+
+  .author-strip {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+    gap: 1.2rem;
+    align-items: center;
+    margin-top: 2.4rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--landing-border);
+  }
+
+  .author-eyebrow {
+    margin-bottom: 0.45rem;
+    font-size: 0.74rem;
+  }
+
+  .author-lede {
+    color: var(--landing-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    max-width: 30ch;
+  }
+
+  .author-command {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--landing-border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.68);
+    text-align: left;
+    cursor: pointer;
+    appearance: none;
+    font: inherit;
+    color: inherit;
+    transition:
+      border-color 0.18s ease,
+      background-color 0.18s ease;
+  }
+
+  .author-command:hover {
+    border-color: var(--landing-border-strong);
+    background: var(--landing-surface-strong);
+  }
+
+  .author-command code {
+    flex: 1;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .author-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.4rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--landing-border);
+    background: transparent;
+    color: var(--landing-text);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .author-link:hover {
+    border-color: var(--landing-border-strong);
+    background: var(--landing-surface-strong);
+  }
+
+  @media (max-width: 900px) {
+    .author-strip {
+      grid-template-columns: 1fr;
+      align-items: flex-start;
+      gap: 0.9rem;
+    }
+
+    .author-link {
+      align-self: flex-start;
+    }
   }
 
   .final-cta-copy {
