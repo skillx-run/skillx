@@ -50,7 +50,7 @@ assert(
 
 const firstRunDoc = readFileSync(resolve('src/content/docs/getting-started/first-run.md'), 'utf8');
 assert(
-  firstRunDoc.includes(primaryFamousSkill.commandSource) &&
+  firstRunDoc.includes(primaryFamousSkill.runUrl) &&
     firstRunDoc.includes(primaryFamousSkill.homepagePrompt),
   'First Run doc must include the primary famous skill command',
 );
@@ -67,8 +67,7 @@ for (const skill of famousSkills) {
   assert(
     famousSkillsDoc.includes(skill.runUrl) &&
       famousSkillsDoc.includes(skill.sourceUrl) &&
-      famousSkillsDoc.includes(`id="${skill.slug}"`) &&
-      famousSkillsDoc.includes(skill.commandSource),
+      famousSkillsDoc.includes(`id="${skill.slug}"`),
     `Famous Skills doc must include URL, source, and anchor for ${skill.slug}`,
   );
 }

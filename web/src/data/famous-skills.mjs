@@ -2,7 +2,6 @@ export const famousSkills = [
   {
     slug: 'frontend-design',
     title: 'Frontend Design',
-    commandSource: 'github:anthropics/skills/skills/frontend-design',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/frontend-design',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md',
     docsHref: '/getting-started/famous-skills/#frontend-design',
@@ -21,7 +20,6 @@ export const famousSkills = [
   {
     slug: 'setup-skillx',
     title: 'Setup skillx',
-    commandSource: 'github:skillx-run/skillx/examples/skills/setup-skillx',
     runUrl: 'https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx',
     sourceUrl: 'https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md',
     docsHref: '/getting-started/famous-skills/#setup-skillx',
@@ -40,7 +38,6 @@ export const famousSkills = [
   {
     slug: 'webapp-testing',
     title: 'Webapp Testing',
-    commandSource: 'github:anthropics/skills/skills/webapp-testing',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/webapp-testing',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/webapp-testing/SKILL.md',
     docsHref: '/getting-started/famous-skills/#webapp-testing',
@@ -60,7 +57,6 @@ export const famousSkills = [
   {
     slug: 'pdf-processing',
     title: 'PDF Processing',
-    commandSource: 'github:anthropics/skills/skills/pdf',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/pdf',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/pdf/SKILL.md',
     docsHref: '/getting-started/famous-skills/#pdf-processing',
@@ -80,7 +76,6 @@ export const famousSkills = [
   {
     slug: 'mcp-builder',
     title: 'MCP Builder',
-    commandSource: 'github:anthropics/skills/skills/mcp-builder',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/mcp-builder',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/mcp-builder/SKILL.md',
     docsHref: '/getting-started/famous-skills/#mcp-builder',
@@ -100,7 +95,6 @@ export const famousSkills = [
   {
     slug: 'claude-api',
     title: 'Claude API',
-    commandSource: 'github:anthropics/skills/skills/claude-api',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/claude-api',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/claude-api/SKILL.md',
     docsHref: '/getting-started/famous-skills/#claude-api',
@@ -120,7 +114,6 @@ export const famousSkills = [
   {
     slug: 'canvas-design',
     title: 'Canvas Design',
-    commandSource: 'github:anthropics/skills/skills/canvas-design',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/canvas-design',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/canvas-design/SKILL.md',
     docsHref: '/getting-started/famous-skills/#canvas-design',
@@ -140,7 +133,6 @@ export const famousSkills = [
   {
     slug: 'docx',
     title: 'DOCX',
-    commandSource: 'github:anthropics/skills/skills/docx',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/docx',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/docx/SKILL.md',
     docsHref: '/getting-started/famous-skills/#docx',
@@ -160,7 +152,6 @@ export const famousSkills = [
   {
     slug: 'xlsx',
     title: 'XLSX',
-    commandSource: 'github:anthropics/skills/skills/xlsx',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/xlsx',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/xlsx/SKILL.md',
     docsHref: '/getting-started/famous-skills/#xlsx',

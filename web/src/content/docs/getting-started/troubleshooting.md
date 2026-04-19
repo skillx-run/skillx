@@ -80,7 +80,7 @@ This usually means the URL does not point at a real skill directory, or the upst
 ### What a working URL looks like
 
 ```bash
-skillx run github:anthropics/skills/skills/frontend-design "prompt"
+skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "prompt"
 ```
 
 ### Common causes
