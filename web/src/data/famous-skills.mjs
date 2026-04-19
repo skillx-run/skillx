@@ -12,8 +12,7 @@ export const famousSkills = [
     homepageTitle: 'Redesign a landing page',
     homepageBody:
       'Use a public Agent Skill to redesign a real landing page section with production-ready code.',
-    homepagePrompt:
-      'Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code.',
+    homepagePrompt: 'Redesign the hero section.',
     homepageNote: 'A strong first run if you want a visible, high-signal result.',
     docsDescription:
       'Use this when you want the most convincing first run: the prompt is concrete, the output is visible, and the value of a reusable skill is easy to judge from the result.',

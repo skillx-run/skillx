@@ -197,6 +197,12 @@ const heroCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill
     border-bottom: 1px dashed var(--landing-border);
   }
 
+  .terminal-line-command span:last-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
   .prompt {
     color: var(--landing-accent-strong);
     font-weight: 700;
