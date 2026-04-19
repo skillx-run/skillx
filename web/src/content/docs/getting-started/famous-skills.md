@@ -1,9 +1,9 @@
 ---
 title: Famous Skills
-description: Curated external GitHub skills you can run immediately with skillx.
+description: Curated external Agent Skills you can run immediately with skillx.
 ---
 
-Famous Skills are curated external GitHub skills from well-known repositories. They are ranked for immediate usefulness: start with the one that matches your current task, then move to the others when you need a narrower workflow.
+Famous Skills are curated external Agent Skills from well-known repositories. They are ranked for immediate usefulness: start with the one that matches your current task, then move to the others when you need a narrower workflow.
 
 If you only try one, start with **Frontend Design**. It still gives the strongest end-to-end first run: a concrete prompt produces visible output, and it is the easiest way to judge whether a curated skill feels worth adopting.
 

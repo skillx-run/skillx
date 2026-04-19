@@ -3,7 +3,7 @@ title: Official Examples
 description: Official example skills included in the skillx repository and how they differ from Famous Skills.
 ---
 
-Official Examples live in this repository and are designed to teach skill structure, patterns, and file layouts you can reuse. Each example page now starts with a GitHub source you can run directly from the docs, then shows the equivalent local repository path when you want to study or modify the example in a clone of this repo. Famous Skills are different: they are curated external GitHub skills that you can run directly when you want a ready-made workflow from an upstream source.
+Official Examples live in this repository and are designed to teach skill structure, patterns, and file layouts you can reuse. Each example page now starts with a GitHub source you can run directly from the docs, then shows the equivalent local repository path when you want to study or modify the example in a clone of this repo. Famous Skills are different: they are curated external Agent Skills that you can run directly when you want a ready-made workflow from an upstream source.
 
 ## Official Example Entrypoints
 

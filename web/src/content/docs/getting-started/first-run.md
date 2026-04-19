@@ -1,6 +1,6 @@
 ---
 title: First Run
-description: The shortest path to a successful skillx run with a real GitHub skill.
+description: The shortest path to a successful skillx run with a real Agent Skill.
 ---
 
 ## 1. Install skillx
@@ -11,9 +11,9 @@ If you have not installed skillx yet, use the recommended install command:
 curl -fsSL https://skillx.run/install.sh | sh
 ```
 
-## 2. Run a Real GitHub Skill
+## 2. Run a Real Agent Skill
 
-Use the same public GitHub skill featured on the landing page:
+Use the same public Agent Skill featured on the landing page:
 
 ```bash
 skillx run github:anthropics/skills/skills/frontend-design "Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."
