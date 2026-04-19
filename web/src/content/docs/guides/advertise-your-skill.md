@@ -17,6 +17,8 @@ skillx run https://github.com/skillx-run/skillx/tree/main/skills/setup-skillx
 
 It reads your `SKILL.md` frontmatter, inspects `git remote` to infer the hosting platform and `owner/repo` slug, and proposes a short "Try it with skillx" block for `README.md`. Every change is shown as a diff and requires your confirmation before anything is written.
 
+Before rendering, the skill asks one yes/no question: whether to embed the `--auto-approve` flag in the generated command. Default is **no** — the plain form is the safest recommendation for strangers reading your README. Say **yes** if your skill is conversational or you'd rather readers not be interrupted by per-step permission prompts; when you do, the block gains a short italic disclaimer pointing readers at the `--auto-approve` trade-off so they can drop the flag if they'd rather approve each action manually. See [Common Scenarios](#common-scenarios) below.
+
 Want to audit it first without touching files? Add any dry-run cue (`dry run`, `preview only`, `just show me`, `--dry-run`) and the skill will walk through the same detection and show the full diff without writing.
 
 If you already have a local clone of `skillx-run/skillx`, the equivalent local invocation is:
@@ -58,8 +60,9 @@ Placement preference: immediately after the top-level title, any badge row, and 
 
 ## Common Scenarios
 
-- **Monorepo with multiple skills**: when `SKILL.md` files live under sub-paths, the generated source URL points to that sub-path on the host's web UI (e.g. `https://github.com/org/repo/tree/main/skills/<name>`). If you select more than one skill, the skill emits a single block containing one `skillx run` command per selection.
-- **Conversational / wizard-style skill**: if the skill drives its own dialogue (like `setup-skillx` itself) it doesn't need a free-text prompt — the generated command drops the trailing quoted argument, so it looks like `skillx run <url>` on its own.
+- **Monorepo with multiple skills**: when `SKILL.md` files live under sub-paths, the generated source URL points to that sub-path on the host's web UI (e.g. `https://github.com/org/repo/tree/main/skills/<name>`). If you select more than one skill, the skill emits a single block containing one `skillx run` command per selection. The `--auto-approve` choice applies uniformly to all commands in the block.
+- **Conversational / wizard-style skill**: if the skill drives its own dialogue (like `setup-skillx` itself) it doesn't need a free-text prompt — the generated command drops the trailing quoted argument, so it looks like `skillx run <url>` on its own. For this skill shape, `--auto-approve` is often a good fit (readers would otherwise be interrupted at every step), but the default is still **no** — the skill surfaces the trade-off and lets you decide.
+- **Opt-in `--auto-approve`**: the only flag the skill will ever embed for you. Picking **yes** produces `skillx run --auto-approve <url> "..."` plus an italic disclaimer line inside the marker pair; picking **no** produces the plain form. Any other safety-relaxing flag — for instance, scan-disabling flags, WARN auto-confirm flags, or fail-on-threshold flags — is intentionally unavailable from the skill; those belong in the hands of each reader, not the skill author.
 - **Non-English README**: section heading and prose are localized to the README's language; the command itself and marker comments stay as-is. If you ship multiple language-specific READMEs, each is localized separately.
 - **Private repo**: the block still emits — note that users running the skill will need access to the repo.
 - **No git remote**: the skill asks you for the canonical repo URL, or falls back to a local-path example.
