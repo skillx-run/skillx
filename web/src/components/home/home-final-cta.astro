@@ -211,26 +211,3 @@ const runCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.
     }
   }
 </style>
-
-<script>
-  const buttons = document.querySelectorAll('.copy-command');
-
-  buttons.forEach((button) => {
-    button.addEventListener('click', async () => {
-      const command = button.getAttribute('data-command') || '';
-
-      try {
-        await navigator.clipboard.writeText(command);
-        button.dataset.copied = 'true';
-        const label = button.querySelector('.copy-label');
-        if (label) label.textContent = 'Copied';
-        window.setTimeout(() => {
-          delete button.dataset.copied;
-          if (label) label.textContent = 'Copy';
-        }, 1400);
-      } catch {
-        window.prompt('Copy this command', command);
-      }
-    });
-  });
-</script>
