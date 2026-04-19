@@ -38,11 +38,19 @@ The block is wrapped with idempotency markers so a re-run updates it in place in
 <!-- skillx:begin:setup-skillx -->
 ## Try it with skillx
 
-[badge] Run this skill without installing anything:
+[![Run with skillx](https://img.shields.io/badge/Run%20with-skillx-F97316)](https://skillx.run)
 
-`skillx run <source> "<sample-prompt>"`
+Run this skill without installing anything:
+
+```bash
+skillx run github:acme/my-skill "review this diff"
+```
+
+Powered by [skillx](https://skillx.run) — fetch, scan, inject, and clean up any agent skill in one command.
 <!-- skillx:end:setup-skillx -->
 ~~~
+
+The badge is a static shields.io image; no external service has to be set up.
 
 Placement preference: immediately after the top-level title, any badge row, and the intro paragraph, before the first `##` section. You can move the marked block anywhere afterwards — re-running the skill updates it in place wherever it lives.
 
@@ -54,8 +62,6 @@ Placement preference: immediately after the top-level title, any badge row, and 
 - **No git remote**: the skill asks you for the canonical repo URL, or falls back to a local-path example.
 - **Landing page**: if the repo ships an Astro / Next / Docusaurus / mkdocs site, the skill offers to propose an integration. It does not force a template — it picks a location and form that fits, as a diff.
 
-See [Setup skillx](/guides/setup-skillx/) for the full workflow and the exact template it inserts.
-
 ## After Running
 
 Typical follow-up:
@@ -66,3 +72,7 @@ git add README.md && git commit -m "docs: add skillx quick-start"
 ```
 
 If the block already exists and nothing changed, the skill tells you and exits — safe to re-run on every release.
+
+## Why this skill exists
+
+Most skills produce content for the user. `setup-skillx` produces a change to the user's own project — a different shape of skill, with stronger safety needs and a more conversational flow. It shows how a skill can drive a multi-step authoring task while respecting the user's codebase: diff before write, idempotency markers, explicit consent on every file touched.
