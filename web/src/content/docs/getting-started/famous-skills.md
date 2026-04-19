@@ -12,10 +12,11 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
 | Priority | Skill | Why start here |
 |----------|-------|----------------|
 | 1 | Frontend Design | Best first impression: it turns a vague brief into a visible interface and shows the quality of a curated skill immediately. |
-| 2 | Webapp Testing | Best when you already have a running app and want the skill to interact with it directly in the browser. |
-| 3 | MCP Builder | Best when your next step is building tools and API integrations instead of screens. |
-| 4 | Claude API | Best when you are already shipping Anthropic features and want stronger API defaults fast. |
-| 5 | PDF Processing | Best for document-heavy work when you need extraction, transformation, or form handling rather than UI or browser automation. |
+| 2 | Setup skillx | Best when you author skills yourself and want a clean Run-with-skillx block in your README without hand-writing it. |
+| 3 | Webapp Testing | Best when you already have a running app and want the skill to interact with it directly in the browser. |
+| 4 | MCP Builder | Best when your next step is building tools and API integrations instead of screens. |
+| 5 | Claude API | Best when you are already shipping Anthropic features and want stronger API defaults fast. |
+| 6 | PDF Processing | Best for document-heavy work when you need extraction, transformation, or form handling rather than UI or browser automation. |
 
 ## Curated Skills
 
