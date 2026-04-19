@@ -2,7 +2,7 @@
 name: setup-skillx
 description: Add a "Run with skillx" quick-start section to a skill project's README, and optionally to its landing page
 author: skillx-run
-version: "1.0.0"
+version: "1.1.0"
 license: MIT
 tags:
   - onboarding
@@ -20,10 +20,25 @@ State these up front so the user knows what to expect:
 
 - You only modify or create README files, and, with explicit consent, the landing page files the user points you to.
 - You never modify source code, `.git/`, lockfiles, CI configs, or environment files.
-- You never run installers or execute network requests. All changes are local file edits.
+- You never run installers or any install-type action on the user's system. The only commands you run are read-only local inspections (e.g. `git remote -v`, reading `.git/config`).
 - Before writing anything, show a diff and wait for confirmation.
 
 If the user declines any step, stop that step cleanly and continue with the rest.
+
+## Modes
+
+This skill runs in one of two modes. Decide at the start of the conversation and announce the choice.
+
+- **Apply mode** (default) — follow the full workflow: detect → propose diff → get approval → write.
+- **Dry-Run mode** — same detection and diffs, but **no files are written**. At the end, print a summary of what *would* change and tell the user how to apply it for real.
+
+Enter Dry-Run mode when any of the following is true:
+
+- The user says `dry run`, `dry-run`, `--dry-run`, `preview only`, `just show me`, `don't write`, or an obvious equivalent.
+- The user explicitly asks to audit or review without touching files.
+- The environment signals it (e.g. CI, `SKILLX_DRY_RUN=1`) and the user confirms.
+
+In Dry-Run mode, replace every "write file" step with "show the full diff and record it in the summary." Still ask clarifying questions, still let the user pick which README(s) or locales to target — skipping interaction would defeat the preview.
 
 ## Workflow
 
@@ -34,7 +49,7 @@ Follow these five steps in order. Think of each as a small conversation with the
 Gather signals without making assumptions:
 
 1. Look for `SKILL.md` at the repository root, and also at common sub-paths (for example `skills/*/SKILL.md`, `examples/skills/*/SKILL.md`).
-2. If a `SKILL.md` is found, read its YAML frontmatter and extract `name` and `description`.
+2. If a `SKILL.md` is found, read its YAML frontmatter and extract `name` and `description`. If the frontmatter is missing, empty, or fails to parse, fall back to the directory name for `name`, tell the user what happened, and ask them for a one-line description (or offer to proceed without one).
 3. Run `git remote -v` (or read `.git/config`, or ask the user) to infer the hosting platform and the `owner/repo` slug. Support GitHub, GitLab, Bitbucket, Gitea/Codeberg, and SourceHut.
 4. If multiple `SKILL.md` files exist, list them and ask whether to advertise one, several, or all of them. See the "Multiple skills in one repo" entry under Edge Cases for how the selection shapes the block.
 
@@ -42,21 +57,28 @@ If no `SKILL.md` is present, tell the user this does not look like a skill proje
 
 ### Step 2 — Derive the Source URL
 
-Use this heuristic to pick the `skillx run` source string:
+Emit a **full repository URL** that points to the skill directory on the host's web UI. This matches skillx.run's own convention (used by the Famous Skills list and homepage) and gives readers a URL they can click in GitHub's rendered README to jump straight to the source.
 
-- `SKILL.md` sits at the repository root → the whole repo is the skill. Use `<platform>:<owner>/<repo>`.
-- `SKILL.md` sits under a sub-path in a monorepo → use `<platform>:<owner>/<repo>/<path-to-skill>`.
+General form: `<host>/<owner>/<repo>/tree/<ref>/<path-to-skill>` (drop `/tree/<ref>/<path-to-skill>` when the skill is the whole repo).
+
+- `SKILL.md` sits at the repository root → use `<host>/<owner>/<repo>` (optionally `/tree/<ref>` if pinning a tag).
+- `SKILL.md` sits under a sub-path in a monorepo → use `<host>/<owner>/<repo>/tree/<ref>/<path-to-skill>`.
 - When in doubt, show both candidates and let the user pick.
 
-Platform prefix mapping:
+Pick `<ref>`:
 
-| Host | Prefix |
-|------|--------|
-| GitHub | `github:` |
-| GitLab | `gitlab:` |
-| Bitbucket | `bitbucket:` |
-| Gitea / Codeberg | `gitea:` |
-| SourceHut | `sourcehut:` |
+- Default to the repo's default branch (usually `main`). Read `.git/HEAD` or ask if unclear.
+- If the repo has published release tags, ask the user whether to pin to the latest tag (e.g. `/tree/v1.2/...`) — a pinned tag gives users a stable target, the default branch gives them the latest.
+
+Per-host URL shape (use these when constructing the link; the CLI also accepts the older `<platform>:<owner>/<repo>` shorthand, but prefer full URLs):
+
+| Host | URL shape |
+|------|-----------|
+| GitHub | `https://github.com/<owner>/<repo>/tree/<ref>/<path>` |
+| GitLab | `https://gitlab.com/<owner>/<repo>/-/tree/<ref>/<path>` |
+| Bitbucket | `https://bitbucket.org/<owner>/<repo>/src/<ref>/<path>` |
+| Gitea / Codeberg | `https://<host>/<owner>/<repo>/src/branch/<ref>/<path>` (or `/src/tag/<tag>/<path>` for tags) |
+| SourceHut | `https://git.sr.ht/~<owner>/<repo>/tree/<ref>/item/<path>` |
 
 ### Step 3 — Update the README(s)
 
@@ -64,10 +86,17 @@ Platform prefix mapping:
 
 Then, **for each selected README**, repeat steps 2–5 below:
 
-2. Render the quick-start block using the template below, substituting `<source>`, `<skill-name>`, and a short `<sample-prompt>` that matches the skill's purpose (take the prompt idea from the `description` field). If the README is non-English, localize the block according to the table in Edge Cases.
+2. Render the quick-start block using the template below, substituting `<source>` (the full URL from Step 2) and a short `<sample-prompt>`. If the README is non-English, localize the block according to the table in Edge Cases.
+
+   Choosing `<sample-prompt>`:
+   - Make it concrete and actionable — a one-line command, not a paraphrase of the skill's `description`. Good: `"Redesign the hero section."` / `"Review the staged diff for security issues."` Bad: `"frontend design"` / `"review code"`.
+   - Start with a verb (Redesign / Review / Summarize / Generate / Translate / Fix …).
+   - Match the skill's natural input language (a Chinese name-poem skill should get a Chinese sample prompt).
+   - **Conversational / wizard-style skills** (the skill drives the dialogue and doesn't need a free-text task — `setup-skillx` itself is an example): omit the trailing quoted argument entirely and emit `skillx run <source>` on its own. If you're unsure whether a skill is conversational, ask the user.
+
 3. Wrap the block with the idempotency markers `<!-- skillx:begin:setup-skillx -->` and `<!-- skillx:end:setup-skillx -->` so it can be updated in place on a later run without touching surrounding content.
-4. If the markers already exist, diff the new block against the existing one. If nothing changed, tell the user and move on. Otherwise show the diff and ask before overwriting.
-5. If the markers do not exist, pick a sensible insertion point: just after the top-level title, any badge/logo row, and any short intro paragraph, before the first `##` section. If the README has no subsequent section, append the block at the end. Show the user where you plan to insert, and ask before writing.
+4. If the markers already exist, diff the new block against the existing one. If nothing changed, tell the user and move on. Otherwise show the diff and ask before overwriting (in Dry-Run mode, show the diff and record it — do not write).
+5. If the markers do not exist, pick a sensible insertion point: just after the top-level title, any badge/logo row, and any short intro paragraph, before the first `##` section. If the README has no subsequent section, append the block at the end. Show the user where you plan to insert, and ask before writing (in Dry-Run mode, show the placement and record it — do not write).
 
 **Quick-start block template** (keep the markers verbatim):
 
@@ -87,6 +116,8 @@ Powered by [skillx](https://skillx.run) — fetch, scan, inject, and clean up an
 <!-- skillx:end:setup-skillx -->
 ~~~
 
+For conversational skills, drop the `"<sample-prompt>"` argument so the command becomes `skillx run <source>`.
+
 Keep the block short. Resist the urge to add feature lists or badges unrelated to skillx — the goal is a single clear entry point.
 
 ### Step 4 — Offer Landing Page Integration
@@ -105,16 +136,28 @@ If a landing page exists:
 1. Describe what you found ("detected an Astro site under `web/`", "found `index.html` at repo root") so the user can confirm.
 2. If the site is internationalized (multiple locale content dirs like `content/en/` + `content/zh/`, Next.js locale subpaths, Docusaurus `i18n/` plugin, etc.), name the locales you detected and ask which ones to update — do not assume all locales should be changed.
 3. Ask whether to integrate the skillx entry point on the selected location(s).
-4. If the user says yes, propose an integration — but do not force a template. Pick a location and a form that fits the site (a hero call-to-action, a "Try it" section, a nav link, or a dedicated quick-start page). Show the proposed change as a diff and wait for approval.
+4. If the user says yes, propose an integration — but do not force a template. Pick a location and a form that fits the site (a hero call-to-action, a "Try it" section, a nav link, or a dedicated quick-start page). Show the proposed change as a diff and wait for approval (in Dry-Run mode, show the diff and record it — do not write).
 5. Prefer the same idempotency marker pattern when the file format supports HTML comments. For formats that do not (YAML, JSON, TOML), describe the change explicitly in the summary so the user can maintain it by hand.
 
 ### Step 5 — Summarize
 
-At the end, print a short summary:
+At the end, print a short summary. Adapt the wording to the mode:
+
+**Apply mode**
 
 - Files changed or created (with paths).
 - Files proposed but skipped (and why).
-- Suggested next steps: `skillx scan .` to verify the skill is clean, then commit.
+- Suggested next steps:
+  - `skillx scan .` to verify the skill still passes the scanner.
+  - Run the generated `skillx run <source> ...` command in a scratch directory as a smoke test — cheap insurance that the URL, sub-path, and sample prompt actually work end-to-end.
+  - Commit the change (e.g. `git commit -m "docs: add skillx quick-start"`).
+
+**Dry-Run mode**
+
+- Heading: **"Dry run — no files were written."**
+- For each file, show the path and the full diff that *would* have been applied.
+- List any files that were skipped (and why).
+- Tell the user how to apply the changes: re-run the skill without the dry-run cue (e.g. `skillx run <this-skill>` with no "dry run" phrasing), and it will walk through the same steps and actually write.
 
 ## Idempotency Rules
 
@@ -125,7 +168,9 @@ At the end, print a short summary:
 ## Edge Cases
 
 - **Private repo**: still emit the source URL. Advise the user that anyone running the skill will need access to the repo.
-- **No git remote**: ask the user for the canonical repo URL, or fall back to a local-path example (`skillx run ./path/to/skill "..."`).
+- **No git remote (or not a git repo at all)**: ask the user for the canonical repo URL, or fall back to a local-path example (`skillx run ./path/to/skill "..."`). Flag in the summary that the emitted command only works for people who already have the project locally.
+- **Missing or malformed frontmatter**: `SKILL.md` exists but the YAML header is absent, empty, or unparseable. Fall back to the directory name for `name`, surface the parse error to the user, and ask for a one-line description (or proceed without one — the block doesn't render `description` anyway, but a good description feeds the `<sample-prompt>` decision).
+- **Conversational / wizard-style skill**: the skill has no natural free-text prompt (it drives the dialogue itself — `setup-skillx` is an example). Emit `skillx run <source>` with no trailing quoted argument. If unsure, ask the user "does your skill take a one-line task from the user, or does it ask its own questions?"
 - **Multiple skills in one repo**: when the user picks more than one skill in Step 1.4, render a single block that contains one `skillx run` command per selected skill, each using its full sub-path. Do not create separate blocks.
 - **Non-English README**: localize the block so it reads naturally in the README's language, using the table below. When the project has multiple language-specific READMEs, localize each copy to its own language.
 
