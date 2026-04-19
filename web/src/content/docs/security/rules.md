@@ -5,7 +5,7 @@ description: Complete reference for all scanner rules — MD-001 through MD-011,
 
 ## Overview
 
-The skillx scanner has 30 rules organized into three categories:
+The skillx scanner has 31 rules organized into three categories:
 
 - **MD** (Markdown) — rules applied to `SKILL.md`
 - **SC** (Script) — rules applied to files in `scripts/` and script-like files at root

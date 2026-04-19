@@ -4,7 +4,7 @@
 
 **Core value props (in priority order):**
 1. **No install needed** — `skillx run` is ephemeral by default: fetch, use, auto-clean. Nothing permanently added to the project.
-2. **Security first** — 30 rules scan every skill before injection. Dangerous patterns are blocked.
+2. **Security first** — 31 rules scan every skill before injection. Dangerous patterns are blocked.
 3. **One command** — Full lifecycle (fetch → scan → inject → run → clean) in a single CLI call.
 
 `skillx install` exists for persistent use cases but is opt-in, not the default.
@@ -215,7 +215,7 @@ cargo run -- upgrade             # Check for CLI updates
 - `GIT_TERMINAL_PROMPT=0` set on all git commands to prevent interactive prompts. SSH probe uses `BatchMode=yes` + `ConnectTimeout=3`.
 - `CacheManager::write_meta()` writes only `meta.json` without file copying (used by `fetch_with_cache()` since fetch_fn already writes to cache_dest)
 - GitHub API fallback uses `tokio::sync::Semaphore` (max 8) for concurrent download throttling
-- Scanner has 30 rules total: MD-001~011, SC-001~015, RS-001~005
+- Scanner has 31 rules total: MD-001~011 (11), SC-001~015 (15), RS-001~005 (5)
 - `normalize.rs` provides shell continuation-line joining (`join_continuation_lines`) and keyword whitespace normalization (`normalize_whitespace`) for anti-evasion detection
 - RS-004 symlink detection uses `entry.file_type().is_symlink()` — never follows symlinks; checked in `scan_directory`, `scan_root_files`, and `resource_analyzer`
 - RS-005 script-in-references detection uses shebang (`#!`) check on non-binary files in `references/`
