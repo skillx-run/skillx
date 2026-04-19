@@ -12,7 +12,7 @@ Hand-writing that snippet is easy to get wrong: stale sub-path, wrong platform p
 From the root of your skill project:
 
 ```bash
-skillx run github:skillx-run/skillx/examples/skills/setup-skillx
+skillx run github:skillx-run/skillx/skills/setup-skillx
 ```
 
 It reads your `SKILL.md` frontmatter, inspects `git remote` to infer the platform and `owner/repo` slug, and proposes a short "Try it with skillx" block for `README.md`. Every change is shown as a diff and requires your confirmation before anything is written.
@@ -20,7 +20,7 @@ It reads your `SKILL.md` frontmatter, inspects `git remote` to infer the platfor
 If you already have a local clone of `skillx-run/skillx`, the equivalent local invocation is:
 
 ```bash
-skillx run ./examples/skills/setup-skillx
+skillx run ./skills/setup-skillx
 ```
 
 ## What It Touches
@@ -54,7 +54,7 @@ Placement preference: immediately after the top-level title, any badge row, and 
 - **No git remote**: the skill asks you for the canonical repo URL, or falls back to a local-path example.
 - **Landing page**: if the repo ships an Astro / Next / Docusaurus / mkdocs site, the skill offers to propose an integration. It does not force a template — it picks a location and form that fits, as a diff.
 
-See [Setup skillx](/examples/setup-skillx/) for the full workflow and the exact template it inserts.
+See [Setup skillx](/guides/setup-skillx/) for the full workflow and the exact template it inserts.
 
 ## After Running
 

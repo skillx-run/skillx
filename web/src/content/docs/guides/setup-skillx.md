@@ -38,7 +38,7 @@ Key sections of the SKILL.md:
 Run from inside a repo whose root `SKILL.md` is the skill:
 
 ```bash
-skillx run github:skillx-run/skillx/examples/skills/setup-skillx
+skillx run github:skillx-run/skillx/skills/setup-skillx
 ```
 
 The agent detects the root `SKILL.md`, reads its `name` and `description`, derives the source URL as `github:<owner>/<repo>`, and proposes the quick-start block.
@@ -62,7 +62,7 @@ If no landing page is detected, this step is skipped silently.
 If you are already inside a local clone of `skillx-run/skillx`, use:
 
 ```bash
-skillx run ./examples/skills/setup-skillx
+skillx run ./skills/setup-skillx
 ```
 
 ## The Quick-Start Block
@@ -92,7 +92,7 @@ The badge is a static shields.io image; no external service has to be set up.
 Scanning the setup-skillx skill:
 
 ```bash
-skillx scan github:skillx-run/skillx/examples/skills/setup-skillx
+skillx scan github:skillx-run/skillx/skills/setup-skillx
 ```
 
 ```
@@ -103,10 +103,10 @@ Scan Result: PASS
 The skill is purely instructional — no scripts, no executables, no sensitive references — so it passes cleanly. You can also scan the local checkout:
 
 ```bash
-skillx scan ./examples/skills/setup-skillx
+skillx scan ./skills/setup-skillx
 ```
 
-## Why this example exists
+## Why this skill exists
 
 Most skills produce content for the user. `setup-skillx` produces a change to the user's own project — a different shape of skill, with stronger safety needs and a more conversational flow. It shows how a skill can drive a multi-step authoring task while respecting the user's codebase: diff before write, idempotency markers, explicit consent on every file touched.
 

@@ -20,8 +20,8 @@ export const famousSkills = [
   {
     slug: 'setup-skillx',
     title: 'Setup skillx',
-    runUrl: 'https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx',
-    sourceUrl: 'https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md',
+    runUrl: 'https://github.com/skillx-run/skillx/tree/main/skills/setup-skillx',
+    sourceUrl: 'https://github.com/skillx-run/skillx/blob/main/skills/setup-skillx/SKILL.md',
     docsHref: '/getting-started/famous-skills/#setup-skillx',
     recommendedReason:
       'Best when you author skills yourself and want a clean Run-with-skillx block in your README without hand-writing it.',

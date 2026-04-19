@@ -56,21 +56,21 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
         <td>
           <strong>Setup skillx</strong>
           <div class="famous-skill-links">
-            <a href="https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md">SKILL.md</a>
-            <a href="https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx">Directory</a>
+            <a href="https://github.com/skillx-run/skillx/blob/main/skills/setup-skillx/SKILL.md">SKILL.md</a>
+            <a href="https://github.com/skillx-run/skillx/tree/main/skills/setup-skillx">Directory</a>
           </div>
         </td>
         <td>Advertising your own skill so others can try it with skillx</td>
         <td class="famous-command-cell">
           <div class="famous-command-stack">
             <div class="famous-command-scroll">
-              <code>skillx run https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx</code>
+              <code>skillx run https://github.com/skillx-run/skillx/tree/main/skills/setup-skillx</code>
             </div>
             <div class="famous-command-actions">
-              <button type="button" class="famous-copy-button" data-copy="skillx run https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx" onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+              <button type="button" class="famous-copy-button" data-copy="skillx run https://github.com/skillx-run/skillx/tree/main/skills/setup-skillx" onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
                 <span>Copy</span>
               </button>
-              <a class="famous-source-link" href="https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md">View source</a>
+              <a class="famous-source-link" href="https://github.com/skillx-run/skillx/blob/main/skills/setup-skillx/SKILL.md">View source</a>
             </div>
           </div>
         </td>

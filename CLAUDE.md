@@ -197,9 +197,10 @@ cargo run -- upgrade             # Check for CLI updates
 - Amp injects to `.agents/skills/` (not `.amp/skills/`) — Amp reads `.agents/skills/` and `.claude/skills/`
 - Aider: GenericAdapter auto-adds `--read SKILL.md` in launch when skill_dir has SKILL.md
 - Most agents now natively support SKILL.md in `.<agent>/skills/` directories (Agent Skills standard)
-- Example skills in `examples/skills/` (name-poem, hello-world, code-review, testing-guide, commit-message, setup-skillx, dangerous-example)
+- Demo skills in `examples/skills/` (name-poem, hello-world, code-review, testing-guide, commit-message, dangerous-example) — used by docs and e2e tests
+- First-party skills published by skillx live in `skills/` (currently `setup-skillx`) — distinguish from `examples/skills/` (demos) and `.claude/skills/` (project-internal automation like `release`)
 - Project release skill in `.claude/skills/release/` (used by Claude Code for version bump workflow)
-- Example skills are used in e2e tests (`e2e_tests.rs`): scan all examples, run command with `--agent universal`, gate blocking, cleanup verification, session archival
+- Demo + first-party skills are used in e2e tests (`e2e_tests.rs`): scan all examples and `skills/setup-skillx`, run command with `--agent universal`, gate blocking, cleanup verification, session archival. Helpers: `example_skill(name)` for `examples/skills/`, `firstparty_skill(name)` for `skills/`.
 - Run command e2e tests use `--agent universal` (always available, no binary needed) + `write_stdin("\n")` to avoid stdin blocking in CI
 - Web docs sidebar includes "Examples" section between Guides and Reference
 - `famous-skills.mjs` exports a `famousSkills` array whose first entry is `primaryFamousSkill` (currently `frontend-design`, used by Hero, Final CTA, and `first-run.md`). `setup-skillx` sits at index 1 so the homepage Use Cases slice `frontend-design → setup-skillx → webapp-testing`. Homepage smoke (`assert-homepage.mjs`) verifies this order.
