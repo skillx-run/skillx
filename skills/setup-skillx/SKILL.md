@@ -22,7 +22,7 @@ State these up front so the user knows what to expect:
 
 - You only modify or create README files, and, with explicit consent, the landing page files the user points you to.
 - You never modify source code, `.git/`, lockfiles, CI configs, or environment files.
-- You never run installers or any install-type action on the user's system. The only commands you run are read-only local inspections (e.g. `git remote -v`, reading `.git/config`).
+- You never run installers or any install-type action on the user's system. The only commands you run are read-only git-metadata inspections of the project — locally (e.g. `git remote -v`, reading `.git/config`, `git symbolic-ref`) or, when you need to read the default branch and local detection fails, a lightweight metadata probe of the project's own remote (`git remote show origin`). No code is fetched, cloned, or downloaded.
 - Before writing anything, show a diff and wait for confirmation.
 
 If the user declines any step, stop that step cleanly and continue with the rest.
@@ -54,7 +54,7 @@ Gather signals without making assumptions:
 2. If a `SKILL.md` is found, read its YAML frontmatter and extract `name` and `description`. If the frontmatter is missing, empty, or fails to parse, fall back to the directory name for `name`, tell the user what happened, and ask them for a one-line description (or offer to proceed without one).
 3. Run `git remote -v` (or read `.git/config`, or ask the user) to infer the hosting platform and the `owner/repo` slug. Support GitHub, GitLab, Bitbucket, Gitea/Codeberg, and SourceHut.
    - **Multiple remotes**: prefer `origin` by default. If more than one remote exists (common in fork setups: `origin` + `upstream`), list them with their URLs and ask which one to advertise — fork authors typically want `upstream`, mirror maintainers may want `origin`.
-   - **Running from a sub-path that belongs to a git submodule**: submodules have their own remote that differs from the parent repo's. Run `git remote -v` from the skill's own directory (where the `SKILL.md` lives), not the project root. If the directory itself is inside a submodule, the submodule's remote is the correct source for the skill.
+   - **Git submodule**: first verify whether the skill's directory is actually a submodule — it is if any of the following hold: the top-level repo has a `.gitmodules` file listing this path, `git submodule status <path>` prints a matching entry, or the directory contains a `.git` *file* (not a `.git/` directory) that points to a `gitdir`. If confirmed, run `git remote -v` from inside the submodule directory (its remote is the canonical source for the skill, and differs from the parent repo's). If the sub-path is NOT a submodule, keep using the parent repo's remote — a plain subdirectory has no remote of its own.
 4. If multiple `SKILL.md` files exist, list them and ask whether to advertise one, several, or all of them. See the "Multiple skills in one repo" entry under Edge Cases for how the selection shapes the block.
 5. Announce what you detected in plain language before proceeding — which skills, which host, which remote, and (when you get to Step 3) which READMEs and locales. A one-line summary like `"detected 1 skill (setup-skillx) on github.com/skillx-run/skillx via origin; found README.md + README.zh-CN.md"` gives the user a chance to spot a missing locale or wrong remote before you start writing.
 
@@ -72,7 +72,11 @@ General form: `<host>/<owner>/<repo>/tree/<ref>/<path-to-skill>` (drop `/tree/<r
 
 Pick `<ref>`:
 
-- Default to the repo's **default branch**, not the currently checked-out branch. Detect it with `git symbolic-ref refs/remotes/origin/HEAD` (returns `refs/remotes/origin/<default>`) or `git remote show origin | grep "HEAD branch"`. Avoid reading `.git/HEAD` — that tracks the current checkout, so it will produce a `feature/…` URL if the author ran the skill from a feature branch. Fall back to asking the user or defaulting to `main` only if both detection commands fail.
+- Default to the repo's **default branch**, not the currently checked-out branch. Detect it in this order:
+  1. **Local**: `git symbolic-ref refs/remotes/origin/HEAD` (returns `refs/remotes/origin/<default>`). Fast, no network, works whenever the repo was obtained via `git clone`.
+  2. **If step 1 fails** — the symbolic ref may be absent on repos created with `git init` + `git remote add` and never `set-head` — offer the user a lightweight remote probe (`git remote show origin | grep "HEAD branch"`); mention that this makes a single read-only request to the remote, consistent with the Safety Guarantees.
+  3. **If both fail**: ask the user, or default to `main`.
+  Do **not** read `.git/HEAD` — that tracks the current checkout, so it will produce a `feature/…` URL if the author ran the skill from a feature branch.
 - If the repo has published release tags, ask the user whether to pin to the latest tag (e.g. `/tree/v1.2/...`) — a pinned tag gives users a stable target, the default branch gives them the latest.
 
 Per-host URL shape (use these when constructing the link; the CLI also accepts the older `<platform>:<owner>/<repo>` shorthand, but prefer full URLs):
@@ -176,7 +180,7 @@ At the end, print a short summary. Adapt the wording to the mode:
 ## Idempotency Rules
 
 - The marker pair `<!-- skillx:begin:setup-skillx -->` / `<!-- skillx:end:setup-skillx -->` is the single source of truth for the block.
-- **Update by marker, not by position.** On a second run, locate the existing block by its markers and replace the content *in place* — do **not** remove it and re-insert a fresh copy at the Step 3.5 default location. If the user moved the block elsewhere in the README (for example, demoted it below a longer intro), respect that placement.
+- **Update by marker, not by position.** On a second run, locate the existing block by its markers and replace the content *in place* — do **not** remove it and re-insert a fresh copy at the default insertion point from Step 3 (the "pick a sensible insertion point" rule only applies when the markers don't yet exist). If the user moved the block elsewhere in the README (for example, demoted it below a longer intro), respect that placement.
 - A second run of this skill should be a no-op when the block is already present and unchanged.
 - Never duplicate the block. If a legacy copy exists without markers (for example, a hand-written section that already mentions skillx), ask the user whether to replace it with the marked block or leave it alone.
 
