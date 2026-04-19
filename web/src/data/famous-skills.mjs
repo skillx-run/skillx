@@ -2,7 +2,6 @@ export const famousSkills = [
   {
     slug: 'frontend-design',
     title: 'Frontend Design',
-    commandSource: 'github:anthropics/skills/skills/frontend-design',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/frontend-design',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md',
     docsHref: '/getting-started/famous-skills/#frontend-design',
@@ -12,17 +11,33 @@ export const famousSkills = [
     homepageTitle: 'Redesign a landing page',
     homepageBody:
       'Use a public Agent Skill to redesign a real landing page section with production-ready code.',
-    homepagePrompt:
-      'Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code.',
+    homepagePrompt: 'Redesign the hero section.',
     homepageNote: 'A strong first run if you want a visible, high-signal result.',
     docsDescription:
       'Use this when you want the most convincing first run: the prompt is concrete, the output is visible, and the value of a reusable skill is easy to judge from the result.',
     docsPrompt: 'Design a distinctive landing page for a developer tool',
   },
   {
+    slug: 'setup-skillx',
+    title: 'Setup skillx',
+    runUrl: 'https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx',
+    sourceUrl: 'https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md',
+    docsHref: '/getting-started/famous-skills/#setup-skillx',
+    recommendedReason:
+      'Best when you author skills yourself and want a clean Run-with-skillx block in your README without hand-writing it.',
+    bestFor: 'Advertising your own skill so others can try it with skillx',
+    homepageTitle: 'Advertise your skill',
+    homepageBody:
+      'Generate a Run-with-skillx block for your skill\'s README so others can try it in one command.',
+    homepagePrompt: '',
+    homepageNote: 'The skill is conversational — just run it and it will walk you through detecting your project and drafting the block.',
+    docsDescription:
+      'Use this when you publish a skill and want a tidy "Run with skillx" block in your README. It detects the skill, infers the hosting platform, and inserts a copyable command block with diff preview before writing. Runs without a free-text prompt — the skill drives the conversation.',
+    docsPrompt: '',
+  },
+  {
     slug: 'webapp-testing',
     title: 'Webapp Testing',
-    commandSource: 'github:anthropics/skills/skills/webapp-testing',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/webapp-testing',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/webapp-testing/SKILL.md',
     docsHref: '/getting-started/famous-skills/#webapp-testing',
@@ -42,7 +57,6 @@ export const famousSkills = [
   {
     slug: 'pdf-processing',
     title: 'PDF Processing',
-    commandSource: 'github:anthropics/skills/skills/pdf',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/pdf',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/pdf/SKILL.md',
     docsHref: '/getting-started/famous-skills/#pdf-processing',
@@ -62,7 +76,6 @@ export const famousSkills = [
   {
     slug: 'mcp-builder',
     title: 'MCP Builder',
-    commandSource: 'github:anthropics/skills/skills/mcp-builder',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/mcp-builder',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/mcp-builder/SKILL.md',
     docsHref: '/getting-started/famous-skills/#mcp-builder',
@@ -82,7 +95,6 @@ export const famousSkills = [
   {
     slug: 'claude-api',
     title: 'Claude API',
-    commandSource: 'github:anthropics/skills/skills/claude-api',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/claude-api',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/claude-api/SKILL.md',
     docsHref: '/getting-started/famous-skills/#claude-api',
@@ -102,7 +114,6 @@ export const famousSkills = [
   {
     slug: 'canvas-design',
     title: 'Canvas Design',
-    commandSource: 'github:anthropics/skills/skills/canvas-design',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/canvas-design',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/canvas-design/SKILL.md',
     docsHref: '/getting-started/famous-skills/#canvas-design',
@@ -122,7 +133,6 @@ export const famousSkills = [
   {
     slug: 'docx',
     title: 'DOCX',
-    commandSource: 'github:anthropics/skills/skills/docx',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/docx',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/docx/SKILL.md',
     docsHref: '/getting-started/famous-skills/#docx',
@@ -142,7 +152,6 @@ export const famousSkills = [
   {
     slug: 'xlsx',
     title: 'XLSX',
-    commandSource: 'github:anthropics/skills/skills/xlsx',
     runUrl: 'https://github.com/anthropics/skills/tree/main/skills/xlsx',
     sourceUrl: 'https://github.com/anthropics/skills/blob/main/skills/xlsx/SKILL.md',
     docsHref: '/getting-started/famous-skills/#xlsx',
@@ -168,5 +177,6 @@ export function getFamousSkill(slug) {
 }
 
 export function buildSkillxRunCommand(skill, prompt) {
-  return `skillx run ${skill.commandSource ?? skill.runUrl} "${prompt}"`;
+  if (!prompt) return `skillx run ${skill.runUrl}`;
+  return `skillx run ${skill.runUrl} "${prompt}"`;
 }

@@ -24,9 +24,10 @@ const cases = famousSkills.slice(0, 3).map((skill) => ({
         <article class="case-card">
           <h3>{item.title}</h3>
           <p class="case-body">{item.body}</p>
-          <div class="case-command">
+          <button class="case-command copy-command" type="button" data-command={item.command}>
             <code>{item.command}</code>
-          </div>
+            <span class="copy-label">Copy</span>
+          </button>
           <p class="case-note">{item.note}</p>
           <div class="case-actions">
             <a href={item.docsHref}>See docs</a>
@@ -101,16 +102,47 @@ const cases = famousSkills.slice(0, 3).map((skill) => ({
   }
 
   .case-command {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    width: 100%;
     padding: 0.95rem;
     border: 1px solid var(--landing-border);
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.78);
+    text-align: left;
+    cursor: pointer;
+    appearance: none;
+    font: inherit;
+    color: inherit;
+    transition:
+      border-color 0.18s ease,
+      background-color 0.18s ease;
+  }
+
+  .case-command:hover {
+    border-color: var(--landing-border-strong);
+    background: var(--landing-surface-strong);
   }
 
   .case-command code {
+    flex: 1;
     font-size: 0.84rem;
     line-height: 1.55;
     word-break: break-word;
+  }
+
+  .copy-label {
+    flex-shrink: 0;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    background: var(--landing-accent-soft);
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .case-note {

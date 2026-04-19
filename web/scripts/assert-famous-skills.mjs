@@ -27,7 +27,7 @@ const slugs = new Set();
 const docsHrefs = new Set();
 const runUrls = new Set();
 
-assert(famousSkills.length >= 8, 'Famous skills list must contain at least 8 curated skills');
+assert(famousSkills.length >= 9, 'Famous skills list must contain at least 9 curated skills');
 
 for (const skill of famousSkills) {
   assert(!slugs.has(skill.slug), `Duplicate famous skill slug: ${skill.slug}`);
@@ -50,7 +50,7 @@ assert(
 
 const firstRunDoc = readFileSync(resolve('src/content/docs/getting-started/first-run.md'), 'utf8');
 assert(
-  firstRunDoc.includes(primaryFamousSkill.commandSource) &&
+  firstRunDoc.includes(primaryFamousSkill.runUrl) &&
     firstRunDoc.includes(primaryFamousSkill.homepagePrompt),
   'First Run doc must include the primary famous skill command',
 );
@@ -67,15 +67,14 @@ for (const skill of famousSkills) {
   assert(
     famousSkillsDoc.includes(skill.runUrl) &&
       famousSkillsDoc.includes(skill.sourceUrl) &&
-      famousSkillsDoc.includes(`id="${skill.slug}"`) &&
-      famousSkillsDoc.includes(skill.commandSource),
+      famousSkillsDoc.includes(`id="${skill.slug}"`),
     `Famous Skills doc must include URL, source, and anchor for ${skill.slug}`,
   );
 }
 
 const command = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.homepagePrompt);
 assert(
-  command.includes(primaryFamousSkill.commandSource),
+  command.includes(primaryFamousSkill.runUrl),
   'Primary command should include the primary famous skill URL',
 );
 

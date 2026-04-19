@@ -16,7 +16,7 @@ curl -fsSL https://skillx.run/install.sh | sh
 Use the same public Agent Skill featured on the landing page:
 
 ```bash
-skillx run github:anthropics/skills/skills/frontend-design "Redesign the hero section of this landing page for higher conversion. Keep the existing stack and return production-ready code."
+skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Redesign the hero section."
 ```
 
 ## 3. Expect This Kind of Output

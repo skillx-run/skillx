@@ -25,16 +25,6 @@ const heroCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill
         <a class="button button-primary" href="#first-run">Run your first skill</a>
         <a class="button button-secondary" href="#how-it-works">How it works</a>
       </div>
-
-      <div class="trust-block">
-        <p class="trust-label">Built for first-run trust without permanent install baggage.</p>
-        <div class="trust-strip" aria-label="Homepage trust strip">
-          <span>Public GitHub URLs</span>
-          <span>Scan before inject</span>
-          <span>Temporary by default</span>
-          <span>Common agent workflows</span>
-        </div>
-      </div>
     </div>
 
     <div class="terminal-card" aria-label="Terminal replay">
@@ -150,36 +140,6 @@ const heroCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill
     border-color: var(--landing-border-strong);
   }
 
-  .trust-block {
-    margin-top: 1.5rem;
-  }
-
-  .trust-label {
-    margin-bottom: 0.8rem;
-    font-size: 0.92rem;
-    color: var(--landing-muted);
-  }
-
-  .trust-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem;
-  }
-
-  .trust-strip span {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.35rem;
-    padding: 0.45rem 0.8rem;
-    border-radius: 999px;
-    border: 1px solid var(--landing-border);
-    background: var(--landing-surface);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.86rem;
-    font-weight: 600;
-    color: var(--landing-text);
-  }
-
   .terminal-card {
     border: 1px solid var(--landing-border);
     border-radius: var(--landing-radius-xl);
@@ -235,6 +195,12 @@ const heroCommand = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill
     padding-bottom: 0.6rem;
     margin-bottom: 0.1rem;
     border-bottom: 1px dashed var(--landing-border);
+  }
+
+  .terminal-line-command span:last-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .prompt {

@@ -21,25 +21,6 @@ const steps = [
     description: 'Remove injected files and session artifacts when the run is finished.',
   },
 ];
-
-const proofCards = [
-  {
-    title: 'Built-in analyzers',
-    body: 'Security checks before injection, not after something goes wrong.',
-  },
-  {
-    title: 'Risk-based gate',
-    body: 'A clearer way to understand whether a skill looks safe to run.',
-  },
-  {
-    title: 'Common agents',
-    body: 'Use the same workflow across the agents people already have installed.',
-  },
-  {
-    title: 'Git hosts + archives',
-    body: 'Start with GitHub now, then keep the same workflow across supported remote sources.',
-  },
-];
 ---
 
 <section
@@ -63,15 +44,6 @@ const proofCards = [
           <p class="step-index">0{index + 1}</p>
           <h3>{step.name}</h3>
           <p>{step.description}</p>
-        </article>
-      ))}
-    </div>
-
-    <div class="proof-grid" aria-label="Trust proof cards">
-      {proofCards.map((proof) => (
-        <article class="proof-card">
-          <h3>{proof.title}</h3>
-          <p>{proof.body}</p>
         </article>
       ))}
     </div>
@@ -120,8 +92,7 @@ const proofCards = [
     gap: 0.9rem;
   }
 
-  .step-card,
-  .proof-card {
+  .step-card {
     border: 1px solid var(--landing-border);
     border-radius: var(--landing-radius-lg);
     background:
@@ -150,39 +121,18 @@ const proofCards = [
     text-transform: lowercase;
   }
 
-  .step-card p,
-  .proof-card p {
+  .step-card p {
     color: var(--landing-muted);
-  }
-
-  .proof-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.9rem;
-  }
-
-  .proof-card {
-    padding: 1.2rem;
-  }
-
-  .proof-card h3 {
-    margin-bottom: 0.7rem;
-    font-size: 1.18rem;
   }
 
   @media (max-width: 1080px) {
     .mechanism-flow {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
-    .proof-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
   }
 
   @media (max-width: 720px) {
-    .mechanism-flow,
-    .proof-grid {
+    .mechanism-flow {
       grid-template-columns: 1fr;
     }
   }

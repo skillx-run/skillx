@@ -41,13 +41,36 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
         <td class="famous-command-cell">
           <div class="famous-command-stack">
             <div class="famous-command-scroll">
-              <code>skillx run github:anthropics/skills/skills/frontend-design "Design a distinctive landing page for a developer tool"</code>
+              <code>skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Design a distinctive landing page for a developer tool"</code>
             </div>
             <div class="famous-command-actions">
-              <button type="button" class="famous-copy-button" data-copy='skillx run github:anthropics/skills/skills/frontend-design "Design a distinctive landing page for a developer tool"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+              <button type="button" class="famous-copy-button" data-copy='skillx run https://github.com/anthropics/skills/tree/main/skills/frontend-design "Design a distinctive landing page for a developer tool"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
                 <span>Copy</span>
               </button>
               <a class="famous-source-link" href="https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md">View source</a>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <strong>Setup skillx</strong>
+          <div class="famous-skill-links">
+            <a href="https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md">SKILL.md</a>
+            <a href="https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx">Directory</a>
+          </div>
+        </td>
+        <td>Advertising your own skill so others can try it with skillx</td>
+        <td class="famous-command-cell">
+          <div class="famous-command-stack">
+            <div class="famous-command-scroll">
+              <code>skillx run https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx</code>
+            </div>
+            <div class="famous-command-actions">
+              <button type="button" class="famous-copy-button" data-copy="skillx run https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx" onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+                <span>Copy</span>
+              </button>
+              <a class="famous-source-link" href="https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md">View source</a>
             </div>
           </div>
         </td>
@@ -64,10 +87,10 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
         <td class="famous-command-cell">
           <div class="famous-command-stack">
             <div class="famous-command-scroll">
-              <code>skillx run github:anthropics/skills/skills/webapp-testing "Test my local web app at http://localhost:3000 for UI regressions and console errors"</code>
+              <code>skillx run https://github.com/anthropics/skills/tree/main/skills/webapp-testing "Test my local web app at http://localhost:3000 for UI regressions and console errors"</code>
             </div>
             <div class="famous-command-actions">
-              <button type="button" class="famous-copy-button" data-copy='skillx run github:anthropics/skills/skills/webapp-testing "Test my local web app at http://localhost:3000 for UI regressions and console errors"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+              <button type="button" class="famous-copy-button" data-copy='skillx run https://github.com/anthropics/skills/tree/main/skills/webapp-testing "Test my local web app at http://localhost:3000 for UI regressions and console errors"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
                 <span>Copy</span>
               </button>
               <a class="famous-source-link" href="https://github.com/anthropics/skills/blob/main/skills/webapp-testing/SKILL.md">View source</a>
@@ -87,10 +110,10 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
         <td class="famous-command-cell">
           <div class="famous-command-stack">
             <div class="famous-command-scroll">
-              <code>skillx run github:anthropics/skills/skills/pdf "Extract the text, tables, and form fields from this PDF"</code>
+              <code>skillx run https://github.com/anthropics/skills/tree/main/skills/pdf "Extract the text, tables, and form fields from this PDF"</code>
             </div>
             <div class="famous-command-actions">
-              <button type="button" class="famous-copy-button" data-copy='skillx run github:anthropics/skills/skills/pdf "Extract the text, tables, and form fields from this PDF"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+              <button type="button" class="famous-copy-button" data-copy='skillx run https://github.com/anthropics/skills/tree/main/skills/pdf "Extract the text, tables, and form fields from this PDF"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
                 <span>Copy</span>
               </button>
               <a class="famous-source-link" href="https://github.com/anthropics/skills/blob/main/skills/pdf/SKILL.md">View source</a>
@@ -110,10 +133,10 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
         <td class="famous-command-cell">
           <div class="famous-command-stack">
             <div class="famous-command-scroll">
-              <code>skillx run github:anthropics/skills/skills/mcp-builder "Create an MCP server plan and starter implementation for a GitHub Issues integration"</code>
+              <code>skillx run https://github.com/anthropics/skills/tree/main/skills/mcp-builder "Create an MCP server plan and starter implementation for a GitHub Issues integration"</code>
             </div>
             <div class="famous-command-actions">
-              <button type="button" class="famous-copy-button" data-copy='skillx run github:anthropics/skills/skills/mcp-builder "Create an MCP server plan and starter implementation for a GitHub Issues integration"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+              <button type="button" class="famous-copy-button" data-copy='skillx run https://github.com/anthropics/skills/tree/main/skills/mcp-builder "Create an MCP server plan and starter implementation for a GitHub Issues integration"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
                 <span>Copy</span>
               </button>
               <a class="famous-source-link" href="https://github.com/anthropics/skills/blob/main/skills/mcp-builder/SKILL.md">View source</a>
@@ -133,10 +156,10 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
         <td class="famous-command-cell">
           <div class="famous-command-stack">
             <div class="famous-command-scroll">
-              <code>skillx run github:anthropics/skills/skills/claude-api "Add prompt caching and streaming to my Anthropic API app and explain the code changes"</code>
+              <code>skillx run https://github.com/anthropics/skills/tree/main/skills/claude-api "Add prompt caching and streaming to my Anthropic API app and explain the code changes"</code>
             </div>
             <div class="famous-command-actions">
-              <button type="button" class="famous-copy-button" data-copy='skillx run github:anthropics/skills/skills/claude-api "Add prompt caching and streaming to my Anthropic API app and explain the code changes"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+              <button type="button" class="famous-copy-button" data-copy='skillx run https://github.com/anthropics/skills/tree/main/skills/claude-api "Add prompt caching and streaming to my Anthropic API app and explain the code changes"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
                 <span>Copy</span>
               </button>
               <a class="famous-source-link" href="https://github.com/anthropics/skills/blob/main/skills/claude-api/SKILL.md">View source</a>
@@ -156,10 +179,10 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
         <td class="famous-command-cell">
           <div class="famous-command-stack">
             <div class="famous-command-scroll">
-              <code>skillx run github:anthropics/skills/skills/canvas-design "Create a bold product announcement poster in a modern editorial style"</code>
+              <code>skillx run https://github.com/anthropics/skills/tree/main/skills/canvas-design "Create a bold product announcement poster in a modern editorial style"</code>
             </div>
             <div class="famous-command-actions">
-              <button type="button" class="famous-copy-button" data-copy='skillx run github:anthropics/skills/skills/canvas-design "Create a bold product announcement poster in a modern editorial style"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+              <button type="button" class="famous-copy-button" data-copy='skillx run https://github.com/anthropics/skills/tree/main/skills/canvas-design "Create a bold product announcement poster in a modern editorial style"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
                 <span>Copy</span>
               </button>
               <a class="famous-source-link" href="https://github.com/anthropics/skills/blob/main/skills/canvas-design/SKILL.md">View source</a>
@@ -179,10 +202,10 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
         <td class="famous-command-cell">
           <div class="famous-command-stack">
             <div class="famous-command-scroll">
-              <code>skillx run github:anthropics/skills/skills/docx "Create a polished project update memo as a .docx file with headings and a summary table"</code>
+              <code>skillx run https://github.com/anthropics/skills/tree/main/skills/docx "Create a polished project update memo as a .docx file with headings and a summary table"</code>
             </div>
             <div class="famous-command-actions">
-              <button type="button" class="famous-copy-button" data-copy='skillx run github:anthropics/skills/skills/docx "Create a polished project update memo as a .docx file with headings and a summary table"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+              <button type="button" class="famous-copy-button" data-copy='skillx run https://github.com/anthropics/skills/tree/main/skills/docx "Create a polished project update memo as a .docx file with headings and a summary table"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
                 <span>Copy</span>
               </button>
               <a class="famous-source-link" href="https://github.com/anthropics/skills/blob/main/skills/docx/SKILL.md">View source</a>
@@ -202,10 +225,10 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
         <td class="famous-command-cell">
           <div class="famous-command-stack">
             <div class="famous-command-scroll">
-              <code>skillx run github:anthropics/skills/skills/xlsx "Clean this sales workbook, add summary formulas, and prepare it for review"</code>
+              <code>skillx run https://github.com/anthropics/skills/tree/main/skills/xlsx "Clean this sales workbook, add summary formulas, and prepare it for review"</code>
             </div>
             <div class="famous-command-actions">
-              <button type="button" class="famous-copy-button" data-copy='skillx run github:anthropics/skills/skills/xlsx "Clean this sales workbook, add summary formulas, and prepare it for review"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+              <button type="button" class="famous-copy-button" data-copy='skillx run https://github.com/anthropics/skills/tree/main/skills/xlsx "Clean this sales workbook, add summary formulas, and prepare it for review"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
                 <span>Copy</span>
               </button>
               <a class="famous-source-link" href="https://github.com/anthropics/skills/blob/main/skills/xlsx/SKILL.md">View source</a>
@@ -220,6 +243,10 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
 <h3 id="frontend-design">Frontend Design</h3>
 
 Use this when you want the most convincing first run: the prompt is concrete, the output is visible, and the value of a reusable skill is easy to judge from the result.
+
+<h3 id="setup-skillx">Setup skillx</h3>
+
+Use this when you publish a skill and want a tidy "Run with skillx" block in your README. It detects the skill, infers the hosting platform, and inserts a copyable command block with diff preview before writing.
 
 <h3 id="webapp-testing">Webapp Testing</h3>
 
