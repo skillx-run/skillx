@@ -79,32 +79,51 @@ const authorCommand = buildSkillxRunCommand(authorSkill, authorSkill.homepagePro
   }
 
   .author-callout {
+    position: relative;
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
-    gap: 1.25rem;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 1.4rem;
     align-items: center;
-    margin-top: 1.6rem;
-    padding: 1.1rem 1.3rem;
+    margin-top: 1.8rem;
+    padding: 1.05rem 1.35rem 1.05rem 1.55rem;
     border: 1px solid var(--landing-border);
-    border-radius: var(--landing-radius-lg);
+    border-radius: 16px;
     background:
       linear-gradient(
-        135deg,
-        rgba(53, 92, 255, 0.05) 0%,
-        rgba(250, 247, 240, 0.7) 100%
+        180deg,
+        rgba(247, 248, 252, 0.95) 0%,
+        rgba(241, 244, 252, 0.92) 100%
       );
+    overflow: hidden;
+  }
+
+  .author-callout::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: linear-gradient(
+      180deg,
+      var(--landing-accent) 0%,
+      var(--landing-accent-strong) 100%
+    );
   }
 
   .author-callout-head {
     display: flex;
     flex-direction: column;
-    gap: 0.55rem;
+    gap: 0.5rem;
   }
 
   .author-callout-badge {
     align-self: flex-start;
-    padding: 0.28rem 0.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem;
     border-radius: 999px;
     background: var(--landing-accent-soft);
     color: var(--landing-accent-strong);
@@ -115,6 +134,12 @@ const authorCommand = buildSkillxRunCommand(authorSkill, authorSkill.homepagePro
     text-transform: uppercase;
   }
 
+  .author-callout-badge::before {
+    content: '✱';
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
   .author-callout-text {
     margin: 0;
     color: var(--landing-text);
@@ -123,62 +148,71 @@ const authorCommand = buildSkillxRunCommand(authorSkill, authorSkill.homepagePro
   }
 
   .author-callout-text code {
-    padding: 0.08rem 0.32rem;
+    padding: 0.1rem 0.4rem;
     border-radius: 6px;
-    background: rgba(17, 17, 17, 0.06);
-    color: var(--landing-text);
-    font-size: 0.9em;
+    background: rgba(53, 92, 255, 0.1);
+    color: var(--landing-accent-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    font-weight: 600;
   }
 
   .author-callout-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.2rem;
-    margin-left: 0.35rem;
+    gap: 0.25rem;
+    margin-left: 0.4rem;
     color: var(--landing-accent-strong);
     font-weight: 700;
     text-decoration: none;
     white-space: nowrap;
+    transition: gap 0.18s ease;
   }
 
   .author-callout-link:hover {
+    gap: 0.45rem;
     text-decoration: underline;
   }
 
   .author-callout-command {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    padding: 0.8rem 1rem;
-    border: 1px solid var(--landing-border);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.85);
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--landing-border-strong);
+    border-radius: 12px;
+    background: #fff;
     text-align: left;
     cursor: pointer;
     appearance: none;
     font: inherit;
     color: inherit;
+    box-shadow: 0 1px 0 rgba(17, 17, 17, 0.02);
     transition:
       border-color 0.18s ease,
-      background-color 0.18s ease;
+      box-shadow 0.18s ease,
+      transform 0.18s ease;
   }
 
   .author-callout-command:hover {
-    border-color: var(--landing-border-strong);
-    background: #fff;
+    border-color: var(--landing-accent);
+    box-shadow: 0 4px 12px rgba(53, 92, 255, 0.12);
+    transform: translateY(-1px);
   }
 
   .author-callout-command code {
     flex: 1;
-    font-size: 0.84rem;
+    font-size: 0.85rem;
     line-height: 1.5;
     word-break: break-word;
+    color: var(--landing-text);
   }
 
   @media (max-width: 900px) {
     .author-callout {
       grid-template-columns: 1fr;
       gap: 1rem;
+      padding: 1rem 1.2rem 1rem 1.4rem;
     }
   }
 
