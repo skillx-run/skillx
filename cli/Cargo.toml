@@ -1,6 +1,6 @@
 [package]
 name = "skillx"
-version = "0.8.1"
+version = "0.8.2"
 edition = "2021"
 description = "npx for Agent Skills — fetch, scan, inject, run, clean in one command"
 license = "Apache-2.0"

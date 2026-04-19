@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-04-20
+
+### Fixed
+
+- Scanner WARN markdown rules no longer fire on patterns like `` `rm -rf` `` wrapped in inline code spans (backtick spans are stripped before WARN matching; DANGER/BLOCK still match the original text so wrapping can't be used as evasion)
+- Scanner WARN/DANGER matches suppressed inside Python triple-quoted docstrings via `normalize::python_docstring_mask` (applied to `.py` files and files with a python shebang; BLOCK rules still fire inside docstrings)
+
 ## [0.8.1] - 2026-04-17
 
 ### Fixed
@@ -215,6 +222,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SARIF 2.1.0 output format for scanner results
 - Text and JSON output formatters
 
+[0.8.2]: https://github.com/skillx-run/skillx/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/skillx-run/skillx/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/skillx-run/skillx/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/skillx-run/skillx/compare/v0.6.0...v0.7.0
