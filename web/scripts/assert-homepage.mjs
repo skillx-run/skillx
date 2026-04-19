@@ -33,9 +33,11 @@ const checks = [
   primaryFamousSkill.runUrl,
   primaryFamousSkill.homepagePrompt,
   'For skill authors',
-  'Shipping a skill? Generate a Run-with-skillx block for your README in one command.',
-  authorCommand,
+  'Shipping a skill?',
+  'setup-skillx',
+  'generates a Run-with-skillx block for',
   '/guides/advertise-your-skill/',
+  authorCommand,
   'https://github.com/skillx-run/skillx',
 ];
 
