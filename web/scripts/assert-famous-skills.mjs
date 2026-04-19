@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   buildSkillxRunCommand,
@@ -7,13 +7,39 @@ import {
   primaryFamousSkill,
 } from '../src/data/famous-skills.mjs';
 
+const SELF_URL_RE =
+  /^https:\/\/github\.com\/skillx-run\/skillx\/(tree|blob)\/main\/(.+)$/;
+const REPO_ROOT = resolve('..');
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
   }
 }
 
+function assertSelfUrlExistsLocally(url) {
+  const match = url.match(SELF_URL_RE);
+  assert(match, `Self URL not in expected tree|blob/main form: ${url}`);
+  const [, kind, repoPath] = match;
+  const fullPath = resolve(REPO_ROOT, repoPath);
+  assert(existsSync(fullPath), `Self URL path missing locally: ${url} -> ${fullPath}`);
+  const stat = statSync(fullPath);
+  if (kind === 'tree') {
+    assert(stat.isDirectory(), `Self URL "tree" must be a directory: ${url}`);
+  } else {
+    assert(stat.isFile(), `Self URL "blob" must be a file: ${url}`);
+  }
+}
+
 function assertUrlOk(url) {
+  // Self URLs (this repo) are validated against the working tree so PRs that
+  // rename or add paths can pass before merging. Live HTTP would require the
+  // URL to already exist on origin/main, which is a chicken-and-egg with PRs.
+  if (SELF_URL_RE.test(url)) {
+    assertSelfUrlExistsLocally(url);
+    return;
+  }
+
   const status = execFileSync(
     'curl',
     ['-I', '-L', '-sS', '--max-time', '20', '-o', '/dev/null', '-w', '%{http_code}', url],
