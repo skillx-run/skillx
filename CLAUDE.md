@@ -167,6 +167,8 @@ cargo run -- upgrade             # Check for CLI updates
 - CI: GitHub Actions with `ci.yml` (fmt + clippy + test multi-platform + cargo-deny audit) and `release.yml` (tag → cross-compile → GitHub Release → crates.io → Homebrew tap)
 - `deny.toml` configures cargo-deny for license allow-list and advisory checks
 - Scanner WARN rules skip comment lines (script) and code blocks (markdown) to reduce false positives
+- Scanner WARN/DANGER matches are suppressed inside Python triple-quoted docstrings (via `normalize::python_docstring_mask`); applied to `.py` files and files with a python shebang. BLOCK rules still fire in docstrings.
+- Scanner WARN markdown rules match against an inline-code-stripped variant of each line (backtick spans blanked to spaces) so descriptive text like `` `rm -rf` `` in prose no longer triggers MD-004. DANGER/BLOCK rules still match original text to avoid backtick wrapping becoming an evasion
 - `web/public/install.sh` verifies SHA256 checksums before extraction (graceful degradation if unavailable)
 - Homebrew formula template in `Formula/skillx.rb` (SHA256 placeholders replaced by release CI)
 - cargo-binstall supported via `[package.metadata.binstall]` in Cargo.toml

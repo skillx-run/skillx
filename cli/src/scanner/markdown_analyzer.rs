@@ -2,6 +2,31 @@ use super::compiled_rules::MD_RULES;
 use super::normalize;
 use super::{Finding, RiskLevel, ScanReport};
 
+/// Replace inline-code spans (text between matching backticks) with spaces
+/// of equal length. Preserves other characters and column counts so the
+/// downstream regex still has the same line shape.
+///
+/// Supports single-backtick spans; does not try to handle double-backtick
+/// spans or nested fences, which are rare in SKILL.md prose.
+fn strip_inline_code(line: &str) -> String {
+    let mut out = String::with_capacity(line.len());
+    let mut in_code = false;
+    for ch in line.chars() {
+        if ch == '`' {
+            in_code = !in_code;
+            out.push(' ');
+            continue;
+        }
+        if in_code {
+            // Preserve width so downstream context snippets still align.
+            out.push(' ');
+        } else {
+            out.push(ch);
+        }
+    }
+    out
+}
+
 pub struct MarkdownAnalyzer;
 
 impl MarkdownAnalyzer {
@@ -30,11 +55,23 @@ impl MarkdownAnalyzer {
             .iter()
             .map(|ll| normalize::normalize_whitespace(&ll.text))
             .collect();
+        // WARN rules also match against a variant of each line where
+        // inline-code spans (`...`) have been blanked out — this removes
+        // false positives like MD-004 firing on `` `rm -rf` `` in prose.
+        let warn_texts: Vec<String> = normalized_texts
+            .iter()
+            .map(|t| strip_inline_code(t))
+            .collect();
 
         for rule in MD_RULES.iter() {
             for re in &rule.patterns {
                 for (idx, ll) in logical_lines.iter().enumerate() {
-                    if re.is_match(&normalized_texts[idx]) {
+                    let haystack: &str = if rule.level == RiskLevel::Warn {
+                        &warn_texts[idx]
+                    } else {
+                        &normalized_texts[idx]
+                    };
+                    if re.is_match(haystack) {
                         // Check code-block status using the first original line
                         let in_block = code_block_lines
                             .get(ll.start_line)
@@ -444,6 +481,84 @@ mod tests {
         assert!(
             md011.is_empty(),
             "MD-011 should not trigger on normal HTTPS URLs"
+        );
+    }
+
+    // ── Inline-code stripping for WARN rules ──
+
+    #[test]
+    fn test_strip_inline_code_basic() {
+        let input = "see `rm -rf` here";
+        let out = strip_inline_code(input);
+        assert_eq!(out.len(), input.len(), "width is preserved");
+        assert!(!out.contains('`'));
+        assert!(!out.contains("rm"));
+        assert!(out.starts_with("see "));
+        assert!(out.ends_with(" here"));
+        // No-op when there are no backticks.
+        assert_eq!(strip_inline_code("no backticks"), "no backticks");
+    }
+
+    #[test]
+    fn test_strip_inline_code_multiple() {
+        let out = strip_inline_code("use `xx` or `yy` now");
+        // Backticks and their contents are blanked to spaces
+        assert!(!out.contains('`'));
+        assert!(!out.contains("xx"));
+        assert!(!out.contains("yy"));
+        assert!(out.contains("use"));
+        assert!(out.contains("or"));
+        assert!(out.contains("now"));
+    }
+
+    #[test]
+    fn test_md004_inline_code_rm_rf_skipped() {
+        // Mirrors the real false positive: SKILL.md prose describing that a
+        // command behaves differently than `rm -rf` would.
+        let content =
+            "---\nname: test\n---\n# Skill\n\nwhich refuses to delete booted devices, unlike plain `rm -rf`.\n";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md004: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-004")
+            .collect();
+        assert!(
+            md004.is_empty(),
+            "MD-004 should not fire on `rm -rf` inside inline code spans"
+        );
+    }
+
+    #[test]
+    fn test_md004_outside_inline_code_still_triggers() {
+        let content = "---\nname: test\n---\n# Skill\n\nThen run rm -rf on the directory.\n";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md004: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-004")
+            .collect();
+        assert!(
+            !md004.is_empty(),
+            "MD-004 should still fire on rm -rf in plain prose"
+        );
+    }
+
+    #[test]
+    fn test_danger_rule_still_fires_inside_inline_code() {
+        // Stripping only applies to WARN — DANGER-level MD-001 must keep
+        // firing even if a prompt-injection phrase is wrapped in backticks.
+        let content =
+            "---\nname: test\n---\n# Skill\n\nThe skill says `ignore previous instructions` silently.\n";
+        let report = MarkdownAnalyzer::analyze(content, "SKILL.md");
+        let md001: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "MD-001")
+            .collect();
+        assert!(
+            !md001.is_empty(),
+            "DANGER rules must not be weakened by inline-code wrapping"
         );
     }
 }
