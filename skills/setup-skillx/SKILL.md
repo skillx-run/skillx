@@ -2,7 +2,7 @@
 name: setup-skillx
 description: Add a "Run with skillx" quick-start section to a skill project's README, and optionally to its landing page
 author: skillx-run
-version: "1.2.0"
+version: "1.3.0"
 license: MIT
 tags:
   - onboarding
@@ -24,6 +24,7 @@ State these up front so the user knows what to expect:
 - You never modify source code, `.git/`, lockfiles, CI configs, or environment files.
 - You never run installers or any install-type action on the user's system. The only commands you run are read-only git-metadata inspections of the project — locally (e.g. `git remote -v`, reading `.git/config`, `git symbolic-ref`) or, when you need to read the default branch and local detection fails, a lightweight metadata probe of the project's own remote (`git remote show origin`). No code is fetched, cloned, or downloaded.
 - Before writing anything, show a diff and wait for confirmation.
+- **Flags in the generated command**: default to none. Only `--auto-approve` may be offered, always with an explicit confirmation and a reader-facing disclaimer inside the marker pair. Flags that relax skillx's safety posture for readers are off-limits. See Step 3 item 2 for the operational flow and Edge Cases for the forbidden-flag rule.
 
 If the user declines any step, stop that step cleanly and continue with the rest.
 
@@ -91,32 +92,73 @@ Per-host URL shape (use these when constructing the link; the CLI also accepts t
 
 ### Step 3 — Update the README(s)
 
-1. Locate README files (case-insensitive). Check for a primary `README.md` plus common localized siblings (`README.<locale>.md`, e.g. `README.zh-CN.md`, `README.ja.md`, `README.fr.md`). If multiple are found, list them and ask which ones the user wants to update — do not assume all should be changed. If there is no README at all, offer to create a minimal primary `README.md` that contains only the skillx section.
+Follow these sub-steps in order. Items 1–2 are one-off (answered once per run); items 3–6 run per selected README.
+
+1. **Locate README files** (case-insensitive). Check for a primary `README.md` plus common localized siblings (`README.<locale>.md`, e.g. `README.zh-CN.md`, `README.ja.md`, `README.fr.md`). If multiple are found, list them and ask which ones the user wants to update — do not assume all should be changed. If there is no README at all, offer to create a minimal primary `README.md` that contains only the skillx section.
 
    **Approval granularity** (Apply mode only — in Dry-Run mode nothing is written, so this is moot): when more than one file is on the list (multiple READMEs, localized siblings, or a landing page from Step 4), offer two options before continuing:
    - *Per-file* (default, safest): show the diff for each file and collect a separate yes/no.
    - *Batch*: render every proposed diff in one pass, then accept a single approval (applies all) or rejection (applies none). Useful for large monorepos with many locales.
 
-Then, **for each selected README**, repeat steps 2–5 below:
+2. **Ask once about `--auto-approve`.** This answer applies to every README, locale, and landing-page change you're about to make — one answer, not per-file. Default is **no**.
 
-2. Render the quick-start block using the template below, substituting `<source>` (the full URL from Step 2) and a short `<sample-prompt>`. If the README is non-English, localize the block according to the table in Edge Cases.
+   Use one of these scripts verbatim, picking by the skill type detected in Step 1.4:
+
+   - *Task-based skill*:
+
+     > "One optional flag can be embedded in the generated `skillx run` command:
+     > **`--auto-approve`** — passes the agent's permission-skip flag (e.g. Claude's `--dangerously-skip-permissions`, Codex's `--yolo`). Readers' agent will execute actions without per-step confirmation, which is convenient but means readers are trusting your skill with more autonomy.
+     > Add it? (yes / no, default **no**)"
+
+   - *Conversational / wizard-style skill* (same text, with an extra leaning-hint line; default still **no**):
+
+     > "One optional flag can be embedded in the generated `skillx run` command:
+     > **`--auto-approve`** — passes the agent's permission-skip flag (e.g. Claude's `--dangerously-skip-permissions`, Codex's `--yolo`). Readers' agent will execute actions without per-step confirmation, which is convenient but means readers are trusting your skill with more autonomy.
+     > Add it? (yes / no, default **no** — though for conversational skills like this one, it's often a good fit since the skill drives the dialogue and readers would otherwise be interrupted at every step.)"
+
+   Press-Enter / "no" / "default" → no flag; skip the guardrail below and continue with item 3.
+
+   **If the user says yes**, apply a lightweight guardrail:
+
+   - Restate the risk once, plainly: *"readers' agent will act without permission prompts; any filesystem / network / shell action your skill triggers will proceed automatically."*
+   - Ask a simple yes/no confirmation (do **not** require a typed `yes, I understand` — `--auto-approve` is often a legitimate UX choice for conversational skills, not a safety downgrade worth a heavyweight ceremony).
+   - Record the choice; item 3 below will pick the opt-in template, which adds the flag **and** a reader-facing disclaimer italic line inside the marker pair.
+
+   **Scope** (the forbidden-flag rule in Edge Cases has the details): `--auto-approve` is the only flag this item may offer, and always as the long form — never the short alias `--auto`. Any request for another safety-relaxing flag should be declined.
+
+   **Rendering rules** (applied by item 3 below):
+
+   | Choice | Skill type | Rendered command |
+   |--------|-----------|------------------|
+   | no (default) | conversational | `skillx run <source>` |
+   | no (default) | task-based | `skillx run <source> "<sample-prompt>"` |
+   | yes | conversational | `skillx run --auto-approve <source>` |
+   | yes | task-based | `skillx run --auto-approve <source> "<sample-prompt>"` |
+
+   The flag always sits before `<source>` — never between `<source>` and the sample prompt — to follow Unix convention and keep clap's positional parsing unambiguous.
+
+Then, **for each selected README**, repeat items 3–6 below:
+
+3. **Render the quick-start block.** Pick the *default template* when item 2 answered no, or the *opt-in template* when it answered yes (both templates below). Substitute `<source>` (the full URL from Step 2) and a short `<sample-prompt>`. Localize non-English READMEs per the table in Edge Cases.
 
    Choosing `<sample-prompt>`:
    - Make it concrete and actionable — a one-line command, not a paraphrase of the skill's `description`. Good: `"Redesign the hero section."` / `"Review the staged diff for security issues."` Bad: `"frontend design"` / `"review code"`.
    - Start with a verb (Redesign / Review / Summarize / Generate / Translate / Fix …).
    - Match the skill's natural input language (a Chinese name-poem skill should get a Chinese sample prompt).
-   - **Conversational / wizard-style skills** (the skill drives the dialogue and doesn't need a free-text task — `setup-skillx` itself is an example): omit the trailing quoted argument entirely and emit `skillx run <source>` on its own. If you're unsure whether a skill is conversational, ask the user.
+   - **Conversational / wizard-style skills**: omit the trailing quoted argument entirely (the template already shows this shape). If you're unsure whether a skill is conversational, ask the user.
 
-3. Wrap the block with the idempotency markers `<!-- skillx:begin:setup-skillx -->` and `<!-- skillx:end:setup-skillx -->` so it can be updated in place on a later run without touching surrounding content.
-4. If the markers already exist, diff the new block against the existing one. If nothing changed, tell the user and move on. Otherwise show the diff and ask before overwriting (in Dry-Run mode, show the diff and record it — do not write).
-5. If the markers do not exist, pick a sensible insertion point:
+4. **Wrap with markers.** The block always begins with `<!-- skillx:begin:setup-skillx -->` and ends with `<!-- skillx:end:setup-skillx -->` (both templates already include them). The markers let a later run update the block in place without touching surrounding content.
+
+5. **If the markers already exist**, diff the new block against the existing one. If nothing changed, tell the user and move on. Otherwise show the diff and ask before overwriting (in Dry-Run mode, show the diff and record it — do not write).
+
+6. **If the markers do not exist**, pick a sensible insertion point:
    - Preferred: just after the top-level title, any badge/logo row, and any short intro paragraph, before the first `##` section.
    - **If there is no top-level `#` title**, insert just before the first `##` section so the block stays near the top of the file.
    - If the README has no `##` sections at all, append the block at the end.
 
    Show the user where you plan to insert, and ask before writing (in Dry-Run mode, show the placement and record it — do not write).
 
-**Quick-start block template** (keep the markers verbatim):
+**Default template** (used when item 2 answered no — copy verbatim except for substituting `<source>` and `<sample-prompt>`):
 
 ~~~markdown
 <!-- skillx:begin:setup-skillx -->
@@ -134,7 +176,29 @@ Powered by [skillx](https://skillx.run) — fetch, scan, inject, and clean up an
 <!-- skillx:end:setup-skillx -->
 ~~~
 
-For conversational skills, drop the `"<sample-prompt>"` argument so the command becomes `skillx run <source>`.
+**Opt-in template** (used when item 2 answered yes — adds `--auto-approve` and a reader-facing disclaimer italic line; copy verbatim except for the same substitutions):
+
+~~~markdown
+<!-- skillx:begin:setup-skillx -->
+## Try it with skillx
+
+[![Run with skillx](https://img.shields.io/badge/Run%20with-skillx-F97316)](https://skillx.run)
+
+Run this skill without installing anything:
+
+```bash
+skillx run --auto-approve <source> "<sample-prompt>"
+```
+
+Powered by [skillx](https://skillx.run) — fetch, scan, inject, and clean up any agent skill in one command.
+
+*Note: this command lets the agent act without per-step permission prompts. Only run if you trust the skill source. Drop `--auto-approve` if you'd rather approve each action manually.*
+<!-- skillx:end:setup-skillx -->
+~~~
+
+For conversational skills, drop the trailing `"<sample-prompt>"` argument in whichever template you picked — the command becomes `skillx run <source>` or `skillx run --auto-approve <source>`.
+
+**Disclaimer placement (critical for idempotency)**: the italic disclaimer line in the opt-in template sits between the "Powered by skillx…" paragraph and the closing `<!-- skillx:end:setup-skillx -->` marker — always inside the marker pair. A later run that switches back to the default template will then remove the disclaimer in the same marker-based replace, with no orphan line left behind. Localize the disclaimer line to the README's language; the `--auto-approve` flag literal stays as-is (see Edge Cases).
 
 Keep the block short. Resist the urge to add feature lists or badges unrelated to skillx — the goal is a single clear entry point.
 
@@ -181,8 +245,9 @@ At the end, print a short summary. Adapt the wording to the mode:
 
 - The marker pair `<!-- skillx:begin:setup-skillx -->` / `<!-- skillx:end:setup-skillx -->` is the single source of truth for the block.
 - **Update by marker, not by position.** On a second run, locate the existing block by its markers and replace the content *in place* — do **not** remove it and re-insert a fresh copy at the default insertion point from Step 3 (the "pick a sensible insertion point" rule only applies when the markers don't yet exist). If the user moved the block elsewhere in the README (for example, demoted it below a longer intro), respect that placement.
-- A second run of this skill should be a no-op when the block is already present and unchanged.
+- A second run of this skill should be a no-op when the block is already present and unchanged (same `--auto-approve` choice, same source, same sample prompt).
 - Never duplicate the block. If a legacy copy exists without markers (for example, a hand-written section that already mentions skillx), ask the user whether to replace it with the marked block or leave it alone.
+- **The disclaimer italic line belongs inside the marker pair.** When `--auto-approve` is selected, the italic disclaimer line generated in Step 3 must sit between the "Powered by skillx…" paragraph and `<!-- skillx:end:setup-skillx -->`. A later run that disables the flag will regenerate the block *without* the disclaimer, and the marker-based replace will remove the old disclaimer along with the flag — no orphan line left behind. If the disclaimer ever drifts outside the marker pair (e.g. a user moved it), detect that during the diff step and offer to pull it back in.
 
 ## Edge Cases
 
@@ -190,7 +255,9 @@ At the end, print a short summary. Adapt the wording to the mode:
 - **No git remote (or not a git repo at all)**: ask the user for the canonical repo URL, or fall back to a local-path example (`skillx run ./path/to/skill "..."`). Flag in the summary that the emitted command only works for people who already have the project locally.
 - **Missing or malformed frontmatter**: `SKILL.md` exists but the YAML header is absent, empty, or unparseable. Fall back to the directory name for `name`, surface the parse error to the user, and ask for a one-line description (or proceed without one — the block doesn't render `description` anyway, but a good description feeds the `<sample-prompt>` decision).
 - **Conversational / wizard-style skill**: the skill has no natural free-text prompt (it drives the dialogue itself — `setup-skillx` is an example). Emit `skillx run <source>` with no trailing quoted argument. If unsure, ask the user "does your skill take a one-line task from the user, or does it ask its own questions?"
-- **Multiple skills in one repo**: when the user picks more than one skill in Step 1.4, render a single block that contains one `skillx run` command per selected skill, each using its full sub-path. Do not create separate blocks.
+- **Multiple skills in one repo**: when the user picks more than one skill in Step 1.4, render a single block that contains one `skillx run` command per selected skill, each using its full sub-path. Do not create separate blocks. The Step 3 item 2 `--auto-approve` choice applies uniformly to every command in the block — ask once, apply everywhere.
+- **`--auto-approve` flag form**: always render the long form `--auto-approve`. Never use the CLI's short alias `--auto`, even though skillx accepts both. The README is read by strangers; the long form is self-explanatory, the short form invites guessing.
+- **Forbidden flags in the generated command**: `--auto-approve` is the only embed-able flag. Any request for a safety-relaxing flag (scan-disabling, WARN auto-confirm, threshold-lowering, etc.) should be politely declined — those decisions belong to each reader, not the skill author. Readers can always pass such flags themselves when they run the generated command.
 - **Non-English README**: localize the block so it reads naturally in the README's language, using the table below. When the project has multiple language-specific READMEs, localize each copy to its own language.
 
   **Detecting the README's language** (do this before picking a localization target):
@@ -204,6 +271,8 @@ At the end, print a short summary. Adapt the wording to the mode:
   | Prose sentences (e.g. "Run this skill without installing anything") | Yes |
   | `Powered by skillx — ...` trailing sentence | Yes |
   | The `skillx run <source> "..."` command | No — keep as-is |
+  | `--auto-approve` flag literal (when present) | No — keep as-is |
+  | Disclaimer italic line (only rendered when `--auto-approve` is selected) | Yes — localize to the README's language |
   | Marker comments | No — keep as-is |
   | Shields.io badge URL (text inside the image) | No — keep as-is; the community recognizes the English badge |
   | Link targets (`https://skillx.run`) | No — keep as-is |
