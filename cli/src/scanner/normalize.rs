@@ -107,6 +107,116 @@ pub fn normalize_whitespace(line: &str) -> String {
         .to_string()
 }
 
+/// For each 0-based original line of `content`, return whether that line is
+/// fully contained inside a Python triple-quoted string block (docstring).
+///
+/// Heuristic — handles the cases that matter for scanning:
+///   - `"""..."""` and `'''...'''` multi-line blocks
+///   - Blocks opened and closed on the same line are not masked
+///   - The line where the opener appears and the line where the closer
+///     appears are NOT masked (they contain the quote delimiters and may
+///     carry code around them — e.g. `x = """text"""`); only interior
+///     lines are masked
+///   - Escaped quotes (`\"`) inside a triple-quote block are ignored (in
+///     practice triple-quoted strings don't need escaping, but we still
+///     avoid misreading `\"""` as a delimiter)
+///
+/// This is not a full Python tokenizer and will not handle pathological
+/// cases (raw strings mixing delimiters, prefix-stripping semantics, etc.),
+/// but it's sufficient to eliminate the common docstring false positives
+/// without masking real executable code.
+pub fn python_docstring_mask(content: &str) -> Vec<bool> {
+    #[derive(Clone, Copy, PartialEq)]
+    enum State {
+        None,
+        InTripleDouble,
+        InTripleSingle,
+    }
+
+    let lines: Vec<&str> = content.lines().collect();
+    let mut mask = vec![false; lines.len()];
+    let mut state = State::None;
+
+    for (i, line) in lines.iter().enumerate() {
+        let entry_state = state;
+        let bytes = line.as_bytes();
+        let mut j = 0;
+        while j < bytes.len() {
+            // Skip escaped char so `\"""` doesn't open/close a block
+            if bytes[j] == b'\\' && j + 1 < bytes.len() {
+                j += 2;
+                continue;
+            }
+            let is_triple_double = j + 2 < bytes.len()
+                && bytes[j] == b'"'
+                && bytes[j + 1] == b'"'
+                && bytes[j + 2] == b'"';
+            let is_triple_single = j + 2 < bytes.len()
+                && bytes[j] == b'\''
+                && bytes[j + 1] == b'\''
+                && bytes[j + 2] == b'\'';
+
+            match state {
+                State::None => {
+                    if is_triple_double {
+                        state = State::InTripleDouble;
+                        j += 3;
+                        continue;
+                    }
+                    if is_triple_single {
+                        state = State::InTripleSingle;
+                        j += 3;
+                        continue;
+                    }
+                    // Skip over single-line single/double-quoted strings so that
+                    // `s = "foo"""` etc. don't confuse the triple-quote scanner.
+                    if bytes[j] == b'"' || bytes[j] == b'\'' {
+                        let quote = bytes[j];
+                        j += 1;
+                        while j < bytes.len() && bytes[j] != quote {
+                            if bytes[j] == b'\\' && j + 1 < bytes.len() {
+                                j += 2;
+                            } else {
+                                j += 1;
+                            }
+                        }
+                        if j < bytes.len() {
+                            j += 1;
+                        }
+                        continue;
+                    }
+                }
+                State::InTripleDouble => {
+                    if is_triple_double {
+                        state = State::None;
+                        j += 3;
+                        continue;
+                    }
+                }
+                State::InTripleSingle => {
+                    if is_triple_single {
+                        state = State::None;
+                        j += 3;
+                        continue;
+                    }
+                }
+            }
+            j += 1;
+        }
+
+        // Mask a line only if the entire line lies inside a triple-quoted
+        // block: it started the line already inside one AND it remains
+        // inside one at the end (no closer on this line). Lines that open
+        // or close the block are left unmasked so code on the same line
+        // is still scanned.
+        let inside_at_start = entry_state != State::None;
+        let inside_at_end = state != State::None;
+        mask[i] = inside_at_start && inside_at_end;
+    }
+
+    mask
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -210,5 +320,65 @@ mod tests {
     fn test_normalize_whitespace_case_insensitive() {
         assert_eq!(normalize_whitespace("EVAL  ("), "EVAL (");
         assert_eq!(normalize_whitespace("Curl   url"), "Curl url");
+    }
+
+    // ── python_docstring_mask ──
+
+    #[test]
+    fn test_docstring_mask_triple_double_block() {
+        let content =
+            "def foo():\n    \"\"\"\n    body of docstring\n    rm -rf /\n    \"\"\"\n    pass\n";
+        let mask = python_docstring_mask(content);
+        assert_eq!(mask.len(), 6);
+        assert!(!mask[0], "def line not masked");
+        assert!(!mask[1], "opening \"\"\" line not masked");
+        assert!(mask[2], "interior line masked");
+        assert!(mask[3], "interior line masked");
+        assert!(!mask[4], "closing \"\"\" line not masked");
+        assert!(!mask[5], "code after docstring not masked");
+    }
+
+    #[test]
+    fn test_docstring_mask_triple_single_block() {
+        let content = "'''\nhello\n'''\n";
+        let mask = python_docstring_mask(content);
+        assert_eq!(mask, vec![false, true, false]);
+    }
+
+    #[test]
+    fn test_docstring_mask_single_line_not_masked() {
+        // A triple-quoted block that opens and closes on the same line
+        // must not mask that line.
+        let content = "x = \"\"\"inline\"\"\"\ny = 1\n";
+        let mask = python_docstring_mask(content);
+        assert_eq!(mask, vec![false, false]);
+    }
+
+    #[test]
+    fn test_docstring_mask_no_docstring() {
+        let content = "import os\nshutil.rmtree(p)\n";
+        let mask = python_docstring_mask(content);
+        assert_eq!(mask, vec![false, false]);
+    }
+
+    #[test]
+    fn test_docstring_mask_ignores_escaped_triple() {
+        // `\"""` should not open a block (escaped first quote)
+        let content = "x = \"plain\"\ny = 1\n";
+        let mask = python_docstring_mask(content);
+        assert_eq!(mask, vec![false, false]);
+    }
+
+    #[test]
+    fn test_docstring_mask_module_level_multi_line() {
+        // Typical module-level docstring spanning several lines.
+        let content = "\"\"\"Module doc.\n\nwritten to <workdir>/out.json\n\"\"\"\nimport os\n";
+        let mask = python_docstring_mask(content);
+        assert_eq!(mask.len(), 5);
+        assert!(!mask[0]);
+        assert!(mask[1]);
+        assert!(mask[2], "line with >/ inside docstring is masked");
+        assert!(!mask[3]);
+        assert!(!mask[4]);
     }
 }

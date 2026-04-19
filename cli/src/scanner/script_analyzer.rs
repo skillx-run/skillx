@@ -13,6 +13,19 @@ fn is_comment_line(line: &str) -> bool {
     trimmed.starts_with('#') || trimmed.starts_with("//") || trimmed.starts_with("--")
 }
 
+/// Python files where docstring masking is useful. We also run the mask on
+/// extensionless files that begin with a python shebang.
+fn should_apply_python_docstring_mask(path: &Path, content: &str) -> bool {
+    if path.extension().and_then(|e| e.to_str()) == Some("py") {
+        return true;
+    }
+    content
+        .lines()
+        .next()
+        .map(|first| first.starts_with("#!") && first.contains("python"))
+        .unwrap_or(false)
+}
+
 pub struct ScriptAnalyzer;
 
 impl ScriptAnalyzer {
@@ -57,6 +70,17 @@ impl ScriptAnalyzer {
             .map(|ll| normalize::normalize_whitespace(&ll.text))
             .collect();
 
+        // Compute which original lines sit inside a Python triple-quoted
+        // docstring. These are pure documentation and should not fire
+        // WARN/DANGER matches (they're not executable code). BLOCK-level
+        // rules still fire inside docstrings because mentions of things
+        // like self-replication are worth reviewing even in prose.
+        let docstring_mask: Vec<bool> = if should_apply_python_docstring_mask(path, &content) {
+            normalize::python_docstring_mask(&content)
+        } else {
+            Vec::new()
+        };
+
         // SC-002 through SC-015: Pre-compiled pattern matching
         for rule in SC_RULES.iter() {
             for re in &rule.patterns {
@@ -65,6 +89,13 @@ impl ScriptAnalyzer {
                         // Skip WARN-level matches on comment lines to reduce false positives.
                         // DANGER/BLOCK level rules still fire on comments (worth reviewing).
                         if rule.level == RiskLevel::Warn && is_comment_line(&ll.text) {
+                            continue;
+                        }
+                        // Skip WARN/DANGER matches that sit entirely inside
+                        // a Python docstring.
+                        if rule.level != RiskLevel::Block
+                            && docstring_mask.get(ll.start_line).copied().unwrap_or(false)
+                        {
                             continue;
                         }
                         report.add(Finding {
@@ -120,6 +151,14 @@ mod tests {
         let path = dir.path().join("test.sh");
         std::fs::write(&path, content).unwrap();
         ScriptAnalyzer::analyze(&path, "test.sh").unwrap()
+    }
+
+    /// Helper: write a temp .py file, analyze it, return the report.
+    fn analyze_python_content(content: &str) -> ScanReport {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("test.py");
+        std::fs::write(&path, content).unwrap();
+        ScriptAnalyzer::analyze(&path, "test.py").unwrap()
     }
 
     #[test]
@@ -308,5 +347,93 @@ mod tests {
             .filter(|f| f.rule_id == "SC-015")
             .collect();
         assert!(!findings.is_empty(), "SC-015 should detect printenv");
+    }
+
+    // ── Python docstring skipping ──
+
+    #[test]
+    fn test_sc003_skipped_inside_python_docstring() {
+        let content =
+            "def foo():\n    \"\"\"\n    Behaves like rm -rf but safer.\n    \"\"\"\n    pass\n";
+        let report = analyze_python_content(content);
+        let sc003: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-003")
+            .collect();
+        assert!(
+            sc003.is_empty(),
+            "SC-003 should not fire on `rm -rf` inside a Python docstring"
+        );
+    }
+
+    #[test]
+    fn test_sc003_still_fires_on_real_python_code() {
+        let content = "import shutil\nshutil.rmtree(path)\n";
+        let report = analyze_python_content(content);
+        let sc003: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-003")
+            .collect();
+        assert!(
+            !sc003.is_empty(),
+            "SC-003 should still fire on real shutil.rmtree() calls"
+        );
+    }
+
+    #[test]
+    fn test_sc007_skipped_inside_python_docstring() {
+        // Mirrors the real false positive from aggregate_history.py:
+        // `Output shape (written to <workdir>/history.json)::`
+        let content =
+            "\"\"\"Module doc.\n\nOutput written to <workdir>/history.json\n\"\"\"\nimport os\n";
+        let report = analyze_python_content(content);
+        let sc007: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-007")
+            .collect();
+        assert!(
+            sc007.is_empty(),
+            "SC-007 should not fire on `>/` inside a Python docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_mask_disabled_on_shell_scripts() {
+        // Shell scripts don't get the mask — verifies we don't accidentally
+        // mask unrelated file types.
+        let content = "cat <<EOF\n\"\"\"\nrm -rf /tmp\n\"\"\"\nEOF\n";
+        let report = analyze_script_content(content);
+        let sc003: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-003")
+            .collect();
+        assert!(
+            !sc003.is_empty(),
+            "shell heredocs are not docstrings — SC-003 must still fire"
+        );
+    }
+
+    #[test]
+    fn test_python_shebang_enables_docstring_mask() {
+        // A file without .py extension but with a python shebang should
+        // still benefit from the mask.
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("run_thing");
+        let content = "#!/usr/bin/env python3\n\"\"\"\nrm -rf /\n\"\"\"\nprint('ok')\n";
+        std::fs::write(&path, content).unwrap();
+        let report = ScriptAnalyzer::analyze(&path, "run_thing").unwrap();
+        let sc003: Vec<_> = report
+            .findings
+            .iter()
+            .filter(|f| f.rule_id == "SC-003")
+            .collect();
+        assert!(
+            sc003.is_empty(),
+            "python-shebang files should get docstring masking"
+        );
     }
 }
