@@ -27,6 +27,18 @@ fn example_skill(name: &str) -> String {
         .to_string()
 }
 
+/// Absolute path to a first-party skill directory (top-level `skills/`).
+fn firstparty_skill(name: &str) -> String {
+    let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    manifest
+        .parent()
+        .unwrap()
+        .join("skills")
+        .join(name)
+        .to_string_lossy()
+        .to_string()
+}
+
 /// Absolute path to a test fixture directory.
 fn fixture(name: &str) -> String {
     let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -265,9 +277,9 @@ fn test_scan_example_testing_guide() {
 }
 
 #[test]
-fn test_scan_example_setup_skillx() {
+fn test_scan_firstparty_setup_skillx() {
     skillx()
-        .args(["scan", &example_skill("setup-skillx")])
+        .args(["scan", &firstparty_skill("setup-skillx")])
         .assert()
         .success();
 }

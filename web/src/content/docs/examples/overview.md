@@ -14,7 +14,6 @@ Official Examples live in this repository and are designed to teach skill struct
 | [Testing Guide](/examples/testing-guide/) | Multi-file skill structure with supporting references |
 | [Hello World](/examples/hello-world/) | The smallest possible skill and the fastest way to understand injection |
 | [Name Poem](/examples/name-poem/) | Multilingual creative output with cultural awareness |
-| [Setup skillx](/examples/setup-skillx/) | Advertise your own skill by inserting a quick-start block into your README (and optionally your landing page) |
 
 ## Which track should I use?
 
