@@ -27,7 +27,7 @@ const slugs = new Set();
 const docsHrefs = new Set();
 const runUrls = new Set();
 
-assert(famousSkills.length >= 8, 'Famous skills list must contain at least 8 curated skills');
+assert(famousSkills.length >= 9, 'Famous skills list must contain at least 9 curated skills');
 
 for (const skill of famousSkills) {
   assert(!slugs.has(skill.slug), `Duplicate famous skill slug: ${skill.slug}`);
@@ -75,7 +75,7 @@ for (const skill of famousSkills) {
 
 const command = buildSkillxRunCommand(primaryFamousSkill, primaryFamousSkill.homepagePrompt);
 assert(
-  command.includes(primaryFamousSkill.commandSource),
+  command.includes(primaryFamousSkill.runUrl),
   'Primary command should include the primary famous skill URL',
 );
 

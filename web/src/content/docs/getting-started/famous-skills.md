@@ -54,6 +54,29 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
       </tr>
       <tr>
         <td>
+          <strong>Setup skillx</strong>
+          <div class="famous-skill-links">
+            <a href="https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md">SKILL.md</a>
+            <a href="https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx">Directory</a>
+          </div>
+        </td>
+        <td>Advertising your own skill so others can try it with skillx</td>
+        <td class="famous-command-cell">
+          <div class="famous-command-stack">
+            <div class="famous-command-scroll">
+              <code>skillx run github:skillx-run/skillx/examples/skills/setup-skillx "Add a Run-with-skillx section to this repo's README"</code>
+            </div>
+            <div class="famous-command-actions">
+              <button type="button" class="famous-copy-button" data-copy='skillx run github:skillx-run/skillx/examples/skills/setup-skillx "Add a Run-with-skillx section to this repo&apos;s README"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+                <span>Copy</span>
+              </button>
+              <a class="famous-source-link" href="https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md">View source</a>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
           <strong>Webapp Testing</strong>
           <div class="famous-skill-links">
             <a href="https://github.com/anthropics/skills/blob/main/skills/webapp-testing/SKILL.md">SKILL.md</a>
@@ -220,6 +243,10 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
 <h3 id="frontend-design">Frontend Design</h3>
 
 Use this when you want the most convincing first run: the prompt is concrete, the output is visible, and the value of a reusable skill is easy to judge from the result.
+
+<h3 id="setup-skillx">Setup skillx</h3>
+
+Use this when you publish a skill and want a tidy "Run with skillx" block in your README. It detects the skill, infers the hosting platform, and inserts a copyable command block with diff preview before writing.
 
 <h3 id="webapp-testing">Webapp Testing</h3>
 

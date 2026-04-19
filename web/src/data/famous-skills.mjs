@@ -20,6 +20,26 @@ export const famousSkills = [
     docsPrompt: 'Design a distinctive landing page for a developer tool',
   },
   {
+    slug: 'setup-skillx',
+    title: 'Setup skillx',
+    commandSource: 'github:skillx-run/skillx/examples/skills/setup-skillx',
+    runUrl: 'https://github.com/skillx-run/skillx/tree/main/examples/skills/setup-skillx',
+    sourceUrl: 'https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md',
+    docsHref: '/getting-started/famous-skills/#setup-skillx',
+    recommendedReason:
+      'Best when you author skills yourself and want a clean Run-with-skillx block in your README without hand-writing it.',
+    bestFor: 'Advertising your own skill so others can try it with skillx',
+    homepageTitle: 'Advertise your skill',
+    homepageBody:
+      'Generate a Run-with-skillx block for your skill\'s README so others can try it in one command.',
+    homepagePrompt:
+      'Add a Run-with-skillx section to this repo\'s README.',
+    homepageNote: 'Best fit for skill authors who want visitors to try the skill without installing it.',
+    docsDescription:
+      'Use this when you publish a skill and want a tidy "Run with skillx" block in your README. It detects the skill, infers the hosting platform, and inserts a copyable command block with diff preview before writing.',
+    docsPrompt: 'Add a Run-with-skillx section to this repo\'s README',
+  },
+  {
     slug: 'webapp-testing',
     title: 'Webapp Testing',
     commandSource: 'github:anthropics/skills/skills/webapp-testing',
@@ -168,5 +188,5 @@ export function getFamousSkill(slug) {
 }
 
 export function buildSkillxRunCommand(skill, prompt) {
-  return `skillx run ${skill.commandSource ?? skill.runUrl} "${prompt}"`;
+  return `skillx run ${skill.runUrl} "${prompt}"`;
 }
