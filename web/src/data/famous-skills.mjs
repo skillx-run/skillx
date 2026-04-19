@@ -32,12 +32,11 @@ export const famousSkills = [
     homepageTitle: 'Advertise your skill',
     homepageBody:
       'Generate a Run-with-skillx block for your skill\'s README so others can try it in one command.',
-    homepagePrompt:
-      'Add a Run-with-skillx section to this repo\'s README.',
-    homepageNote: 'Best fit for skill authors who want visitors to try the skill without installing it.',
+    homepagePrompt: '',
+    homepageNote: 'The skill is conversational — just run it and it will walk you through detecting your project and drafting the block.',
     docsDescription:
-      'Use this when you publish a skill and want a tidy "Run with skillx" block in your README. It detects the skill, infers the hosting platform, and inserts a copyable command block with diff preview before writing.',
-    docsPrompt: 'Add a Run-with-skillx section to this repo\'s README',
+      'Use this when you publish a skill and want a tidy "Run with skillx" block in your README. It detects the skill, infers the hosting platform, and inserts a copyable command block with diff preview before writing. Runs without a free-text prompt — the skill drives the conversation.',
+    docsPrompt: '',
   },
   {
     slug: 'webapp-testing',
@@ -188,5 +187,6 @@ export function getFamousSkill(slug) {
 }
 
 export function buildSkillxRunCommand(skill, prompt) {
+  if (!prompt) return `skillx run ${skill.runUrl}`;
   return `skillx run ${skill.runUrl} "${prompt}"`;
 }

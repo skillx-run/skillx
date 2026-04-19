@@ -64,10 +64,10 @@ If you only try one, start with **Frontend Design**. It still gives the stronges
         <td class="famous-command-cell">
           <div class="famous-command-stack">
             <div class="famous-command-scroll">
-              <code>skillx run github:skillx-run/skillx/examples/skills/setup-skillx "Add a Run-with-skillx section to this repo's README"</code>
+              <code>skillx run github:skillx-run/skillx/examples/skills/setup-skillx</code>
             </div>
             <div class="famous-command-actions">
-              <button type="button" class="famous-copy-button" data-copy='skillx run github:skillx-run/skillx/examples/skills/setup-skillx "Add a Run-with-skillx section to this repo&apos;s README"' onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
+              <button type="button" class="famous-copy-button" data-copy="skillx run github:skillx-run/skillx/examples/skills/setup-skillx" onclick="navigator.clipboard.writeText(this.dataset.copy); const label = this.querySelector('span'); const original = label.textContent; label.textContent = 'Copied'; setTimeout(() => label.textContent = original, 1200);">
                 <span>Copy</span>
               </button>
               <a class="famous-source-link" href="https://github.com/skillx-run/skillx/blob/main/examples/skills/setup-skillx/SKILL.md">View source</a>
