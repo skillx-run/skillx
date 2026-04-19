@@ -11,61 +11,127 @@
 **skillx** is a CLI tool that runs Agent Skills without permanently installing them. One command fetches a skill from Git hosts and other supported sources, scans it for risky patterns, injects it into your agent, and cleans everything up when the session ends. No files are left behind.
 
 ```bash
-skillx run ./examples/skills/name-poem "Your Name"
+skillx run github:skillx-run/skillx/examples/skills/name-poem "Ada Lovelace"
 ```
 
 ## Why skillx?
 
-**No install needed.** Every other skill manager requires permanent installation. skillx runs skills ephemerally by default — fetch, use, auto-clean. When you want persistence, `skillx install` is there, but it's opt-in.
+- **No install needed.** Tools like `skills` and `skillfish` drop files into your agent and leave them there. skillx runs skills ephemerally by default — fetch, use, auto-clean. When you want persistence, `skillx install` is there, but it's opt-in.
+- **Security first.** Every skill is scanned before injection. 31 built-in rules look for prompt injection, credential access, destructive operations, and disguised binaries. Dangerous patterns are blocked — you never run untrusted code silently.
+- **One command.** No config files, no setup. `skillx run` handles the entire lifecycle: fetch → scan → inject → run → clean.
 
-**Security first.** Every skill is scanned before injection. Built-in analyzers look for prompt injection, credential access, destructive operations, and disguised binaries before launch. Dangerous patterns are blocked — you never run untrusted code silently.
+## Install
 
-**One command.** No config files, no setup. One command handles the entire lifecycle: fetch → scan → inject → run → clean.
+```bash
+# Shell installer (macOS / Linux)
+curl -fsSL https://skillx.run/install.sh | sh
+
+# Homebrew (macOS / Linux)
+brew install skillx-run/tap/skillx
+
+# Cargo (any platform with Rust toolchain)
+cargo install skillx
+
+# Cargo binstall (prebuilt binaries, no build step)
+cargo binstall skillx
+```
+
+Windows binaries are on the [Releases page](https://github.com/skillx-run/skillx/releases).
 
 ## Quick Start
 
 ```bash
-# Install skillx
-curl -fsSL https://skillx.run/install.sh | sh
+# Run a skill from GitHub (temporary — auto-cleans when done)
+skillx run github:skillx-run/skillx/examples/skills/name-poem "Ada Lovelace"
 
-# Run a local skill (temporary — auto-cleans when done)
-skillx run ./examples/skills/name-poem "Your Name"
+# Paste a full URL — skillx recognizes 20+ platforms
+skillx run https://github.com/skillx-run/skillx/tree/main/examples/skills/code-review
 
-# Run a skill from GitHub
-skillx run github:skillx-run/skillx/examples/skills/name-poem "Your Name"
+# Scan a skill before running
+skillx scan github:skillx-run/skillx/examples/skills/name-poem
 
 # Want persistence? Opt in explicitly
 skillx install github:skillx-run/skillx/examples/skills/name-poem
 ```
 
+Browse [`examples/skills/`](examples/skills) for runnable demos (`name-poem`, `hello-world`, `code-review`, `testing-guide`, `commit-message`) and [`skills/`](skills) for first-party skills (currently `setup-skillx`).
+
+## How It Works
+
+```
+┌───────┐   ┌──────┐   ┌────────┐   ┌─────┐   ┌───────┐
+│ fetch │ → │ scan │ → │ inject │ → │ run │ → │ clean │
+└───────┘   └──────┘   └────────┘   └─────┘   └───────┘
+```
+
+1. **Fetch** — Resolves the source (local path, `github:`, full URL, archive, …) and downloads with caching.
+2. **Scan** — Runs 31 security rules across Markdown, scripts, and bundled resources.
+3. **Inject** — Copies or inlines skill files into the detected agent's expected location (e.g. `.claude/skills/`, `.cursor/skills/`).
+4. **Run** — Launches the agent with the skill invocation prefix (e.g. `/name-poem`) prepended to your prompt.
+5. **Clean** — Removes injected files and archives the session manifest to `~/.skillx/history/`.
+
+## vs. install-based skill managers
+
+Tools like `skills` and `skillfish` drop skill files into your agent and leave them there. skillx fetches, scans, runs once, and cleans up.
+
+**Install-based managers — 4 steps per skill:**
+
+1. Install the skill onto your machine
+2. Link it into your agent's folder
+3. Audit the files yourself (nothing scans before injection)
+4. Uninstall it when you're done
+
+**skillx — 1 command:**
+
+```bash
+skillx run <url> "prompt"
+```
+
+skillx does the rest: scan → inject → run → clean. Persistent installation is still available via `skillx install`, but it's opt-in.
+
 ## Commands
+
+**Core**
 
 | Command | Description |
 |---------|-------------|
 | `skillx run <source> [prompt]` | Run a skill temporarily (fetch, scan, inject, run, clean) |
-| `skillx install [sources...]` | Install skills persistently (opt-in) |
+| `skillx install [sources...]`  | Install skills persistently (opt-in) |
+
+**Manage installed skills**
+
+| Command | Description |
+|---------|-------------|
+| `skillx list`                | List installed skills |
+| `skillx update [names...]`   | Update installed skills |
 | `skillx uninstall <name...>` | Remove installed skills |
-| `skillx list` | List installed skills |
-| `skillx update [names...]` | Update installed skills |
-| `skillx init` | Initialize skillx.toml |
-| `skillx scan <source>` | Security scan a skill |
-| `skillx agents` | List detected agent environments |
-| `skillx info <source>` | Show skill metadata |
-| `skillx cache ls\|clean` | Manage local cache |
+| `skillx init`                | Initialize `skillx.toml` |
+
+**Utilities**
+
+| Command | Description |
+|---------|-------------|
+| `skillx scan <source>`     | Security scan a skill |
+| `skillx info <source>`     | Show skill metadata |
+| `skillx agents`            | List detected agent environments |
+| `skillx cache ls\|clean`   | Manage local cache |
+| `skillx upgrade`           | Check for and upgrade skillx itself |
 
 ## Supported Agents
 
-Built-in agents across multiple tiers, plus custom agent support:
+32 built-in agents plus custom support:
 
 - **Tier 1**: Claude Code, Codex, GitHub Copilot, Cursor
 - **Tier 2**: Gemini CLI, OpenCode, Amp, Windsurf, Cline, Roo
-- **Tier 3**: 21 additional agents via generic adapter
-- **Custom agents** via `config.toml`
+- **Tier 3**: 21 additional agents via a data-driven generic adapter
+- **Custom agents** via `[[custom_agents]]` in `~/.skillx/config.toml`
 - **Universal fallback** for unrecognized environments
+
+Run `skillx agents --all` to list every built-in adapter.
 
 ## Supported Sources
 
-skillx is built around local paths, Git hosts, archives, and other compatible source URLs:
+skillx recognizes local paths, shorthand prefixes, and full URLs across Git hosts and other sources:
 
 | Source | Example |
 |--------|---------|
@@ -79,26 +145,36 @@ skillx is built around local paths, Git hosts, archives, and other compatible so
 | HuggingFace | `https://huggingface.co/org/model/blob/main/skill.md` |
 | Archive | `https://example.com/skill.tar.gz` |
 
-skillx also keeps compatibility with selected legacy directory links when they resolve cleanly to underlying Git repositories, but those URLs are not the recommended discovery path.
-
-Custom URL patterns can be added via `config.toml` `[[url_patterns]]`.
+skillx also keeps compatibility with selected skill-directory sites when they resolve cleanly to underlying Git repositories. Custom URL patterns can be added via `[[url_patterns]]` in `config.toml`.
 
 ## Security
 
-Built-in analyzers cover Markdown, scripts, and bundled resources:
+Three built-in analyzers, 31 rules total, 5 risk levels:
 
-- **5 risk levels**: Pass → Info → Warn → Danger → Block
-- **Interactive gating**: auto-pass for Pass/Info, prompt for Warn, confirmation for Danger, refuse for Block
-- **SARIF 2.1.0** output for CI integration
+- **Markdown analyzer** — prompt injection, sensitive directory access, hidden zero-width text, disguised data URIs, missing frontmatter fields.
+- **Script analyzer** — `eval`, `rm -rf`, base64 / hex decode, environment-variable exfiltration, binary blobs masquerading as text.
+- **Resource analyzer** — disguised file types, oversized files, executable files under `references/`, symlinks anywhere in the skill tree (never followed).
+
+Risk levels gate the run interactively:
+
+| Level | Behavior |
+|-------|----------|
+| Pass / Info | Auto-pass |
+| Warn   | Prompt (`y/n`) |
+| Danger | Confirmation required (`yes` + acknowledge details) |
+| Block  | Refuses to run |
 
 ```bash
-skillx scan github:org/skills/data-pipeline
-skillx scan --format sarif ./my-skill/
+skillx scan github:org/skills/data-pipeline          # Text report
+skillx scan --format sarif ./my-skill/               # SARIF 2.1.0 for CI
+skillx scan --format json ./my-skill/                # JSON for scripting
 ```
+
+A GitHub Action (`.github/actions/scan/action.yml`) is available for CI. See [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
 
 ## Project Configuration
 
-For teams that want reproducible skill sets, define them in `skillx.toml`:
+For teams that want reproducible skill sets, declare them in `skillx.toml`:
 
 ```toml
 [project]
@@ -115,17 +191,16 @@ code-review = { source = "github:skillx-run/skillx/examples/skills/code-review",
 ```bash
 skillx init                  # Create skillx.toml
 skillx init --from-installed # Create from currently installed skills
+skillx run                   # Run all skills declared in skillx.toml
 ```
 
-## Examples
+## Documentation & Community
 
-Browse the [examples/skills](examples/skills) directory for runnable demo skills (name-poem, hello-world, code-review, testing-guide, commit-message). First-party skills published by skillx live under [skills/](skills) — currently `setup-skillx`.
-
-## Documentation
-
-Full documentation at [https://skillx.run](https://skillx.run).
+- **Full docs**: [https://skillx.run](https://skillx.run)
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
+- **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Security reporting**: [SECURITY.md](SECURITY.md)
 
 ## License
 
-- Code: [Apache-2.0](LICENSE)
-- Documentation: [CC-BY-4.0](LICENSE-DOCS)
+Code under [Apache-2.0](LICENSE); documentation under [CC-BY-4.0](LICENSE-DOCS).
